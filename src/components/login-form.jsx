@@ -2,13 +2,71 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
+import { useState } from "react"
+import { useAuth} from "@/contexts/authentication-context"
+import { loginUser} from "@/services/authenticationService"
 export function LoginForm({
   className,
   ...props
 }) {
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
+  const [fieldErrors, setFieldErrors] = useState({
+    email: false,
+    password: false
+  });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setFieldErrors({ email: false, password: false });
+    const email = formData.email;
+    const password = formData.password;
+    
+    // Input validation
+    if (!email) {
+      setFieldErrors(prev => ({ ...prev, email: true }));
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setFieldErrors(prev => ({ ...prev, email: true }));
+      return;
+    }
+    if (!password) {
+      setFieldErrors(prev => ({ ...prev, password: true }));
+      return;
+    }
+
+    const credential = { email, password };
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await loginUser(credential);
+      const {user, token} = response;
+      login(user, token);
+      // navigate("/home");
+      console.log(response);
+    } catch (error) {
+      setError("Login failed. Please check your credentials and try again.");
+      console.error("Login failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
-    (<form className={cn("flex flex-col gap-6", className)} {...props}>
+    
+    (<form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -18,16 +76,45 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" className="border border-border focus:ring-primary focus:border-primary" required />
+          <Input 
+            id="email" 
+            name="email"
+            type="email" 
+            placeholder="m@example.com"
+            value={formData.email}
+            onChange={(e) => {
+              handleInputChange(e);
+              if(fieldErrors.email) {
+                setFieldErrors(prev => ({ ...prev, email: false }));
+                setError(null);
+              }
+            }}
+            className={fieldErrors.email ? "border-red-500" : ""}
+             />
+            {fieldErrors.email && <p className="text-xs text-red-500">Please enter a valid email address</p>}
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
-            <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
+            <a href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" className="border border-border focus:ring-primary focus:border-primary" required />
+          <Input 
+            id="password"
+            name="password"
+            type="password" 
+            value={formData.password}
+            onChange={(e) => {
+              handleInputChange(e);
+              if (fieldErrors.password) {
+                setFieldErrors(prev => ({ ...prev, password: false }));
+                setError(null);
+              }
+            }}
+            className={fieldErrors.password ? "border-red-500" : ""}
+          />
+          {fieldErrors.password && <p className="text-xs text-red-500">Password is required</p>}
         </div>
         <Button type="submit" className="w-full">
           Login

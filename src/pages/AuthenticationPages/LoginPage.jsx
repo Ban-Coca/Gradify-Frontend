@@ -3,7 +3,7 @@ import { GalleryVerticalEnd } from "lucide-react"
 import loginImg from "@/assets/learning-animate.svg"
 import { useRef } from "react"
 import { motion } from "motion/react"
-
+import logo from '@/assets/gradifyLogo.svg'
 export default function LoginPage() {
   const ref = useRef(null)
   return (
@@ -12,8 +12,8 @@ export default function LoginPage() {
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <GalleryVerticalEnd className="size-4" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
+              <img src={logo} alt="Logo" className="h-6 w-6" />
             </div>
             Gradify
           </a>

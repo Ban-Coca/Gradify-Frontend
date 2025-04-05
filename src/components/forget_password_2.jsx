@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { InputOTPPattern } from "./code_input"
+import { useNavigate } from "react-router-dom"
 export function EnterCodeForm({
   className,
   ...props
 }) {
+  const navigate = useNavigate()
   return (
     (<form className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
@@ -22,7 +24,7 @@ export function EnterCodeForm({
             <InputOTPPattern id="code" type="text" placeholder="XXXXXX" className="border border-border focus:ring-primary focus:border-primary" required />
           </div>
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" onClick={()=>navigate('/reset-password')} className="w-full">
           Verify code
         </Button>
       </div>

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ForgotPasswordForm } from '@/components/forget_password_1';
 import forgotPasswordImg from '@/assets/forgot-password-animate.svg';
 import { EnterCodeForm } from '@/components/forget_password_2';
-
+import logo from '@/assets/gradifyLogo.svg'
 export default function VerifyCode() {
     const ref = useRef(null)
     return (
@@ -15,8 +15,8 @@ export default function VerifyCode() {
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
             <a href="#" className="flex items-center gap-2 font-medium">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                
+              <div className="flex h-6 w-6 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
+                <img src={logo} alt="Logo" className="h-6 w-6" />
               </div>
               Gradify
             </a>
