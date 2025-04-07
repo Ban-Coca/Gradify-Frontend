@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import LoginPage from '@/pages/AuthenticationPages/LoginPage'
 import SignupPage from '@/pages/AuthenticationPages/SignupPage'
 import ForgotPassword from '@/pages/AuthenticationPages/ForgotPassword'
 import VerifyCode from '@/pages/AuthenticationPages/VerificationCodePage'
 import PasswordReset from './pages/AuthenticationPages/PasswordReset'
-import HomePage from '@/pages/HomePage'
-import { AuthenticationProvider, useAuth } from './contexts/authentication-context'
+import Unauthorized from '@/pages/AuthenticationPages/Unauthorized'
+import HomePage from '@/pages/Homepage'
+import StudentDashboard from './pages/StudentDashboard'
+import TeacherDashboard from './pages/TeacherDashboard'
+import { useAuth } from './contexts/authentication-context'
 import { Navigate } from 'react-router-dom'
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -18,8 +21,23 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" />;
   }
   
-  return children;
+  if(allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/unauthorized" />;
+  }
+
+  return <Outlet/>;
 }
+
+export const RoleBasedComponent = ({ children, allowedRoles }) => {
+  const { userRole } = useAuth();
+  
+  if (!allowedRoles || (userRole && allowedRoles.includes(userRole))) {
+    return <>{children}</>;
+  }
+  
+  return null;
+};
+
 const RedirectIfAuthenticated = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
@@ -38,11 +56,20 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-code" element={<VerifyCode />} />
       <Route path="/reset-password" element={<PasswordReset />} />
-      <Route path="/home" element={
-        <ProtectedRoute>
-          <HomePage />
-        </ProtectedRoute>} 
-      />
+      <Route path="/unauthorized" element={<Unauthorized/>} />
+      <Route element={<ProtectedRoute allowedRoles={['TEACHER', 'STUDENT', 'USER']} />}>
+        <Route path="/home" element={<HomePage />} />
+      </Route>
+          
+      <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
+        <Route path="/teacher/*" element={<TeacherDashboard />} />
+      </Route>
+          
+      <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
+        <Route path="/student/*" element={<StudentDashboard />} />
+      </Route>
+          
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }

@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label"
 import { signUpUser } from "@/services/authenticationService";
 import { useAuth } from "@/contexts/authentication-context";
 import { useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 export function SignupForm({
   className,
   ...props
@@ -16,6 +18,7 @@ export function SignupForm({
     email: "",
     password: "",
     confirmPassword: "",
+    role: "USER", // Default role
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,10 +27,15 @@ export function SignupForm({
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
+
+  const handleRoleChange = (value) => {
+    setFormData((prev) => ({ ...prev, role: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+    console.log(formData);
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -36,9 +44,11 @@ export function SignupForm({
     try {
       setLoading(true);
       const response = await signUpUser(formData);
+      console.log(response);
       login(response.user, response.token); // Automatically log in the user after signup
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred during signup.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -106,6 +116,19 @@ export function SignupForm({
             value={formData.confirmPassword}
             onChange={handleChange}
             required />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="role">Role</Label>
+          <Select name="role" id="role" value={formData.role} onValueChange={handleRoleChange} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="USER">User</SelectItem>
+              <SelectItem value="TEACHER">Teacher</SelectItem>
+              <SelectItem value="STUDENT">Student</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button type="submit" className="w-full">
           Register

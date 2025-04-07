@@ -9,6 +9,7 @@ export const signUpUser = async (formData) => {
             lastName: formData.lastName,
             email: formData.email,
             password: formData.password,
+            role: formData.role,
         });
         return response.data;
     } catch (error){
