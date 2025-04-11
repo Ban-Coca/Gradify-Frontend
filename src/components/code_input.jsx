@@ -1,15 +1,25 @@
-import { Input } from "@/components/ui/input"
 import React from "react"
 import { cn } from "@/lib/utils"
-export function InputOTPPattern() {
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+
+export function InputOTPPattern({ value, onChange, className, ...props }) {
   return (
-    <Input
-    
-      className=
-        "w-64 h-12 text-center text-lg border-2 border-emerald-600 bg-white shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
+    <InputOTP
+      value={value}
+      onChange={onChange}
       maxLength={6}
-      pattern="[0-9]{6}"
-    />
+      className={cn("", className)}
+      {...props}
+    >
+      <InputOTPGroup>
+        <InputOTPSlot index={0} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+        <InputOTPSlot index={1} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+        <InputOTPSlot index={2} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+        <InputOTPSlot index={3} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+        <InputOTPSlot index={4} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+        <InputOTPSlot index={5} className="h-12 w-12 border-2 border-emerald-600 focus:border-emerald-500" />
+      </InputOTPGroup>
+    </InputOTP>
   )
 }
 
