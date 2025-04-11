@@ -31,12 +31,25 @@ export const loginUser = async (credential) => {
     }
 }
 
-export const forgotPassword = async (email) => {
+export const requestPasswordReset = async (email) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/verify-email`, { email });
+        const response = await axios.post(`${API_BASE_URL}/request-password-reset`, { email });
         return response.data;
     } catch (error) {
-        console.error('Error sending password reset email:', error);
+        console.error('Error requesting password reset:', error);
+        throw error;
+    }
+}
+
+export const verifyResetCode = async (email, code) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/verify-reset-code`, { 
+            email, 
+            code 
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error verifying reset code:', error);
         throw error;
     }
 }
@@ -45,7 +58,8 @@ export const resetPassword = async (credential) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/reset-password`, {
             email: credential.email,
-            NewPassword: credential.password,
+            resetToken: credential.resetToken,
+            newPassword: credential.password,
         });
         return response.data;
     } catch (error) {
@@ -53,6 +67,7 @@ export const resetPassword = async (credential) => {
         throw error;
     }
 }
+
 
 export const googleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";

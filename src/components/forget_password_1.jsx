@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { forgotPassword } from "@/services/authenticationService"
+import { requestPasswordReset } from "@/services/authenticationService"
 export function ForgotPasswordForm({
   className,
   ...props
@@ -18,7 +18,7 @@ export function ForgotPasswordForm({
     setLoading(true)
     setError(null)
     try {
-      const response = await forgotPassword(email)
+      const response = await requestPasswordReset(email)
       localStorage.setItem("email", email)
       navigate("/verify-code")
     } catch (error) {
