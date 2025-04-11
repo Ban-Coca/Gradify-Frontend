@@ -9,6 +9,7 @@ import Unauthorized from '@/pages/AuthenticationPages/Unauthorized'
 import HomePage from '@/pages/Homepage'
 import StudentDashboard from './pages/StudentDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
+import OAuth2Callback from './components/OAuth2Callback'
 import { useAuth } from './contexts/authentication-context'
 import { Navigate } from 'react-router-dom'
 const ProtectedRoute = ({ allowedRoles }) => {
@@ -53,6 +54,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-code" element={<VerifyCode />} />
       <Route path="/reset-password" element={<PasswordReset />} />
