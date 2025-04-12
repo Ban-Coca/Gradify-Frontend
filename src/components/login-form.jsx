@@ -74,6 +74,7 @@ export function LoginForm({
         </p>
       </div>
       <div className="grid gap-6">
+        {error && <p className="text-sm text-red-500">{error}</p>}
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
           <Input 
@@ -126,7 +127,7 @@ export function LoginForm({
           </span>
         </div>
         <div className="grid gap-3 grid-cols-2"> 
-          <Button variant="outline" className="w-full " onClick={googleLogin}>
+          <Button variant="outline" className="w-full cursor-pointer" onClick={googleLogin}>
             <svg viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" fill="none">
               <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4"></path>
               <path d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-40.298 31.187C35.393 231.798 79.49 261.1 130.55 261.1" fill="#34A853"></path>
@@ -134,7 +135,7 @@ export function LoginForm({
               <path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335"></path>
             </svg>
           </Button>
-          <Button variant="outline" className="w-full " onClick={microsoftLogin}>
+          <Button variant="outline" className="w-full cursor-pointer" onClick={microsoftLogin}>
             <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
               <path fill="#F35325" d="M1 1h6.5v6.5H1V1z"></path>
               <path fill="#81BC06" d="M8.5 1H15v6.5H8.5V1z"></path>

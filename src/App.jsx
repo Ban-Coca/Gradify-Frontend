@@ -52,7 +52,7 @@ const RedirectIfAuthenticated = ({ children }) => {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -71,7 +71,7 @@ function App() {
         <Route path="/student/*" element={<StudentDashboard />} />
       </Route>
           
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
   )
 }

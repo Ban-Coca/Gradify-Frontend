@@ -16,6 +16,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
   --radius: 0.625rem;
   --background: #f8f9fa;
   --foreground: #212529;
@@ -40,12 +41,12 @@
   --chart-3: #ffc107;
   --chart-4: #dc3545;
   --chart-5: #6f42c1;
-  --sidebar: #198754;
-  --sidebar-foreground: #ffffff;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #198754;
   --sidebar-primary: #0dcaf0;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ffc107;
-  --sidebar-accent-foreground: #212529;
+  --sidebar-accent: #198754;
+  --sidebar-accent-foreground: #d5d7da;
   --sidebar-border: #dee2e6;
   --sidebar-ring: #198754;
 }

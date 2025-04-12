@@ -3,18 +3,33 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { InputOTPPattern } from "./code_input"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { resetPassword } from "@/services/authenticationService"
+
 export function PasswordResetForm({
   className,
   ...props
 }) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [email, setEmail] = useState("")
+  const [resetToken, setResetToken] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Get email and resetToken from location state
+    if (location.state?.email && location.state?.resetToken) {
+      setEmail(location.state.email)
+      setResetToken(location.state.resetToken)
+    } else {
+      setError("Missing required information. Please restart the password reset process.")
+    }
+  }, [location.state])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -24,15 +39,20 @@ export function PasswordResetForm({
         setError("Passwords do not match.")
         return
       }
-      const email = localStorage.getItem("email")
-      if (!email) {
-        setError("Email not found in local storage.")
+      
+      if (!email || !resetToken) {
+        setError("Missing required information. Please restart the password reset process.")
         return
       }
-      const credential = { email, password }
+
+      const credential = { 
+        email, 
+        resetToken, 
+        password 
+      }
+      
       const response = await resetPassword(credential)
       if (response.message === "Password reset successfully") {
-        localStorage.removeItem("email")
         navigate("/login")
       } else {
         setError("Failed to reset password. Please try again.")
@@ -43,6 +63,7 @@ export function PasswordResetForm({
       setLoading(false)
     }
   }
+
   const handlePasswordChange = (e) => {
     setPassword(e.target.value)
   }
