@@ -33,7 +33,7 @@ const items = [
     },
     {
       title: "Class Spreadsheets",
-      url: "/teacher/spreadsheets",
+      url: "/teacher/spreadsheets/",
       icon: Calendar,
     },
   ]

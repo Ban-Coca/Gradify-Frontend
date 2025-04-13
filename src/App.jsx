@@ -13,10 +13,12 @@ import { useAuth } from './contexts/authentication-context'
 import { Navigate } from 'react-router-dom'
 import LandingPage from '@/pages/LandingPage'
 import SpreadsheetsPage from './pages/TeacherPages/SpreadsheetsPage'
+import { Loading } from './components/loading-state'
+import DisplaySpreadsheetPage from './pages/TeacherPages/DisplaySpreadsheetPage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading fullscreen variant={"spinner"} size="xl" />;
   }
   
   if (!isAuthenticated) {
@@ -72,6 +74,7 @@ function App() {
         <Route path="/teacher/*" element={<TeacherDashboard />} />
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher/spreadsheets" element={<SpreadsheetsPage />} />
+        <Route path="/teacher/spreadsheets/display/:id" element={<DisplaySpreadsheetPage />} />
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
