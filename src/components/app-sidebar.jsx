@@ -18,7 +18,7 @@ import NavUser from "@/components/nav-user"
 const items = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/teacher/dashboard",
       icon: LayoutDashboard,
     },
     {
@@ -33,7 +33,7 @@ const items = [
     },
     {
       title: "Class Spreadsheets",
-      url: "/spreadsheets",
+      url: "/teacher/spreadsheets/",
       icon: Calendar,
     },
   ]
