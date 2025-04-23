@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from "@/components/layout";
 import { Loading } from '@/components/loading-state';
-import { getSpreadsheetById } from '@/services/teacher/teacherServices';
+import { getSpreadsheetById } from '@/services/teacher/spreadsheetservices';
 import { 
     Table, 
     TableBody, 

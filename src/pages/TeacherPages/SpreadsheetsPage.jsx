@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FolderOpen, Upload } from 'lucide-react';
 import React from "react";
 import { useAuth } from "@/contexts/authentication-context";
-import { uploadSpreadsheet } from "@/services/teacher/teacherServices";
+import { uploadSpreadsheet } from "@/services/teacher/spreadsheetservices";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 export default function SpreadsheetsPage() {
@@ -54,10 +54,10 @@ export default function SpreadsheetsPage() {
             <div>
                 <Tabs defaultValue="upload" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="upload" className="w-full text-center transition-all duration-300 transform">
+                        <TabsTrigger value="upload" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
                             Upload Spreadsheet
                         </TabsTrigger>
-                        <TabsTrigger value="link" className="w-full text-center transition-all duration-300 transform">
+                        <TabsTrigger value="link" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
                             Link Spreadsheet
                         </TabsTrigger>
                     </TabsList>

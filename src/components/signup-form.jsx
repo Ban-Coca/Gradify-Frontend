@@ -18,7 +18,7 @@ export function SignupForm({
     email: "",
     password: "",
     confirmPassword: "",
-    role: "USER", // Default role
+    role: "STUDENT", // Default role
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -124,9 +124,8 @@ export function SignupForm({
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="USER">User</SelectItem>
-              <SelectItem value="TEACHER">Teacher</SelectItem>
               <SelectItem value="STUDENT">Student</SelectItem>
+              <SelectItem value="TEACHER">Teacher</SelectItem>
             </SelectContent>
           </Select>
         </div>
