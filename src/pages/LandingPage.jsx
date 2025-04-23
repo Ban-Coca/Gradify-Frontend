@@ -171,7 +171,7 @@ export default function LandingPage() {
               </Link>
             </motion.div>
             <MotionLink
-              to="/register"
+              to="/signup"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -184,7 +184,7 @@ export default function LandingPage() {
         </div>
       </motion.header>
       <main className="flex-1 pt-16">
-        <section ref={heroRef} className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <section id="home" ref={heroRef} className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2"
@@ -219,7 +219,7 @@ export default function LandingPage() {
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
                   <MotionLink
-                    to="/register"
+                    to="/signup"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -636,7 +636,7 @@ export default function LandingPage() {
                   description: "Perfect for individual teachers",
                   features: ["Up to 5 classes", "Basic analytics", "Email support"],
                   popular: false,
-                  link: "/register?plan=basic"
+                  link: "/signup?plan=basic"
                 },
                 {
                   title: "Pro",
@@ -644,7 +644,7 @@ export default function LandingPage() {
                   description: "Ideal for departments and schools",
                   features: ["Unlimited classes", "Advanced analytics", "Predictive insights", "Priority support"],
                   popular: true,
-                  link: "/register?plan=pro"
+                  link: "/signup?plan=pro"
                 },
                 {
                   title: "Enterprise",
@@ -691,7 +691,7 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <motion.ul
-                      className="grid gap-2 text-sm"
+                      className="mt-auto grid gap-2 text-sm"
                       initial="hidden"
                       animate={pricingInView ? "visible" : "hidden"}
                       variants={{
@@ -719,7 +719,7 @@ export default function LandingPage() {
                       ))}
                     </motion.ul>
                   </CardContent>
-                  <div className="p-6 pt-0">
+                  <div className="mt-auto p-6 pt-0">
                     <MotionLink to={plan.link}>
                       <Button
                         className={`w-full ${plan.popular ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
@@ -754,7 +754,7 @@ export default function LandingPage() {
                 </p>
               </motion.div>
               <motion.div className="flex flex-col gap-2 min-[400px]:flex-row" variants={itemVariants}>
-                <MotionLink to="/register">
+                <MotionLink to="/signup">
                   <Button
                     size="lg"
                     className="bg-emerald-600 hover:bg-emerald-700"
@@ -882,7 +882,7 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <Link to="/">
+            <a href={'#home'}>
               <motion.div
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.05 }}
@@ -891,7 +891,7 @@ export default function LandingPage() {
                 <GraduationCap className="h-6 w-6 text-emerald-600" />
                 <span className="text-xl font-bold">Gradify</span>
               </motion.div>
-            </Link>
+            </a>
             <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Gradify. All rights reserved.</p>
           </motion.div>
         </div>

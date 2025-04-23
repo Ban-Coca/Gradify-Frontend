@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //const API_BASE_URL = process.env.VITE_API_BASE_URL_TEACHER_SERVICE
-const API_BASE_URL = 'http://localhost:8080/api/spreadsheet'
+const API_BASE_URL = 'http://localhost:5173/api/spreadsheet'
 
 export const uploadSpreadsheet = async (data) => {
     const formData = new FormData();
