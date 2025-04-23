@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEffect, useState } from "react"
 import { getAllClasses } from "@/services/teacher/classesservices"
 import ClassesList from "@/components/classeslist"
-import { GradeDistributionChart } from "@/components/grade-distribution"
+import { GradeDistributionChart } from "@/components/charts/grade-distribution"
 import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
 
 const TeacherDashboard = () => {
