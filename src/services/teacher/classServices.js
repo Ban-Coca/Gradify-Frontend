@@ -1,6 +1,5 @@
 import axios from "axios";
 
-//const API_BASE_URL = process.env.VITE_API_BASE_URL_TEACHER_SERVICE
 const API_BASE_URL = 'http://localhost:8080/api/class'
 
 export const createClass = async (data) => {
@@ -26,9 +25,13 @@ export const createClass = async (data) => {
     }
 }
 
-export const getAllClasses = async () => {
+export const getAllClasses = async (header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getallclasses`);
+        const response = await axios.get(`${API_BASE_URL}/getallclasses`, 
+            {
+                headers: header
+            }
+        );
         return response.data;
     } catch (error) {
         console.error("Error fetching all classes:", error);
@@ -36,9 +39,13 @@ export const getAllClasses = async () => {
     }
 }
 
-export const deleteClass = async (id) => {
+export const deleteClass = async (id, header) => {
     try {
-        const response = await axios.delete(`${API_BASE_URL}/deleteClass/${id}`);
+        const response = await axios.delete(`${API_BASE_URL}/deleteClass/${id}`,
+            {
+                headers: header
+            }
+        );
         return response.data;
     } catch (error) {
         console.error("Error deleting class:", error);
@@ -46,9 +53,11 @@ export const deleteClass = async (id) => {
     }
 }
 
-export const getClassById = async (id) => {
+export const getClassById = async (id, header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getclassbyid/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/getclassbyid/${id}`, {
+            headers: header
+        });
         return response.data;
     } catch (error) {
         console.error("Error fetching class by ID:", error);
@@ -56,11 +65,12 @@ export const getClassById = async (id) => {
     }
 }
 
-export const updateClassById = async (id, data) => {
+export const updateClassById = async (id, data, header) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/putclasses/${id}`, data, {
             headers: {
-                "Content-Type": "application/json", // Send data as JSON
+                "Content-Type": "application/json",
+                ...header,
             },
         });
         return response.data;
@@ -69,3 +79,27 @@ export const updateClassById = async (id, data) => {
         throw error;
     }
 };
+
+export const getSpreadsheetByClassId = async (classId, header) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/getspreadsheetbyclassid/${classId}`,
+            { headers: header }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching spreadsheet by class ID:", error);
+        throw error;
+    }
+}
+
+export const getClassByTeacherId = async (teacherId, header) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/getclassbyteacherid/${teacherId}`, {
+            headers: header
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching class by teacher ID:", error);
+        throw error;
+    }
+}

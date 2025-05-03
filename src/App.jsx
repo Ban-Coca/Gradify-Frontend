@@ -79,7 +79,7 @@ function App() {
         <Route path="/teacher/spreadsheets" element={<SpreadsheetsPage />} />
         <Route path="/teacher/spreadsheets/display/:id" element={<DisplaySpreadsheetPage />} />
         <Route path="/classes/:tab?" element={<ClassesPage />} />
-        <Route path="/classdetail/:id?" element={<ClassDetailPage />} />    
+        <Route path="/classes/classdetail/:id?" element={<ClassDetailPage />} />    
         <Route path="/reports" element={<ReportsPage/>} />      
       </Route>
           

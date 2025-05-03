@@ -9,23 +9,24 @@ import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, U
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { getClassById, updateClassById } from "@/services/teacher/classesservices";
-
+import { getClassById, updateClassById } from "@/services/teacher/classServices";
+import { useAuth } from "@/contexts/authentication-context";
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
-
+  const { currentUser, getAuthHeader } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
-  const [classData, setClassData] = useState(null); // State to store class details
-  const [loading, setLoading] = useState(true); // State for loading
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [classData, setClassData] = useState(null); 
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
-        const response = await getClassById(id); // Fetch class details by ID
-        setClassData(response); // Set the fetched class data
-        console.log("Class Data:", response); // Log the class data for debugging
+        const response = await getClassById(id, getAuthHeader());
+        setClassData(response);
+        console.log("Class Data:", classData);
       } catch (err) {
         console.error("Error fetching class details:", err);
         setError("Failed to fetch class details. Please try again later.");
@@ -39,7 +40,7 @@ const ClassDetailPage = () => {
 
   const handleUpdateClass = async () => {
     try {
-      const response = await updateClassById(id, classData);
+      const response = await updateClassById(id, classData, getAuthHeader);
       console.log("Class updated successfully:", response);
       toggleModal();
     } catch (error) {
@@ -81,9 +82,9 @@ const ClassDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="font-bold text-2xl md:text-3xl">{classData.className}</h1>
+              <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} • {classData.schedule} • {classData.classCode} • {classData.room}
+                {classData.semester} semester
               </p>
             </div>
             <div className="flex gap-2">
@@ -213,13 +214,13 @@ const ClassDetailPage = () => {
 
               <TabsContent value="roster">
                 <div className="flex justify-between items-center mb-4">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-4 items-center">
                     <div className="relative w-64">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                       <Input
                         type="search"
                         placeholder="Search students..."
-                        className="w-full pl-8 md:w-[300px]"
+                        className="w-full pl-8 md:w-full"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
@@ -262,7 +263,9 @@ const ClassDetailPage = () => {
                     Export Grades
                   </Button>
                 </div>
-                <GradeEditTable className="w-full" />
+                <GradeEditTable 
+                  classId={id}
+                  className="w-full" />
               </TabsContent>
 
               <TabsContent value="engagement">
