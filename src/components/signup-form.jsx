@@ -6,6 +6,7 @@ import { signUpUser } from "@/services/authenticationService";
 import { useAuth } from "@/contexts/authentication-context";
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Link } from "react-router-dom";
 
 export function SignupForm({
   className,
@@ -160,9 +161,9 @@ export function SignupForm({
       </div>
       <div className="text-center text-sm">
         Already have an account?{" "}
-        <a href="/" className="underline underline-offset-4">
+        <Link to="/login" className="underline underline-offset-4">
           Log in here
-        </a>
+        </Link>
       </div>
     </form>)
   );

@@ -85,7 +85,6 @@ const TeacherDashboard = () => {
     { id: 2, filename: "science202_quiz3.xlsx", date: "Oct 10, 2023", status: "Success", records: 24 },
   ]
 
-  // Navigate to classes page
   const navigateToClass = (classId) => {
     navigate(`/classes/classdetail/${classId}`)
   }

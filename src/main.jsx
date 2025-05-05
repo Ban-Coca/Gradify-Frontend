@@ -4,10 +4,16 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css'
 import App from './App.jsx'
 import { AuthenticationProvider } from './contexts/authentication-context'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient()
+
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <AuthenticationProvider>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </AuthenticationProvider>
   </BrowserRouter>,
 )

@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter } from "lucide-react";
+import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter, Activity } from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
 import { getClassById, updateClassById } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
+import GradingSchemeModal from "@/components/grading-schemes";
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -19,6 +20,7 @@ const ClassDetailPage = () => {
   const [classData, setClassData] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -57,6 +59,10 @@ const ClassDetailPage = () => {
     setIsModalOpen(!isModalOpen);
   };
 
+  const toggleGradingSchemeModal = () => {
+    setGradingSchemeModal(!gradingSchemeModal);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -88,6 +94,12 @@ const ClassDetailPage = () => {
               </p>
             </div>
             <div className="flex gap-2">
+              <GradingSchemeModal
+                open={gradingSchemeModal}
+                onOpenChange={setGradingSchemeModal}
+                classId={id}
+                //initialData = {classData.gradingScheme}
+                />
               <Button variant="outline" onClick={toggleModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
@@ -131,7 +143,7 @@ const ClassDetailPage = () => {
         {/* Modal */}
         {isModalOpen && (
           <div
-            className="mt-15 h-full fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
+            className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
             onClick={(e) => {
               // Close the modal if the user clicks outside the modal content
               if (e.target === e.currentTarget) {
@@ -371,6 +383,7 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
+      
     </Layout>
   )
 }
