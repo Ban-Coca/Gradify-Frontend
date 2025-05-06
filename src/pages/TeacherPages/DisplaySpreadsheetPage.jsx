@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from "@/components/layout";
 import { Loading } from '@/components/loading-state';
-import { getSpreadsheetById } from '@/services/teacher/spreadsheetservices';
+import { getSpreadsheetById } from '@/services/teacher/spreadsheetServices';
 import { 
     Table, 
     TableBody, 
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 
 export default function DisplaySpreadsheetPage(){
-    const { currentUser } = useAuth();
+    const { currentUser, getAuthHeader } = useAuth();
     const navigate = useNavigate();
     const { id } = useParams();
     const [spreadsheet, setSpreadsheet] = useState(null);
@@ -28,7 +28,7 @@ export default function DisplaySpreadsheetPage(){
         const fetchSpreadsheet = async () => {
             try {
                 setLoading(true);
-                const data = await getSpreadsheetById(id);
+                const data = await getSpreadsheetById(id, getAuthHeader());
                 console.log('Fetched spreadsheet data:', data);
                 setSpreadsheet(data);
                 setLoading(false);

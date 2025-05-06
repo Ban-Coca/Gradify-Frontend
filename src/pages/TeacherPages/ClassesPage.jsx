@@ -4,9 +4,10 @@ import Layout from "@/components/layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent} from "@/components/ui/card"
-import { getAllClasses } from "@/services/teacher/classesservices";
-import ClassesList from "@/components/classeslist";
+import { getClassByTeacherId } from "@/services/teacher/classServices";
+import ClassesList from "@/components/classes-list";
 import {Search, Plus, Filter} from "lucide-react";
+import { useAuth } from "@/contexts/authentication-context";
 
 const ClassesPage = () => {
   const { tab } = useParams(); // Read the `tab` parameter from the URL
@@ -14,15 +15,15 @@ const ClassesPage = () => {
   const [view, setView] = useState("grid");
   const [classes, setClasses] = useState([]); // State for classes
   const [searchQuery, setSearchQuery] = useState("")
-
+  const { currentUser, getAuthHeader } = useAuth(); 
   // Default to "current" if no tab is provided
   const defaultTab = tab || "current";
 
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await getAllClasses(); // Call the backend service
-        console.log("Full API Response:", response); // Log the full response
+        const response = await getClassByTeacherId(currentUser.userId, getAuthHeader());
+        console.log("Full API Response:", response);
   
         let allClasses = [];
         if (Array.isArray(response)) {
@@ -73,7 +74,7 @@ const ClassesPage = () => {
 
   // Navigate to class detail page
   const navigateToClass = (classId) => {
-    navigate(`/classdetail/${classId}`);
+    navigate(`/classes/classdetail/${classId}`);
   };
 
   // Navigate to a specific tab

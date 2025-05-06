@@ -10,9 +10,9 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {classes.map((classItem) => (
             <Card
-                key={classItem.classid} // Use `classid` instead of `id`
+                key={classItem.classId} // Use `classid` instead of `id`
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => navigateToClass(classItem.classid)} // Use `classid`
+                onClick={() => navigateToClass(classItem.classId)} // Use `classid`
             >
                 <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
@@ -29,8 +29,8 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
                     <span>Section: {classItem.section}</span> {/* Use `section` */}
                     </div>
                     <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{classItem.schedule}</span> {/* Use `schedule` */}
+                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>{classItem.schedule}</span> {/* Use `schedule` */}
                     </div>
                 </div>
                 </CardContent>

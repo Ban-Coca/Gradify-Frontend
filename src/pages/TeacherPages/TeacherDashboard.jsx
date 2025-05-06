@@ -19,11 +19,11 @@ import {
 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react"
-import { getAllClasses } from "@/services/teacher/classesservices"
-import ClassesList from "@/components/classeslist"
+import { getClassByTeacherId } from "@/services/teacher/classServices"
+import ClassesList from "@/components/classes-list"
 import { GradeDistributionChart } from "@/components/charts/grade-distribution"
 import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
-
+import { useAuth } from "@/contexts/authentication-context"
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState("math101")
   const [selectedPeriod, setSelectedPeriod] = useState("current")
@@ -31,6 +31,7 @@ const TeacherDashboard = () => {
   const [classes, setClasses] = useState([]); // State for classes
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const classesPerPage = 6; // Max cards per page
+  const { currentUser, getAuthHeader } = useAuth();
   // Sample data for charts
   const performanceData = {
     labels: ["Math 101", "Science 202", "History 303", "English 404"],
@@ -55,7 +56,7 @@ const TeacherDashboard = () => {
   useEffect(() => {
       const fetchClasses = async () => {
         try {
-          const response = await getAllClasses();
+          const response = await getClassByTeacherId(currentUser.userId, getAuthHeader());
           console.log("Full API Response:", response);
     
           let allClasses = [];
@@ -84,9 +85,8 @@ const TeacherDashboard = () => {
     { id: 2, filename: "science202_quiz3.xlsx", date: "Oct 10, 2023", status: "Success", records: 24 },
   ]
 
-  // Navigate to classes page
   const navigateToClass = (classId) => {
-    navigate(`/classdetail/${classId}`)
+    navigate(`/classes/classdetail/${classId}`)
   }
 
   return (

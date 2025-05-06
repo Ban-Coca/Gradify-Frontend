@@ -5,27 +5,44 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter } from "lucide-react";
+import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter, Activity } from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { getClassById, updateClassById } from "@/services/teacher/classesservices";
-
+import { getClassById, updateClassById, getClassAverage, getStudentCount } from "@/services/teacher/classServices";
+import { useAuth } from "@/contexts/authentication-context";
+import GradingSchemeModal from "@/components/grading-schemes";
+import { useQuery } from "@tanstack/react-query";
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
-
+  const { currentUser, getAuthHeader } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
-  const [classData, setClassData] = useState(null); // State to store class details
-  const [loading, setLoading] = useState(true); // State for loading
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [classData, setClassData] = useState(null); 
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
+    queryKey: ["classAverage", id],
+    queryFn: () => getClassAverage(id, getAuthHeader()),
+    enabled: !!id,
+  })
 
+  const { data: studentCountData, isLoading: isStudentCountLoading } = useQuery({
+    queryKey: ["studentCount", id],
+    queryFn: () => getStudentCount(id, getAuthHeader()),
+    enabled: !!id,
+  })
+
+  const average = parseFloat(classAverageData/100).toFixed(2)
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
-        const response = await getClassById(id); // Fetch class details by ID
-        setClassData(response); // Set the fetched class data
-        console.log("Class Data:", response); // Log the class data for debugging
+        const response = await getClassById(id, getAuthHeader());
+        setClassData(response);
+        console.log("Class Data:", classData);
       } catch (err) {
         console.error("Error fetching class details:", err);
         setError("Failed to fetch class details. Please try again later.");
@@ -39,7 +56,7 @@ const ClassDetailPage = () => {
 
   const handleUpdateClass = async () => {
     try {
-      const response = await updateClassById(id, classData);
+      const response = await updateClassById(id, classData, getAuthHeader);
       console.log("Class updated successfully:", response);
       toggleModal();
     } catch (error) {
@@ -54,6 +71,10 @@ const ClassDetailPage = () => {
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const toggleGradingSchemeModal = () => {
+    setGradingSchemeModal(!gradingSchemeModal);
   };
 
   if (loading) {
@@ -81,12 +102,18 @@ const ClassDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="font-bold text-2xl md:text-3xl">{classData.className}</h1>
+              <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} • {classData.schedule} • {classData.classCode} • {classData.room}
+                {classData.semester} semester
               </p>
             </div>
             <div className="flex gap-2">
+              <GradingSchemeModal
+                open={gradingSchemeModal}
+                onOpenChange={setGradingSchemeModal}
+                classId={id}
+                //initialData = {classData.gradingScheme}
+                />
               <Button variant="outline" onClick={toggleModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
@@ -102,11 +129,11 @@ const ClassDetailPage = () => {
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-6">
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Students</p>
-              <p className="font-bold text-lg">{classData.students}</p>
+              <p className="font-bold text-lg">{studentCountData}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Avg. Grade</p>
-              <p className="font-bold text-lg">{classData.avgGrade}</p>
+              <p className="font-bold text-lg">{average}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Assignments</p>
@@ -130,7 +157,7 @@ const ClassDetailPage = () => {
         {/* Modal */}
         {isModalOpen && (
           <div
-            className="mt-15 h-full fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
+            className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
             onClick={(e) => {
               // Close the modal if the user clicks outside the modal content
               if (e.target === e.currentTarget) {
@@ -213,13 +240,13 @@ const ClassDetailPage = () => {
 
               <TabsContent value="roster">
                 <div className="flex justify-between items-center mb-4">
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-4 items-center">
                     <div className="relative w-64">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                       <Input
                         type="search"
                         placeholder="Search students..."
-                        className="w-full pl-8 md:w-[300px]"
+                        className="w-full pl-8 md:w-full"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
@@ -240,7 +267,7 @@ const ClassDetailPage = () => {
                     </Button>
                   </div>
                 </div>
-                <StudentTable searchQuery={searchQuery} className="w-full" />
+                <StudentTable searchQuery={searchQuery} classId={id} className="w-full" />
               </TabsContent>
 
               <TabsContent value="grades">
@@ -262,7 +289,9 @@ const ClassDetailPage = () => {
                     Export Grades
                   </Button>
                 </div>
-                <GradeEditTable className="w-full" />
+                <GradeEditTable 
+                  classId={id}
+                  className="w-full" />
               </TabsContent>
 
               <TabsContent value="engagement">
@@ -368,6 +397,7 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
+      
     </Layout>
   )
 }

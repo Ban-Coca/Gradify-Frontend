@@ -47,13 +47,15 @@ const items = [
       if (path === "/" && location.pathname === "/") {
         return true
       }
-  
-      if (path !== "/" && location.pathname.endsWith(path)) {
+      if (location.pathname === "/notifications") {
+        return path === "/home";
+      }
+      if (path !== "/" && location.pathname.startsWith(path)) {
         return true
       }
-  
       return false
     }
+  
     const handleLogout = () => {
       logout();
       navigate("/login");

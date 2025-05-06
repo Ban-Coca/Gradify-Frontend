@@ -4,15 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FolderOpen, Upload } from 'lucide-react';
 import React from "react";
 import { useAuth } from "@/contexts/authentication-context";
-import { uploadSpreadsheet } from "@/services/teacher/spreadsheetservices";
+import { uploadSpreadsheet } from "@/services/teacher/spreadsheetServices";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 export default function SpreadsheetsPage() {
-    const { currentUser } = useAuth();
+    const { currentUser, getAuthHeader } = useAuth();
     const fileInputRef = React.useRef(null);
     const [selectedFile, setSelectedFile] = React.useState(null);
     const [isUploading, setIsUploading] = React.useState(false);
     const navigate = useNavigate();
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -28,7 +29,8 @@ export default function SpreadsheetsPage() {
                 console.log("Uploading file:", selectedFile);
                 console.log("Teacher ID:", currentUser.userId);
                 const response = await uploadSpreadsheet(
-                    {file: selectedFile, teacherId: currentUser.userId}
+                    {file: selectedFile, teacherId: currentUser.userId},
+                    getAuthHeader()
                 );
                 console.log("File uploaded successfully:", response);
                 navigate(`/teacher/spreadsheets/display/${response.id}`);
@@ -42,9 +44,9 @@ export default function SpreadsheetsPage() {
             if (fileInputRef.current) {
                 fileInputRef.current.click();
             }
-        }
-        
+        }    
     };
+
     return (
         <Layout>
             <div className=' bg-inherited p-4 rounded-lg mt-4 mb-4'>
