@@ -9,9 +9,10 @@ import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, U
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { getClassById, updateClassById } from "@/services/teacher/classServices";
+import { getClassById, updateClassById, getClassAverage, getStudentCount } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
+import { useQuery } from "@tanstack/react-query";
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -22,7 +23,20 @@ const ClassDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
+  
+  const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
+    queryKey: ["classAverage", id],
+    queryFn: () => getClassAverage(id, getAuthHeader()),
+    enabled: !!id,
+  })
 
+  const { data: studentCountData, isLoading: isStudentCountLoading } = useQuery({
+    queryKey: ["studentCount", id],
+    queryFn: () => getStudentCount(id, getAuthHeader()),
+    enabled: !!id,
+  })
+
+  const average = parseFloat(classAverageData/100).toFixed(2)
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
@@ -115,11 +129,11 @@ const ClassDetailPage = () => {
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-6">
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Students</p>
-              <p className="font-bold text-lg">{classData.students}</p>
+              <p className="font-bold text-lg">{studentCountData}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Avg. Grade</p>
-              <p className="font-bold text-lg">{classData.avgGrade}</p>
+              <p className="font-bold text-lg">{average}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Assignments</p>
@@ -253,7 +267,7 @@ const ClassDetailPage = () => {
                     </Button>
                   </div>
                 </div>
-                <StudentTable searchQuery={searchQuery} className="w-full" />
+                <StudentTable searchQuery={searchQuery} classId={id} className="w-full" />
               </TabsContent>
 
               <TabsContent value="grades">

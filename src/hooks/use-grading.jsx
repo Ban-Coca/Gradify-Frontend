@@ -18,7 +18,7 @@ export function useGrading({
             console.error('Error saving grading scheme:', error);
         },
     })
-
+    
     return {
         saveScheme,
     };

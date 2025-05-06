@@ -103,3 +103,42 @@ export const getClassByTeacherId = async (teacherId, header) => {
         throw error;
     }
 }
+
+export const getClassRoster = async (classId, header) => {
+    try{
+        const response = await axios.get(`${API_BASE_URL}/${classId}/roster`, {
+            headers: header
+        });
+        console.log(response.data)
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching class roster:", error);
+        throw error;
+    }
+}
+
+export const getClassAverage = async (classId, header) => {
+    try{
+        const response = await axios.get(`${API_BASE_URL}/${classId}/avgclassgrade`, {
+            headers: header
+        });
+        console.log(response.data)
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching class average:", error);
+        throw error;
+    }
+}
+
+export const getStudentCount = async (classId, header) => {
+    try{
+        const response = await axios.get(`${API_BASE_URL}/${classId}/studentcount`, {
+            headers: header
+        });
+        console.log(response.data)
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching student count:", error);
+        throw error;
+    }
+}

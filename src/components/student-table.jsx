@@ -12,20 +12,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-
-export function StudentTable({ searchQuery }) {
+import { getClassRoster } from "@/services/teacher/classServices"
+import { useQuery } from "@tanstack/react-query"
+import { useAuth } from "@/contexts/authentication-context"
+export function StudentTable({ searchQuery, classId }) {
   const [sortColumn, setSortColumn] = useState(null)
   const [sortDirection, setSortDirection] = useState("asc")
-  const students = [
-    
-  ]
-
+  const { getAuthHeader } = useAuth()
+  const { 
+    data: studentsData, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['classRoster', classId],
+    queryFn: () => getClassRoster(classId, getAuthHeader()),
+    enabled: !!classId,
+    select: (data) => data.map(student => ({
+      id: student.studentId,
+      name: student.studentName,
+      studentId: student.studentId,
+      grade: student.grade,
+      // Fix the percentage formatting - divide by 100 if over 100
+      percentage: parseFloat((student.percentage > 100 ? student.percentage/100 : student.percentage).toFixed(1)),
+      // Map the status to one of the expected values based on percentage
+      status: student.status === "Good Standing" ? 
+        (student.percentage >= 9000 ? "Excellent" : 
+         student.percentage >= 8000 ? "On Track" : "At Risk") : 
+        student.status,
+    }))
+  })
+  console.log(studentsData)
   // Filter students based on search query
-  const filteredStudents = students.filter(
+  const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  ) : []
 
   // Sort students based on column and direction
   const sortedStudents = [...filteredStudents].sort((a, b) => {
@@ -83,20 +105,9 @@ export function StudentTable({ searchQuery }) {
                 <ArrowUpDown className="h-4 w-4" />
               </Button>
             </TableHead>
-            <TableHead>Last Submission</TableHead>
             <TableHead>
               <Button variant="ghost" onClick={() => handleSort("status")} className="flex items-center gap-1 px-0">
                 Status
-                <ArrowUpDown className="h-4 w-4" />
-              </Button>
-            </TableHead>
-            <TableHead>
-              <Button
-                variant="ghost"
-                onClick={() => handleSort("missingAssignments")}
-                className="flex items-center gap-1 px-0"
-              >
-                Missing
                 <ArrowUpDown className="h-4 w-4" />
               </Button>
             </TableHead>
@@ -117,7 +128,6 @@ export function StudentTable({ searchQuery }) {
                 <TableCell >{student.studentId}</TableCell>
                 <TableCell>{student.grade}</TableCell>
                 <TableCell>{student.percentage}%</TableCell>
-                <TableCell>{student.lastSubmission}</TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
@@ -132,7 +142,6 @@ export function StudentTable({ searchQuery }) {
                     {student.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{student.missingAssignments}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -171,6 +180,7 @@ export function StudentTable({ searchQuery }) {
 
 StudentTable.propTypes = {
   searchQuery: PropTypes.string,
+  classId: PropTypes.string
 }
 
 StudentTable.defaultProps = {

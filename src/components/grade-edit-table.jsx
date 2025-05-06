@@ -18,7 +18,6 @@ import {
 export function GradeEditTable({ classId }) {
   const { currentUser, getAuthHeader } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams();
   const [spreadsheet, setSpreadsheet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,9 +32,9 @@ export function GradeEditTable({ classId }) {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
+        console.log("Fetching spreadsheet for classId:", classId);
         const data = await getSpreadsheetByClassId(classId, getAuthHeader());
         console.log("Fetched spreadsheet data:", data);
 
