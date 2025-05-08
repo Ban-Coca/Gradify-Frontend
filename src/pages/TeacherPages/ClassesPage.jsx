@@ -1,11 +1,11 @@
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent} from "@/components/ui/card"
 import { getClassByTeacherId } from "@/services/teacher/classServices";
-import ClassesList from "@/components/classes-list";
+import ClassesList from "@/components/classes-list";  // Import the updated component
 import {Search, Plus, Filter} from "lucide-react";
 import { useAuth } from "@/contexts/authentication-context";
 import NewClass from "@/pages/TeacherPages/NewClass.jsx";
@@ -19,6 +19,7 @@ const ClassesPage = () => {
   const { currentUser, getAuthHeader } = useAuth();
   const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false); // State for modal visibility
   const [filteredClasses, setFilteredClasses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Default to "current" if no tab is provided
   const defaultTab = tab || "current";
@@ -26,9 +27,10 @@ const ClassesPage = () => {
 
   useEffect(() => {
     const fetchClasses = async () => {
+      setIsLoading(true);
       try {
         const response = await getClassByTeacherId(currentUser.userId, getAuthHeader());
-        console.log("Full API Response:", response);
+        console.log("API Response:", response);
   
         let allClasses = [];
         if (Array.isArray(response)) {
@@ -38,6 +40,7 @@ const ClassesPage = () => {
         } else {
           console.error("Unexpected API response:", response);
           setClasses([]); // Set an empty array if the response is invalid
+          setIsLoading(false);
           return;
         }
   
@@ -57,11 +60,12 @@ const ClassesPage = () => {
   
         // Categorize classes into current and past
         const categorizedClasses = allClasses.map((classItem) => {
-          const { semester, year } = classItem; // Assuming classItem has `semester` and `year` fields
-          let schoolYear = classItem.schoolYear;
+          const { semester, schoolYear } = classItem;
+          
           if (semester === currentSemester && schoolYear === currentYear.toString()) {
             return { ...classItem, category: "current" };
-          } else if (parseInt(schoolYear) < currentYear || (schoolYear === currentYear.toString() && semester !== currentSemester)) {
+          } else if (parseInt(schoolYear) < currentYear || 
+                    (schoolYear === currentYear.toString() && semester !== currentSemester)) {
             return { ...classItem, category: "past" };
           } else {
             return { ...classItem, category: "all" };
@@ -71,6 +75,9 @@ const ClassesPage = () => {
         setClasses(categorizedClasses); // Set the categorized classes
       } catch (err) {
         console.error("Error fetching classes:", err);
+        setClasses([]);
+      } finally {
+        setIsLoading(false);
       }
     };
   
@@ -104,31 +111,31 @@ const ClassesPage = () => {
 
   // Handle new class creation
   const handleClassCreated = (newClass) => {
-    // Add category to the new class based on current date
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    let currentSemester;
-
-    if (currentMonth >= 1 && currentMonth <= 5) {
-      currentSemester = "2nd Semester";
-    } else if (currentMonth >= 8 && currentMonth <= 12) {
-      currentSemester = "1st Semester";
-    } else {
-      currentSemester = null;
+    console.log("New class created:", newClass);
+    
+    // Add the new class to the existing classes
+    setClasses(prevClasses => [newClass, ...prevClasses]);
+    
+    // Show success notification or UI feedback
+    // Already handled in NewClass component with toast.success
+    
+    // If we're not on the All tab or the Current tab (where the new class should appear),
+    // we could auto-navigate to the all tab to show the new class
+    if (activeTab !== "all" && newClass.category !== activeTab) {
+      navigateToTab("all");
     }
-
-    let category = "all";
-    if (newClass.semester === currentSemester && newClass.schoolYear === currentYear.toString()) {
-      category = "current";
-    } else if (parseInt(newClass.schoolYear) < currentYear || 
-              (newClass.schoolYear === currentYear.toString() && newClass.semester !== currentSemester)) {
-      category = "past";
-    }
-
-    const classWithCategory = { ...newClass, category };
-    setClasses(prev => [...prev, classWithCategory]);
   };
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading classes...</div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -151,7 +158,7 @@ const ClassesPage = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center w-full md:w-auto">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
                   <input
@@ -162,7 +169,7 @@ const ClassesPage = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button variant="outline" size="sm" className={"cursor-pointer"}>
+                <Button variant="outline" size="sm" className="cursor-pointer">
                   <Filter className="h-4 w-4 mr-1" />
                   Filter
                 </Button>
@@ -172,7 +179,7 @@ const ClassesPage = () => {
                   variant={view === "grid" ? "default" : "outline"} 
                   size="sm" 
                   onClick={() => setView("grid")} 
-                  className={"cursor-pointer"}
+                  className="cursor-pointer"
                 >
                   Grid View
                 </Button>
@@ -180,7 +187,7 @@ const ClassesPage = () => {
                   variant={view === "list" ? "default" : "outline"} 
                   size="sm" 
                   onClick={() => setView("list")} 
-                  className={"cursor-pointer"}
+                  className="cursor-pointer"
                 >
                   List View
                 </Button>

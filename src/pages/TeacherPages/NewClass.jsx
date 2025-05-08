@@ -30,6 +30,8 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
     semester: "",
     schoolYear: new Date().getFullYear().toString(),
     classCode: generateRandomCode(6),
+    schedule: "",
+    room: "",
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,18 +67,18 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
       const classFormData = {
         ...formData,
         teacherId: currentUser.userId,
-        authHeader: authHeader // Pass the auth header directly to the service
+        authHeader: authHeader
       };
       
-      console.log("Submitting class with data:", classFormData);
-      
-      // Send data to backend using the updated createClass service
+      // Send data to backend using the service
       const response = await createClass(classFormData);
       
       toast.success("Class created successfully!");
       
-      // Determine category for UI display
+      // Get current date for created/updated timestamps
       const now = new Date();
+      
+      // Determine category for UI display
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth() + 1;
       let currentSemester;
@@ -90,26 +92,60 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
       }
 
       let category = "all";
+      // Current semester logic
       if (formData.semester === currentSemester && formData.schoolYear === currentYear.toString()) {
         category = "current";
-      } else if (parseInt(formData.schoolYear) < currentYear || 
-                (formData.schoolYear === currentYear.toString() && formData.semester !== currentSemester)) {
+      } 
+      // Future semester logic - classes for next semester should also be "current"
+      else if (
+        // Next semester in same year
+        (formData.schoolYear === currentYear.toString() && 
+        ((currentSemester === "1st Semester" && formData.semester === "2nd Semester") ||
+          (currentSemester === "Summer" && formData.semester === "1st Semester"))) ||
+        // Next year's classes
+        (parseInt(formData.schoolYear) > currentYear)
+      ) {
+        category = "current";
+      }
+      // Past classes
+      else if (
+        parseInt(formData.schoolYear) < currentYear || 
+        (formData.schoolYear === currentYear.toString() && 
+        ((currentSemester === "2nd Semester" && formData.semester === "1st Semester") ||
+          (currentSemester === "1st Semester" && formData.semester === "Summer")))
+      ) {
         category = "past";
       }
 
       // Combine backend response with frontend data for immediate UI update
       const newClass = {
-        ...response,
+        classId: response.classId || Date.now(), // Use response ID or fallback
         className: formData.className,
         section: formData.section,
         semester: formData.semester,
         schoolYear: formData.schoolYear,
         classCode: formData.classCode,
-        category
+        schedule: formData.schedule,
+        room: formData.room,
+        category,
+        createdAt: response.createdAt || now.toISOString(),
+        updatedAt: response.updatedAt || now.toISOString(),
+        teacher: {
+          userId: currentUser.userId
+        }
       };
       
       onClassCreated(newClass);
       onClose();
+      
+      // Reset form
+      setFormData({
+        className: "",
+        section: "",
+        semester: "",
+        schoolYear: new Date().getFullYear().toString(),
+        classCode: generateRandomCode(6),
+      });
     } catch (error) {
       console.error("Error creating class:", error);
       const errorMessage = error.response?.data?.message || "Failed to create class. Please try again.";
@@ -142,6 +178,7 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
                 onChange={handleInputChange}
                 className="col-span-3"
                 required
+                placeholder="Enter class name"
               />
             </div>
             
@@ -156,6 +193,21 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
                 onChange={handleInputChange}
                 className="col-span-3"
                 required
+                placeholder="Enter section (e.g., A, B, Class 101)"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-2">
+              <Label htmlFor="schedule" className="text-right">
+                Schedule
+              </Label>
+              <Input
+                id="schedule"
+                name="schedule"
+                value={formData.schedule}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="E.g., Mon/Wed 10:00-11:30 AM"
               />
             </div>
             
@@ -166,6 +218,7 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
               <Select
                 value={formData.semester}
                 onValueChange={(value) => handleSelectChange("semester", value)}
+                required
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select semester" />
@@ -188,6 +241,21 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
                 onChange={handleInputChange}
                 className="col-span-3"
                 required
+                placeholder="Enter school year (e.g., 2025)"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-2">
+              <Label htmlFor="room" className="text-right">
+                Room
+              </Label>
+              <Input
+                id="room"
+                name="room"
+                value={formData.room}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Enter room (e.g., NGE-101)"
               />
             </div>
             

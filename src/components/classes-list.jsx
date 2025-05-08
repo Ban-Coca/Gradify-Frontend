@@ -11,7 +11,7 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
             {classes.map((classItem) => (
             <Card
                 key={classItem.classId} // Use `classid` instead of `id`
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer transition-all duration-200 ease-in-out hover:bg-slate-50 hover:shadow-lg hover:scale-[1.01]"
                 onClick={() => navigateToClass(classItem.classId)} // Use `classid`
             >
                 <CardHeader className="pb-2">
@@ -48,7 +48,7 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
             {classes.map((classItem) => (
             <Card
                 key={classItem.classid}
-                className="cursor-pointer hover:bg-gray-50"
+                className="cursor-pointer transition-all duration-200 ease-in-out hover:bg-slate-50 hover:shadow-lg hover:scale-[1.01]"
                 onClick={() => navigateToClass(classItem.classid)}
             >
                 <CardContent className="p-4">

@@ -87,7 +87,7 @@ export default function GradingSchemeModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={"cursor-pointer"}>
           <Activity className="mr-2 h-4 w-4" />
           Configure Assessment Weights
         </Button>

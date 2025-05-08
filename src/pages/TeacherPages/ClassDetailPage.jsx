@@ -92,7 +92,7 @@ const ClassDetailPage = () => {
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/classes")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/classes")} className="cursor-pointer">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Classes
           </Button>
@@ -114,11 +114,11 @@ const ClassDetailPage = () => {
                 classId={id}
                 //initialData = {classData.gradingScheme}
                 />
-              <Button variant="outline" onClick={toggleModal}>
+              <Button variant="outline" onClick={toggleModal} className="cursor-pointer">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
               </Button>
-              <Button>
+              <Button className="cursor-pointer">
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Data
               </Button>
@@ -168,7 +168,7 @@ const ClassDetailPage = () => {
             <div className="bg-white w-1/3 h-full shadow-lg p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Edit Class</h2>
-                <Button variant="ghost" onClick={toggleModal}>
+                <Button variant="ghost" onClick={toggleModal} className="cursor-pointer">
                   Close
                 </Button>
               </div>
@@ -215,7 +215,7 @@ const ClassDetailPage = () => {
                     className="mt-1 block w-full border rounded-md px-3 py-2"
                   />
                 </div>
-                <Button type="submit" className="w-full mt-4">
+                <Button type="submit" className="w-full mt-4 cursor-pointer">
                   Save Changes
                 </Button>
               </form>
@@ -232,10 +232,10 @@ const ClassDetailPage = () => {
           <CardContent>
             <Tabs defaultValue="roster">
               <TabsList className="mb-4">
-                <TabsTrigger value="roster" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Class Roster</TabsTrigger>
-                <TabsTrigger value="grades"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Edit Grades</TabsTrigger>
-                <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger>
-                <TabsTrigger value="reports"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Reports</TabsTrigger>
+                <TabsTrigger value="roster" className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">Class Roster</TabsTrigger>
+                <TabsTrigger value="grades" className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">Edit Grades</TabsTrigger>
+                <TabsTrigger value="engagement" className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">Engagement Metrics</TabsTrigger>
+                <TabsTrigger value="reports" className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">Reports</TabsTrigger>
               </TabsList>
 
               <TabsContent value="roster">
@@ -251,17 +251,17 @@ const ClassDetailPage = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="cursor-pointer">
                       <Filter className="h-4 w-4 mr-1" />
                       Filter
                     </Button>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="cursor-pointer">
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" className="cursor-pointer">
                       <UserPlus className="h-4 w-4 mr-1" />
                       Add Student
                     </Button>
@@ -273,18 +273,18 @@ const ClassDetailPage = () => {
               <TabsContent value="grades">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex gap-2 items-center">
-                    <select className="border rounded-md px-3 py-2">
+                    <select className="border rounded-md px-3 py-2 cursor-pointer">
                       <option>All Assignments</option>
                       <option>Midterm Exam</option>
                       <option>Final Project</option>
                       <option>Homework 1-5</option>
                     </select>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="cursor-pointer">
                       <Edit className="h-4 w-4 mr-1" />
                       Bulk Edit
                     </Button>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="cursor-pointer">
                     <Download className="h-4 w-4 mr-1" />
                     Export Grades
                   </Button>
@@ -297,13 +297,13 @@ const ClassDetailPage = () => {
               <TabsContent value="engagement">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex gap-2 items-center">
-                    <select className="border rounded-md px-3 py-2">
+                    <select className="border rounded-md px-3 py-2 cursor-pointer">
                       <option>Last 5 Weeks</option>
                       <option>Last 10 Weeks</option>
                       <option>Entire Semester</option>
                     </select>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="cursor-pointer">
                     <Download className="h-4 w-4 mr-1" />
                     Export Report
                   </Button>
@@ -328,7 +328,7 @@ const ClassDetailPage = () => {
                               <p className="text-sm text-gray-500">Generate reports for each student</p>
                             </div>
                           </div>
-                          <Button size="sm">Generate</Button>
+                          <Button size="sm" className="cursor-pointer">Generate</Button>
                         </div>
 
                         <div className="flex items-center justify-between p-3 border rounded-md">
@@ -339,7 +339,7 @@ const ClassDetailPage = () => {
                               <p className="text-sm text-gray-500">Overall class performance</p>
                             </div>
                           </div>
-                          <Button size="sm">Generate</Button>
+                          <Button size="sm" className="cursor-pointer">Generate</Button>
                         </div>
 
                         <div className="flex items-center justify-between p-3 border rounded-md">
@@ -350,7 +350,7 @@ const ClassDetailPage = () => {
                               <p className="text-sm text-gray-500">Identify students needing help</p>
                             </div>
                           </div>
-                          <Button size="sm">Generate</Button>
+                          <Button size="sm" className="cursor-pointer">Generate</Button>
                         </div>
                       </div>
                     </CardContent>
@@ -371,7 +371,7 @@ const ClassDetailPage = () => {
                               <p className="text-sm text-gray-500">Generated on Oct 15, 2023</p>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="cursor-pointer">
                             Download
                           </Button>
                         </div>
@@ -384,7 +384,7 @@ const ClassDetailPage = () => {
                               <p className="text-sm text-gray-500">Generated on Oct 1, 2023</p>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="cursor-pointer">
                             Download
                           </Button>
                         </div>
