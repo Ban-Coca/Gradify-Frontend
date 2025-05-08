@@ -22,15 +22,15 @@ function ReportsPage() {
           <p className="text-muted-foreground">Create customized reports for students or your entire class</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="cursor-pointer">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="cursor-pointer">
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="cursor-pointer">
             <Share2 className="mr-2 h-4 w-4" />
             Share
           </Button>
@@ -47,41 +47,41 @@ function ReportsPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="recipient-type">Recipient Type</Label>
                   <Select defaultValue="individual">
-                    <SelectTrigger id="recipient-type">
+                    <SelectTrigger id="recipient-type" className="cursor-pointer">
                       <SelectValue placeholder="Select recipient type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="individual">Individual Student</SelectItem>
-                      <SelectItem value="group">Student Group</SelectItem>
-                      <SelectItem value="class">Entire Class</SelectItem>
+                      <SelectItem value="individual" className="cursor-pointer">Individual Student</SelectItem>
+                      <SelectItem value="group" className="cursor-pointer">Student Group</SelectItem>
+                      <SelectItem value="class" className="cursor-pointer">Entire Class</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student">Select Student</Label>
                   <Select defaultValue="john-doe">
-                    <SelectTrigger id="student">
+                    <SelectTrigger id="student" className="cursor-pointer">
                       <SelectValue placeholder="Select student" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="john-doe">John Doe</SelectItem>
-                      <SelectItem value="jane-smith">Jane Smith</SelectItem>
-                      <SelectItem value="alex-johnson">Alex Johnson</SelectItem>
-                      <SelectItem value="sarah-williams">Sarah Williams</SelectItem>
+                      <SelectItem value="john-doe" className="cursor-pointer">John Doe</SelectItem>
+                      <SelectItem value="jane-smith" className="cursor-pointer">Jane Smith</SelectItem>
+                      <SelectItem value="alex-johnson" className="cursor-pointer">Alex Johnson</SelectItem>
+                      <SelectItem value="sarah-williams" className="cursor-pointer">Sarah Williams</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="notification-type">Notification Type</Label>
                   <Select defaultValue="feedback">
-                    <SelectTrigger id="notification-type">
+                    <SelectTrigger id="notification-type" className="cursor-pointer">
                       <SelectValue placeholder="Select notification type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="feedback">Assignment Feedback</SelectItem>
-                      <SelectItem value="grade-alert">Grade Alert</SelectItem>
-                      <SelectItem value="improvement">Improvement Suggestion</SelectItem>
-                      <SelectItem value="announcement">Class Announcement</SelectItem>
+                      <SelectItem value="feedback" className="cursor-pointer">Assignment Feedback</SelectItem>
+                      <SelectItem value="grade-alert" className="cursor-pointer">Grade Alert</SelectItem>
+                      <SelectItem value="improvement" className="cursor-pointer">Improvement Suggestion</SelectItem>
+                      <SelectItem value="announcement" className="cursor-pointer">Class Announcement</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -100,21 +100,21 @@ function ReportsPage() {
                 <div className="grid gap-2">
                   <Label>Notification Method</Label>
                   <div className="flex flex-wrap gap-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="email" className="h-4 w-4 rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="email" className="text-sm font-normal">
+                    <div className="flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="email" className="h-4 w-4 rounded border-gray-300 cursor-pointer" defaultChecked />
+                      <Label htmlFor="email" className="text-sm font-normal cursor-pointer">
                         Email
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="in-app" className="h-4 w-4 rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="in-app" className="text-sm font-normal">
+                    <div className="flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="in-app" className="h-4 w-4 rounded border-gray-300 cursor-pointer" defaultChecked />
+                      <Label htmlFor="in-app" className="text-sm font-normal cursor-pointer">
                         In-App
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="sms" className="h-4 w-4 rounded border-gray-300" />
-                      <Label htmlFor="sms" className="text-sm font-normal">
+                    <div className="flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="sms" className="h-4 w-4 rounded border-gray-300 cursor-pointer" />
+                      <Label htmlFor="sms" className="text-sm font-normal cursor-pointer">
                         SMS
                       </Label>
                     </div>
@@ -123,8 +123,8 @@ function ReportsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline">Cancel</Button>
-              <Button>Send Notification</Button>
+              <Button variant="outline" className="cursor-pointer">Cancel</Button>
+              <Button className="cursor-pointer">Send Notification</Button>
             </CardFooter>
           </Card>
 
@@ -135,7 +135,7 @@ function ReportsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center justify-between border-b pb-4 cursor-pointer hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
                     <Bell className="h-6 w-6 text-blue-500" />
                     <div>
@@ -145,7 +145,7 @@ function ReportsPage() {
                   </div>
                   <Badge>Delivered</Badge>
                 </div>
-                <div className="flex items-center justify-between border-b pb-4">
+                <div className="flex items-center justify-between border-b pb-4 cursor-pointer hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
                     <Bell className="h-6 w-6 text-blue-500" />
                     <div>
@@ -155,7 +155,7 @@ function ReportsPage() {
                   </div>
                   <Badge>Delivered</Badge>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between cursor-pointer hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
                     <Bell className="h-6 w-6 text-blue-500" />
                     <div>

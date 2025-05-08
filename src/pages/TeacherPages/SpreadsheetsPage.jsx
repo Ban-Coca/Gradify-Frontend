@@ -56,10 +56,10 @@ export default function SpreadsheetsPage() {
             <div>
                 <Tabs defaultValue="upload" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="upload" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                        <TabsTrigger value="upload" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">
                             Upload Spreadsheet
                         </TabsTrigger>
-                        <TabsTrigger value="link" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                        <TabsTrigger value="link" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer">
                             Link Spreadsheet
                         </TabsTrigger>
                     </TabsList>

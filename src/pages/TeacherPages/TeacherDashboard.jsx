@@ -164,7 +164,7 @@ const TeacherDashboard = () => {
                   <CardTitle>Your Classes</CardTitle>
                   <CardDescription>Quick overview of your active classes</CardDescription>
                 </div>
-                <Button onClick={() => navigate("/classes/all")}>
+                <Button onClick={() => navigate("/classes/all")} className='cursor-pointer'>
                   View All Classes
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -230,19 +230,19 @@ const TeacherDashboard = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full justify-start" onClick={() => router.push("/upload")}>
+              <Button className="w-full justify-start cursor-pointer" onClick={() => navigate("/upload")}>
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Spreadsheet
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/classes/new")}>
+              <Button className="w-full justify-start cursor-pointer" variant="outline" onClick={() => navigate("/classes/new")}>
                 <BookOpen className="mr-2 h-4 w-4" />
                 Create New Class
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/reports")}>
+              <Button className="w-full justify-start cursor-pointer" variant="outline" onClick={() => navigate("/reports")}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Generate Reports
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/integrations")}>
+              <Button className="w-full justify-start cursor-pointer" variant="outline" onClick={() => navigate("/integrations")}>
                 <Database className="mr-2 h-4 w-4" />
                 Manage Integrations
               </Button>
@@ -287,7 +287,7 @@ const TeacherDashboard = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => router.push("/uploads")}>
+              <Button variant="outline" className="w-full cursor-pointer" onClick={() => navigate("/uploads")}>
                 View All Uploads
               </Button>
             </CardFooter>
