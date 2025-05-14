@@ -3,20 +3,30 @@ import axios from 'axios';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER_SERVICE
 
 export const signUpUser = async (formData) => {
-    try{
-        const response = await axios.post(`${API_BASE_URL}/postuserrecord`, {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-            role: formData.role,
-        });
+    
+    try{    
+        const response = await axios.post(`${API_BASE_URL}/postuserrecord`, formData);
         return response.data;
     } catch (error){
         console.error('Error signing up:', error);
         throw error;
     }
 }
+
+export const updateUserRole = async (userId, role, header) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/update-role/${userId}`, { role }, {
+        headers: {
+            ...header,
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating role:', error);
+    throw error;
+  }
+};
 
 export const loginUser = async (credential) => {
     try {
@@ -68,6 +78,20 @@ export const resetPassword = async (credential) => {
     }
 }
 
+export const completeOnboarding = async (onboardingData, header) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/onboarding`, onboardingData, {
+            headers: {
+                ...header,
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error completing onboarding:', error);
+        throw error;
+    }
+}
 
 export const googleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
