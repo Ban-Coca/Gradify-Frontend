@@ -77,11 +77,11 @@ export function LexicalEditor({ onChange, initialContent = "<p></p>" }) {
       <LexicalComposer initialConfig={initialConfig}>
         <div className="editor-container">
           <ToolbarPlugin />
-          <div className="editor-inner p-3">
+          <div className="editor-inner p-3 relative">
             <RichTextPlugin
               contentEditable={<ContentEditable className="editor-input min-h-[150px] outline-none" />}
               placeholder={
-                <div className="editor-placeholder absolute top-[52px] left-3 text-muted-foreground pointer-events-none">
+                <div className="editor-placeholder absolute top-[12px] left-[12px] text-muted-foreground pointer-events-none">
                   Enter your feedback or notification message...
                 </div>
               }

@@ -6,7 +6,7 @@ import ForgotPassword from '@/pages/AuthenticationPages/ForgotPassword'
 import VerifyCode from '@/pages/AuthenticationPages/VerificationCodePage'
 import PasswordReset from './pages/AuthenticationPages/PasswordReset'
 import Unauthorized from '@/pages/AuthenticationPages/Unauthorized'
-import StudentDashboard from './pages/StudentDashboard'
+import StudentDashboard from './pages/StudentPages/StudentDashboard'
 import TeacherDashboard from './pages/TeacherPages/TeacherDashboard'
 import OAuth2Callback from './components/OAuth2Callback'
 import { useAuth } from './contexts/authentication-context'
@@ -22,6 +22,9 @@ import RoleSelection from './pages/OnBoardingPages/ChooseRole'
 import TeacherOnboarding from './pages/OnBoardingPages/TeacherDetails'
 import StudentOnboarding from './pages/OnBoardingPages/StudentDetails'
 import { OnboardingProvider } from './contexts/onboarding-context'
+import GradesPage from './pages/StudentPages/GradesPage'
+import FeedbackPage from './pages/StudentPages/FeedbackPage'
+import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -59,7 +62,7 @@ const RedirectIfAuthenticated = ({ children }) => {
     if (userRole === 'TEACHER') {
       return <Navigate to="/teacher/dashboard" />;
     } else if (userRole === 'STUDENT') {
-      return <Navigate to="/student" />;
+      return <Navigate to="/student/dashboard" />;
     }
   }
 
@@ -106,6 +109,10 @@ function App() {
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
         <Route path="/student/*" element={<StudentDashboard />} />
+        <Route path="/student/dashboard" element={<StudentDashboard />} />
+        <Route path="/student/grades" element={<GradesPage />} />
+        <Route path="/student/feedback" element={<FeedbackPage />} />
+        <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
       </Route>
       
       <Route element={<OnboardingRoute />}>
