@@ -54,6 +54,8 @@ export const deleteClass = async (id, header) => {
 }
 
 export const getClassById = async (id, header) => {
+    console.log("Header in getClassById", header)
+    console.log("ID in getClassById", id)
     try {
         const response = await axios.get(`${API_BASE_URL}/getclassbyid/${id}`, {
             headers: header

@@ -18,6 +18,10 @@ import DisplaySpreadsheetPage from './pages/TeacherPages/DisplaySpreadsheetPage'
 import ClassesPage from './pages/TeacherPages/ClassesPage'
 import ClassDetailPage from './pages/TeacherPages/ClassDetailPage'
 import ReportsPage from './pages/TeacherPages/ReportPage'
+import RoleSelection from './pages/OnBoardingPages/ChooseRole'
+import TeacherOnboarding from './pages/OnBoardingPages/TeacherDetails'
+import StudentOnboarding from './pages/OnBoardingPages/StudentDetails'
+import { OnboardingProvider } from './contexts/onboarding-context'
 import GradesPage from './pages/StudentPages/GradesPage'
 import FeedbackPage from './pages/StudentPages/FeedbackPage'
 import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
@@ -52,23 +56,40 @@ const RedirectIfAuthenticated = ({ children }) => {
   const { isAuthenticated, userRole } = useAuth();
 
   if (isAuthenticated) {
+    if (userRole == 'PENDING') {
+      return <Navigate to="/onboarding/role" />;
+    }
     if (userRole === 'TEACHER') {
       return <Navigate to="/teacher/dashboard" />;
     } else if (userRole === 'STUDENT') {
       return <Navigate to="/student/dashboard" />;
     }
-    // Default redirect if authenticated but role is unknown
-    return <Navigate to="/" />;
   }
 
   return children;
 };
 
+const OnboardingRoute = () => {
+  const { loading } = useAuth();
+  
+  if (loading) {
+    return <Loading fullscreen variant={"spinner"} size="xl" />;
+  }
+
+  return (
+    <Outlet/>
+  );
+}
+
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
-      <Route path="/signup" element={<RedirectIfAuthenticated><SignupPage /></RedirectIfAuthenticated>} />
+      <Route path="/signup" element={
+        <RedirectIfAuthenticated>
+          <SignupPage />
+        </RedirectIfAuthenticated>
+      }/>
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
       <Route path="/forgot-password" element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>} />
       <Route path="/verify-code" element={<RedirectIfAuthenticated><VerifyCode /></RedirectIfAuthenticated>} />
@@ -93,7 +114,12 @@ function App() {
         <Route path="/student/feedback" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
       </Route>
-          
+      
+      <Route element={<OnboardingRoute />}>
+        <Route path='/onboarding/role' element={<RoleSelection/>}/>
+        <Route path='/onboarding/student' element={<StudentOnboarding/>}/>
+        <Route path='/onboarding/teacher' element={<TeacherOnboarding/>}/>
+      </Route>
       {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
   )

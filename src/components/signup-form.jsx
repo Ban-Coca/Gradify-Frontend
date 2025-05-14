@@ -2,16 +2,18 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signUpUser } from "@/services/authenticationService";
+import { signUpUser } from "@/services/user/authenticationService";
 import { useAuth } from "@/contexts/authentication-context";
 import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Link } from "react-router-dom";
+import { useOnboarding } from "@/contexts/onboarding-context";
 
 export function SignupForm({
   className,
   ...props
 }) {
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -19,10 +21,11 @@ export function SignupForm({
     email: "",
     password: "",
     confirmPassword: "",
-    role: "STUDENT", // Default role
+    role: "",
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const {setFormData: setOnboardingData } = useOnboarding();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -36,23 +39,26 @@ export function SignupForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    console.log(formData);
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+    setOnboardingData({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    });
+    
+    // Log to verify data is saved
+    console.log("Data saved to onboarding context:", {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    });
 
-    try {
-      setLoading(true);
-      const response = await signUpUser(formData);
-      console.log(response);
-      login(response.user, response.token); // Automatically log in the user after signup
-    } catch (err) {
-      setError(err.response?.data?.message || "An error occurred during signup.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    navigate("/onboarding/role");
   };
   return (
     (<form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
@@ -118,10 +124,10 @@ export function SignupForm({
             onChange={handleChange}
             required />
         </div>
-        <div className="grid gap-2">
+        {/* <div className="grid gap-2">
           <Label htmlFor="role">Role</Label>
           <Select name="role" id="role" value={formData.role} onValueChange={handleRoleChange} required>
-            <SelectTrigger>
+            <SelectTrigger className="h-10 w-full">
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
             <SelectContent>
@@ -129,9 +135,10 @@ export function SignupForm({
               <SelectItem value="TEACHER">Teacher</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <Button type="submit" className="w-full">
-          Register
+        </div> */}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
         </Button>
         <div
           className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">

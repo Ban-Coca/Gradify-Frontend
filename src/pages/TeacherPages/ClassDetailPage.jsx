@@ -37,10 +37,12 @@ const ClassDetailPage = () => {
   })
 
   const average = parseFloat(classAverageData/100).toFixed(2)
+
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
         const response = await getClassById(id, getAuthHeader());
+        console.log("Class Details:", response);
         setClassData(response);
         console.log("Class Data:", classData);
       } catch (err) {

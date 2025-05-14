@@ -12,14 +12,17 @@ import {
 } from "lucide-react"
 import Layout from "@/components/layout"
 import { Badge } from "@/components/ui/badge";
+import { LexicalEditor } from "@/components/lexical/lexical-editor";
+import { useState } from "react"
 
 function ReportsPage() {
+  const [message, setMessage] = useState("<p>Enter your feedback or notification message</p>")
   return (
     <Layout>
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports Generator</h1>
-          <p className="text-muted-foreground">Create customized reports for students or your entire class</p>
+          <h1 className="text-3xl font-bold tracking-tight">Generate Reports</h1>
+          <p className="text-muted-foreground">Create customized reports for students</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
@@ -73,15 +76,13 @@ function ReportsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="notification-type">Notification Type</Label>
-                  <Select defaultValue="feedback">
+                  <Select defaultValue="grade-alert">
                     <SelectTrigger id="notification-type">
                       <SelectValue placeholder="Select notification type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="feedback">Assignment Feedback</SelectItem>
                       <SelectItem value="grade-alert">Grade Alert</SelectItem>
                       <SelectItem value="improvement">Improvement Suggestion</SelectItem>
-                      <SelectItem value="announcement">Class Announcement</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -91,34 +92,12 @@ function ReportsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="message">Message</Label>
-                  <Textarea
+                  {/* <Textarea
                     id="message"
                     placeholder="Enter your feedback or notification message"
                     className="min-h-[150px]"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Notification Method</Label>
-                  <div className="flex flex-wrap gap-2">
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="email" className="h-4 w-4 rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="email" className="text-sm font-normal">
-                        Email
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="in-app" className="h-4 w-4 rounded border-gray-300" defaultChecked />
-                      <Label htmlFor="in-app" className="text-sm font-normal">
-                        In-App
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="sms" className="h-4 w-4 rounded border-gray-300" />
-                      <Label htmlFor="sms" className="text-sm font-normal">
-                        SMS
-                      </Label>
-                    </div>
-                  </div>
+                  /> */}
+                  <LexicalEditor onChange={setMessage} initialContent={message} />
                 </div>
               </div>
             </CardContent>
@@ -128,7 +107,7 @@ function ReportsPage() {
             </CardFooter>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Recent Notifications</CardTitle>
               <CardDescription>History of your recently sent notifications and feedback</CardDescription>
@@ -167,7 +146,7 @@ function ReportsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
     </Layout>
   )

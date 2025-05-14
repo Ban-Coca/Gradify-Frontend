@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { InputOTPPattern } from "./code_input"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { verifyResetCode } from "@/services/authenticationService"
+import { verifyResetCode } from "@/services/user/authenticationService"
 
 export function EnterCodeForm({
   className,
