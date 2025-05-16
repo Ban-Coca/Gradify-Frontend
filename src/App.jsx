@@ -14,6 +14,7 @@ import LandingPage from '@/pages/LandingPage'
 import SpreadsheetsPage from './pages/TeacherPages/SpreadsheetsPage'
 import { Loading } from './components/loading-state'
 import DisplaySpreadsheetPage from './pages/TeacherPages/DisplaySpreadsheetPage'
+import SpreadsheetDisplayPage from './pages/TeacherPages/SpreadsheetDisplayPage'
 import ClassesPage from './pages/TeacherPages/ClassesPage'
 import ClassDetailPage from './pages/TeacherPages/ClassDetailPage'
 import ReportsPage from './pages/TeacherPages/ReportPage'
@@ -102,7 +103,7 @@ function App() {
         <Route path="/teacher/*" element={<TeacherDashboard />} />
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher/spreadsheets" element={<SpreadsheetsPage />} />
-        <Route path="/teacher/spreadsheets/display/:id" element={<DisplaySpreadsheetPage />} />
+        <Route path="/teacher/spreadsheets/display/:id" element={<SpreadsheetDisplayPage />} />
         <Route path="/classes/:tab?" element={<ClassesPage />} />
         <Route path="/classes/classdetail/:id?" element={<ClassDetailPage />} />    
         <Route path="/reports" element={<ReportsPage/>} />      

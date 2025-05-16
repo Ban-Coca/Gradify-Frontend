@@ -2,16 +2,18 @@ import Layout from "@/components/layout"
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FolderOpen, Upload } from 'lucide-react';
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/authentication-context";
 import { uploadSpreadsheet } from "@/services/teacher/spreadsheetServices";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
+import toast from 'react-hot-toast';
+
 export default function SpreadsheetsPage() {
     const { currentUser, getAuthHeader } = useAuth();
     const fileInputRef = React.useRef(null);
-    const [selectedFile, setSelectedFile] = React.useState(null);
-    const [isUploading, setIsUploading] = React.useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
     const navigate = useNavigate();
 
     const handleFileChange = (event) => {
@@ -20,36 +22,96 @@ export default function SpreadsheetsPage() {
             console.log(currentUser.userId)
             setSelectedFile(file);
             console.log("Selected file:", file);
+            toast.success(`File "${file.name}" selected`, {
+                duration: 2000,
+                position: 'top-center',
+                icon: '📄',
+            });
         }
     }
+    
     const handleButtonClick = async () => {
         if(selectedFile){
             setIsUploading(true);
+            
+            // Show loading toast
+            const loadingToast = toast.loading('Uploading spreadsheet...', {
+                position: 'top-center'
+            });
+            
             try {
                 console.log("Uploading file:", selectedFile);
                 console.log("Teacher ID:", currentUser.userId);
+                
                 const response = await uploadSpreadsheet(
                     {file: selectedFile, teacherId: currentUser.userId},
                     getAuthHeader()
                 );
-                console.log("File uploaded successfully:", response);
-                navigate(`/teacher/spreadsheets/display/${response.id}`);
+                
+                // Log the full response to see its structure
+                console.log("File upload response:", response);
+                
+                // Check if response has the expected structure
+                let spreadsheetId;
+                if (response.id) {
+                    spreadsheetId = response.id;
+                } else if (response.spreadsheet && response.spreadsheet.id) {
+                    spreadsheetId = response.spreadsheet.id;
+                } else {
+                    console.error("Could not find spreadsheet ID in response:", response);
+                    toast.error("Upload successful but couldn't retrieve spreadsheet ID.", {
+                        position: 'top-center'
+                    });
+                    setIsUploading(false);
+                    setSelectedFile(null);
+                    toast.dismiss(loadingToast);
+                    return;
+                }
+                
+                // Dismiss loading toast
+                toast.dismiss(loadingToast);
+                
+                // Show success toast
+                toast.success('Spreadsheet uploaded successfully!', {
+                    duration: 3000,
+                    position: 'top-center',
+                });
+                
+                // Navigate with the extracted ID
+                console.log("Navigating to spreadsheet display with ID:", spreadsheetId);
+                navigate(`/teacher/spreadsheets/display/${spreadsheetId}`, { 
+                    state: { fromUpload: true } 
+                });
+                
                 setIsUploading(false);
                 setSelectedFile(null);
             } catch (error) {
                 console.error("Error uploading file:", error);
+                
+                // Dismiss loading toast
+                toast.dismiss(loadingToast);
+                
+                // Show error toast
+                toast.error(`Error uploading file: ${error.message || "Unknown error"}`, {
+                    duration: 5000,
+                    position: 'top-center',
+                });
+                
                 setIsUploading(false);
             } 
         } else {
             if (fileInputRef.current) {
                 fileInputRef.current.click();
             }
-        }    
+        }
     };
 
     return (
         <Layout>
-            <div className=' bg-inherited p-4 rounded-lg mt-4 mb-4'>
+            {/* Toast container */}
+            <Toaster />
+            
+            <div className='bg-inherited p-4 rounded-lg mt-4 mb-4'>
                 <h1 className="text-xl md:text-2xl font-bold">Import Spreadsheet Data</h1>
                 <p className="text-sm text-muted">Upload or link a spreadsheet to import student grades</p>
             </div>
@@ -65,13 +127,13 @@ export default function SpreadsheetsPage() {
                     </TabsList>
 
                     <TabsContent value="upload" className="mt-4">
-                        <div className="flex flex-col items-center justify-center bg-gray-300/40 rounded-sm p-4 h-full">
+                        <div className="flex flex-col items-center justify-center bg-gray-300/40 rounded-sm p-4 h-full transition-all duration-300 ease-in-out hover:bg-gray-300/50">
                             <FolderOpen className="w-8 h-8" />
                             <h2 className="text-xl font-bold">Upload Spreadsheet</h2>
                             <p className="text-base text-muted">Drag and drop your file here, or</p>
                             <Button 
                                 variant={selectedFile ? "default" : "outline"} 
-                                className="mt-2 cursor-pointer flex gap-2 items-center" 
+                                className="mt-2 cursor-pointer flex gap-2 items-center transition-all duration-300 hover:scale-105" 
                                 onClick={handleButtonClick}
                                 disabled={isUploading}
                             >
@@ -92,7 +154,10 @@ export default function SpreadsheetsPage() {
                                 />
                             </Button>
                             {selectedFile && (
-                                <p className="text-sm mt-2">Selected: {selectedFile.name}</p>
+                                <div className="text-sm mt-2 p-2 bg-gray-100 rounded flex items-center transition-all duration-300 animate-in fade-in">
+                                    <span className="mr-2">📄</span>
+                                    {selectedFile.name}
+                                </div>
                             )}
                             <p className="text-sm text-muted mt-2">Supported formats: .xlsx, .csv</p>
                         </div>
