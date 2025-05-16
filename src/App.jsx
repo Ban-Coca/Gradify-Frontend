@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Routes, Route, Outlet } from 'react-router-dom'
 import LoginPage from '@/pages/AuthenticationPages/LoginPage'
 import SignupPage from '@/pages/AuthenticationPages/SignupPage'
@@ -25,6 +24,7 @@ import { OnboardingProvider } from './contexts/onboarding-context'
 import GradesPage from './pages/StudentPages/GradesPage'
 import FeedbackPage from './pages/StudentPages/FeedbackPage'
 import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
+import { Toaster } from 'react-hot-toast';
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -83,6 +83,7 @@ const OnboardingRoute = () => {
 
 function App() {
   return (
+    <>
     <Routes>
       <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
       <Route path="/signup" element={
@@ -122,6 +123,28 @@ function App() {
       </Route>
       {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
+    <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#fff',
+              color: '#000',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
+    </>
   )
 }
 
