@@ -2,28 +2,45 @@ import axios from "axios";
 
 const API_BASE_URL = 'http://localhost:8080/api/class'
 
-export const createClass = async (data) => {
-    const formData = new FormData();
-    formData.append("className", data.className);   
-    formData.append("semester", data.semester);
-    formData.append("schoolYear", data.schoolYear);
-    formData.append("section", data.section);
-    formData.append("room", data.room);
-    formData.append("classCode", data.classCode);
-    formData.append("schedule", data.schedule);
-
+// Modified to handle the teacher ID association
+export const createClass = async (classData) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/createclass`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        });
-        return response.data;
+      // Get authentication headers - either from parameter or from your auth context
+      const authHeader = classData.authHeader || {};
+      
+      // Create FormData to send as URL parameters as expected by backend
+      const params = new URLSearchParams();
+      params.append('className', classData.className);
+      params.append('semester', classData.semester);
+      params.append('schoolYear', classData.schoolYear);
+      params.append('section', classData.section);
+      params.append('classCode', classData.classCode);
+      
+      // Add optional parameters if present
+      if (classData.room) params.append('room', classData.room);
+      if (classData.schedule) params.append('schedule', classData.schedule);
+      
+      // Important: Backend expects 'teacher.userId' but you're passing 'teacherId'
+      params.append('teacher.userId', classData.teacherId);
+      
+      // Make the API call with the correct parameters and auth headers
+      const response = await axios.post(
+        `${API_BASE_URL}/createclass`, 
+        params,
+        { 
+          headers: {
+            ...authHeader,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+      
+      return response.data;
     } catch (error) {
-        console.error("Error creating class:", error);
-        throw error;
+      console.error('Error creating class:', error);
+      throw error;
     }
-}
+  };
 
 export const getAllClasses = async (header) => {
     try {
