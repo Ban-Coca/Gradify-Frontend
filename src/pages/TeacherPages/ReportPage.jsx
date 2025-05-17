@@ -22,16 +22,11 @@ function ReportsPage() {
   const location = useLocation()
   const { studentId, studentName, classId, teacherId } = location.state || {}
   const { currentUser } = useAuth()
-  const [recipientType, setRecipientType] = useState("individual")
-  const [student, setStudent] = useState("john-doe")
   const [notificationType, setNotificationType] = useState("grade-alert")
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("<p>Enter your feedback or notification message</p>")
   const { createReportMutation } = useReports(currentUser, classId, studentId, teacherId, null)
   
-  if (!studentId || !classId || !teacherId) {
-    return <div>Error: Missing required information to generate report.</div>;
-  }
   const handleSendReport = async () => {
     const payload = {
       teacherId,
@@ -41,15 +36,7 @@ function ReportsPage() {
       subject,
       message,
     }
-    
-    try {
-      await createReportMutation.mutateAsync(payload)
-      console.log("Report sent successfully!")
-      
-    } catch (error) {
-      console.error("Failed to send report:", error)
-      
-    }
+    createReportMutation.mutateAsync(payload)
   }
 
   return (
@@ -131,47 +118,6 @@ function ReportsPage() {
               <Button onClick={handleSendReport}>Send Report</Button>
             </CardFooter>
           </Card>
-
-          {/* <Card>
-            <CardHeader>
-              <CardTitle>Recent Notifications</CardTitle>
-              <CardDescription>History of your recently sent notifications and feedback</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center space-x-4">
-                    <Bell className="h-6 w-6 text-blue-500" />
-                    <div>
-                      <p className="font-medium">Midterm Exam Feedback - John Doe</p>
-                      <p className="text-sm text-muted-foreground">Sent on April 22, 2025</p>
-                    </div>
-                  </div>
-                  <Badge>Delivered</Badge>
-                </div>
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center space-x-4">
-                    <Bell className="h-6 w-6 text-blue-500" />
-                    <div>
-                      <p className="font-medium">Class Announcement - Final Project Guidelines</p>
-                      <p className="text-sm text-muted-foreground">Sent on April 20, 2025</p>
-                    </div>
-                  </div>
-                  <Badge>Delivered</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Bell className="h-6 w-6 text-blue-500" />
-                    <div>
-                      <p className="font-medium">Grade Alert - Sarah Williams</p>
-                      <p className="text-sm text-muted-foreground">Sent on April 18, 2025</p>
-                    </div>
-                  </div>
-                  <Badge>Delivered</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
         </div>
     </Layout>
   )

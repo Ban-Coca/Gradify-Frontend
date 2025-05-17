@@ -13,6 +13,7 @@ import { getClassById, updateClassById, getClassAverage, getStudentCount } from 
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
+import { ReportsTab } from "@/components/reports-tab";
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -315,84 +316,7 @@ const ClassDetailPage = () => {
 
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Performance Reports</CardTitle>
-                      <CardDescription>Generate student performance reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Individual Student Reports</p>
-                              <p className="text-sm text-gray-500">Generate reports for each student</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <BarChart className="h-5 w-5 text-green-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Class Summary Report</p>
-                              <p className="text-sm text-gray-500">Overall class performance</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <Users className="h-5 w-5 text-purple-600 mr-3" />
-                            <div>
-                              <p className="font-medium">At-Risk Students Report</p>
-                              <p className="text-sm text-gray-500">Identify students needing help</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Recent Reports</CardTitle>
-                      <CardDescription>Previously generated reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Midterm Performance Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 15, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Monthly Progress Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 1, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ReportsTab classId={id}/>
                 </div>
               </TabsContent>
             </Tabs>
