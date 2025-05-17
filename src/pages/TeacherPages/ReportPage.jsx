@@ -14,9 +14,44 @@ import Layout from "@/components/layout"
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
 import { useState } from "react"
+import { useLocation } from "react-router-dom";
+import { useReports } from "@/hooks/use-reports";
+import { useAuth } from "@/contexts/authentication-context";
 
 function ReportsPage() {
+  const location = useLocation()
+  const { studentId, studentName, classId, teacherId } = location.state || {}
+  const { currentUser } = useAuth()
+  const [recipientType, setRecipientType] = useState("individual")
+  const [student, setStudent] = useState("john-doe")
+  const [notificationType, setNotificationType] = useState("grade-alert")
+  const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("<p>Enter your feedback or notification message</p>")
+  const { createReportMutation } = useReports(currentUser, classId, studentId, teacherId, null)
+  
+  if (!studentId || !classId || !teacherId) {
+    return <div>Error: Missing required information to generate report.</div>;
+  }
+  const handleSendReport = async () => {
+    const payload = {
+      teacherId,
+      studentId,
+      classId,
+      notificationType,
+      subject,
+      message,
+    }
+    
+    try {
+      await createReportMutation.mutateAsync(payload)
+      console.log("Report sent successfully!")
+      
+    } catch (error) {
+      console.error("Failed to send report:", error)
+      
+    }
+  }
+
   return (
     <Layout>
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -42,27 +77,14 @@ function ReportsPage() {
         <div className="mb-4 mt-4 items-center space-y-5">
           <Card>
             <CardHeader>
-              <CardTitle>Send Feedback and Notifications</CardTitle>
+              <CardTitle className="font-bold">Send Feedback and Notifications</CardTitle>
               <CardDescription>Provide feedback to students or send class-wide notifications</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid w-full gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="recipient-type">Recipient Type</Label>
-                  <Select defaultValue="individual">
-                    <SelectTrigger id="recipient-type">
-                      <SelectValue placeholder="Select recipient type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">Individual Student</SelectItem>
-                      <SelectItem value="group">Student Group</SelectItem>
-                      <SelectItem value="class">Entire Class</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="student">Select Student</Label>
-                  <Select defaultValue="john-doe">
+                  {/* <Label htmlFor="student">Select Student</Label>
+                  <Select defaultValue="john-doe" onValueChange={setStudent}>
                     <SelectTrigger id="student">
                       <SelectValue placeholder="Select student" />
                     </SelectTrigger>
@@ -72,11 +94,15 @@ function ReportsPage() {
                       <SelectItem value="alex-johnson">Alex Johnson</SelectItem>
                       <SelectItem value="sarah-williams">Sarah Williams</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
+                  <div>
+                    <h1 className="font-bold">Recipient</h1>
+                    <p>Student Name: {studentName}</p>
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="notification-type">Notification Type</Label>
-                  <Select defaultValue="grade-alert">
+                  <Select defaultValue="grade-alert" onValueChange={setNotificationType}>
                     <SelectTrigger id="notification-type">
                       <SelectValue placeholder="Select notification type" />
                     </SelectTrigger>
@@ -88,7 +114,7 @@ function ReportsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" placeholder="Enter notification subject" />
+                  <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Enter notification subject" />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="message">Message</Label>
@@ -102,8 +128,7 @@ function ReportsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline">Cancel</Button>
-              <Button>Send Notification</Button>
+              <Button onClick={handleSendReport}>Send Report</Button>
             </CardFooter>
           </Card>
 
