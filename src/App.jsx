@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Routes, Route, Outlet } from 'react-router-dom'
 import LoginPage from '@/pages/AuthenticationPages/LoginPage'
 import SignupPage from '@/pages/AuthenticationPages/SignupPage'
@@ -15,6 +14,7 @@ import LandingPage from '@/pages/LandingPage'
 import SpreadsheetsPage from './pages/TeacherPages/SpreadsheetsPage'
 import { Loading } from './components/loading-state'
 import DisplaySpreadsheetPage from './pages/TeacherPages/DisplaySpreadsheetPage'
+import SpreadsheetDisplayPage from './pages/TeacherPages/SpreadsheetDisplayPage'
 import ClassesPage from './pages/TeacherPages/ClassesPage'
 import ClassDetailPage from './pages/TeacherPages/ClassDetailPage'
 import ReportsPage from './pages/TeacherPages/ReportPage'
@@ -25,6 +25,7 @@ import { OnboardingProvider } from './contexts/onboarding-context'
 import GradesPage from './pages/StudentPages/GradesPage'
 import FeedbackPage from './pages/StudentPages/FeedbackPage'
 import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
+import { Toaster } from 'react-hot-toast';
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -83,6 +84,7 @@ const OnboardingRoute = () => {
 
 function App() {
   return (
+    <>
     <Routes>
       <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
       <Route path="/signup" element={
@@ -101,7 +103,7 @@ function App() {
         <Route path="/teacher/*" element={<TeacherDashboard />} />
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher/spreadsheets" element={<SpreadsheetsPage />} />
-        <Route path="/teacher/spreadsheets/display/:id" element={<DisplaySpreadsheetPage />} />
+        <Route path="/teacher/spreadsheets/display/:id" element={<SpreadsheetDisplayPage />} />
         <Route path="/classes/:tab?" element={<ClassesPage />} />
         <Route path="/classes/classdetail/:id?" element={<ClassDetailPage />} />    
         <Route path="/reports" element={<ReportsPage/>} />      
@@ -122,6 +124,28 @@ function App() {
       </Route>
       {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
+    <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#fff',
+              color: '#000',
+            },
+          },
+          error: {
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
+    </>
   )
 }
 
