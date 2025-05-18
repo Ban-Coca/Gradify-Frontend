@@ -24,12 +24,12 @@ const teacherItems = [
   },
   {
     title: "Classes",
-    url: "/classes",
+    url: "/teacher/classes",
     icon: Inbox,
   },
   {
     title: "Reports",
-    url: "/reports",
+    url: "/teacher/reports",
     icon: Folder,
   },
   {

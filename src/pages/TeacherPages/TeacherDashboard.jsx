@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useEffect, useState } from "react"
 import { getClassByTeacherId } from "@/services/teacher/classServices"
 import ClassesList from "@/components/classes-list"
+import Pagination from "@/components/ui/pagination";
 import { GradeDistributionChart } from "@/components/charts/grade-distribution"
 import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
 import { useAuth } from "@/contexts/authentication-context"
@@ -86,7 +87,7 @@ const TeacherDashboard = () => {
   ]
 
   const navigateToClass = (classId) => {
-    navigate(`/classes/classdetail/${classId}`)
+    navigate(`/teacher/classes/classdetail/${classId}`)
   }
 
   return (
@@ -164,7 +165,7 @@ const TeacherDashboard = () => {
                   <CardTitle>Your Classes</CardTitle>
                   <CardDescription>Quick overview of your active classes</CardDescription>
                 </div>
-                <Button onClick={() => navigate("/classes/all")}>
+                <Button onClick={() => navigate("/teacher/classes/all")}>
                   View All Classes
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -174,17 +175,11 @@ const TeacherDashboard = () => {
               <ClassesList classes={currentClasses} view={"grid"} navigateToClass={navigateToClass} />
             </CardContent>
             <CardFooter className="flex justify-center items-center">
-              <div className="flex justify-center items-center space-x-2">
-                {Array.from({ length: Math.ceil(classes.length / classesPerPage) }, (_, index) => (
-                  <Button
-                    key={index}
-                    variant={currentPage === index + 1 ? "default" : "outline"}
-                    onClick={() => handlePageChange(index + 1)}
-                  >
-                    {index + 1}
-                  </Button>
-                ))}
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(classes.length / classesPerPage)}
+                onPageChange={handlePageChange}
+              />
             </CardFooter>
           </Card>
 
