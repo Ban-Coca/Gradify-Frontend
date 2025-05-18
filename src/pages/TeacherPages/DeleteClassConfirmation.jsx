@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { deleteClass } from "@/services/teacher/classServices";
+import { toast } from "react-hot-toast";
 
 export default function DeleteClassConfirmation({ classId, className, onClassDeleted, getAuthHeader }) {
   const [open, setOpen] = useState(false);
@@ -70,6 +71,18 @@ export default function DeleteClassConfirmation({ classId, className, onClassDel
       
       // Close the dialog
       setOpen(false);
+
+      // Show success toast
+      toast.success(`Class "${className}" deleted successfully`, {
+        icon: "🗑️",
+        position: "bottom-right",
+        duration: 3000,
+        style: {
+          borderRadius: '8px',
+          background: '#fef2f2',
+          color: '#991b1b',
+        },
+      });
       
       // Call the callback function to update UI
       if (onClassDeleted) {
