@@ -10,13 +10,16 @@ import { FileText, BarChart, Users, EllipsisVertical } from "lucide-react";
 import { useState } from "react";
 import { useReports } from "@/hooks/use-reports";
 import { useAuth } from "@/contexts/authentication-context";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Loading } from "@/components/loading-state";
 import { ReportDetailsModal } from "@/components/report-details-teacher-side";
 
-export function ReportsTab({
-    classId,
-}) {
+export function ReportsTab({ classId }) {
   const { currentUser } = useAuth();
   const { reportsByClassQuery } = useReports(
     currentUser,
@@ -27,7 +30,7 @@ export function ReportsTab({
   );
 
   const { data: reports = [], isLoading, isError, error } = reportsByClassQuery;
-  
+
   const [selectedReport, setSelectedReport] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -48,7 +51,9 @@ export function ReportsTab({
     return (
       <div className="flex flex-col items-center justify-center h-64 text-red-600">
         <p className="font-semibold mb-2">Failed to load reports.</p>
-        <p className="text-sm">{error?.message || "An unexpected error occurred."}</p>
+        <p className="text-sm">
+          {error?.message || "An unexpected error occurred."}
+        </p>
       </div>
     );
   }
@@ -106,54 +111,62 @@ export function ReportsTab({
         </CardContent>
       </Card>
 
-      <Card >
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">Recent Reports</CardTitle>
           <CardDescription>Previously made reports</CardDescription>
         </CardHeader>
         <CardContent>
-          {reports.map((report) => (
-            <div
-              key={report.reportId}
-              className="flex items-center justify-between p-3 border rounded-md mb-2"
-              onClick={() => handleCardClick(report)}
-            >
-              <div className="flex items-center">
-                <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                <div>
-                  <p className="font-medium">
-                    {report.subject || "Untitled Report"}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Generated on{" "}
-                    {report.reportDate
-                      ? new Date(report.reportDate).toLocaleDateString()
-                      : "Unknown date"}
-                  </p>
-                </div>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm">
-                    <EllipsisVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent >
-                  <DropdownMenuItem asChild>
-                    <a
-                      href={report.downloadUrl || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                    >
-                      Download
-                    </a>
-                  </DropdownMenuItem>
-                  {/* Add more actions here as needed */}
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {reports.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+              <FileText className="h-10 w-10 mb-2" />
+              <p className="font-semibold">No reports found</p>
+              <p className="text-sm">Reports you generate will appear here.</p>
             </div>
-          ))}
+          ) : (
+            reports.map((report) => (
+              <div
+                key={report.reportId}
+                className="flex items-center justify-between p-3 border rounded-md mb-2"
+                onClick={() => handleCardClick(report)}
+              >
+                <div className="flex items-center">
+                  <FileText className="h-5 w-5 text-gray-500 mr-3" />
+                  <div>
+                    <p className="font-medium">
+                      {report.subject || "Untitled Report"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Generated on{" "}
+                      {report.reportDate
+                        ? new Date(report.reportDate).toLocaleDateString()
+                        : "Unknown date"}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm">
+                      <EllipsisVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem asChild>
+                      <a
+                        href={report.downloadUrl || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                      >
+                        Download
+                      </a>
+                    </DropdownMenuItem>
+                    {/* Add more actions here as needed */}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 
