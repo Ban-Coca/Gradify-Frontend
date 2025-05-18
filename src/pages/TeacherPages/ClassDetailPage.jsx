@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter, Activity } from "lucide-react";
+import { 
+  ArrowLeft, Download, Upload, Edit, Users, FileText, 
+  BarChart, Search, UserPlus, Filter
+} from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
@@ -14,6 +17,8 @@ import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
+import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
+
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -67,6 +72,18 @@ const ClassDetailPage = () => {
     }
   };
 
+  const handleClassDeleted = (className) => {
+    // Navigate back to classes list after successful deletion
+    navigate("/teacher/classes", { 
+      state: { 
+        notification: {
+          type: "success",
+          message: `${className} has been successfully deleted.`
+        }
+      }
+    });
+  };
+
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
@@ -95,7 +112,7 @@ const ClassDetailPage = () => {
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/classes")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/teacher/classes")}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Classes
           </Button>
@@ -125,6 +142,12 @@ const ClassDetailPage = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Data
               </Button>
+              <DeleteClassConfirmation 
+                classId={id} 
+                className={classData?.className}
+                onClassDeleted={handleClassDeleted}
+                getAuthHeader={getAuthHeader}
+              />
             </div>
           </div>
 

@@ -6,6 +6,7 @@
   import { Card, CardContent} from "@/components/ui/card"
   import { getClassByTeacherId } from "@/services/teacher/classServices";
   import ClassesList from "@/components/classes-list";
+  import Pagination from "@/components/ui/pagination";
   import {Search, Plus, Filter} from "lucide-react";
   import { useAuth } from "@/contexts/authentication-context";
   import NewClass from "@/pages/TeacherPages/NewClass.jsx";
@@ -21,8 +22,12 @@
     const [filteredClasses, setFilteredClasses] = useState([]);
     
     // Default to "current" if no tab is provided
-    const defaultTab = tab || "current";
+    const defaultTab = "current";
     const [activeTab, setActiveTab] = useState(defaultTab);
+
+    // Pagination state and helpers
+    const classesPerPage = 6;
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
       const fetchClasses = async () => {
@@ -91,15 +96,41 @@
       setFilteredClasses(filtered);
     }, [classes, searchQuery, activeTab]);
 
+    // Reset to first page when tab or search changes
+    useEffect(() => {
+      setCurrentPage(1);
+    }, [activeTab, searchQuery]);
+
+    // Get paginated classes for the current tab
+    const getPaginatedClasses = (category) => {
+      const filtered =
+        category === "all"
+          ? filteredClasses
+          : filteredClasses.filter((c) => c.category === category);
+
+      const indexOfLastClass = currentPage * classesPerPage;
+      const indexOfFirstClass = indexOfLastClass - classesPerPage;
+      return filtered.slice(indexOfFirstClass, indexOfLastClass);
+    };
+
+    // Get total pages for the current tab
+    const getTotalPages = (category) => {
+      const filtered =
+        category === "all"
+          ? filteredClasses
+          : filteredClasses.filter((c) => c.category === category);
+      return Math.ceil(filtered.length / classesPerPage) || 1;
+    };
+
     // Navigate to class detail page
     const navigateToClass = (classId) => {
-      navigate(`/classes/classdetail/${classId}`);
+      navigate(`/teacher/classes/classdetail/${classId}`);
     };
 
     // Navigate to a specific tab
-    const navigateToTab = (tab) => {
+    const handleTabChange = (tab) => {
       setActiveTab(tab);
-      navigate(`/classes/${tab}`);
+      // No navigation
     };
 
     // Handle new class creation
@@ -190,50 +221,65 @@
           </Card>
 
           {/* Classes */}
-          <Tabs defaultValue={defaultTab} onValueChange={navigateToTab} value={activeTab}>
-            <TabsList>
-              <TabsTrigger 
-                value="current" 
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
-              >
-                Current Classes
-              </TabsTrigger>
-              <TabsTrigger 
-                value="past" 
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
-              >
-                Past Classes
-              </TabsTrigger>
-              <TabsTrigger 
-                value="all" 
-                className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
-              >
-                All Classes
-              </TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue={defaultTab} onValueChange={handleTabChange} value={activeTab}>
+          <TabsList>
+            <TabsTrigger 
+              value="current" 
+              className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
+            >
+              Current Classes
+            </TabsTrigger>
+            <TabsTrigger 
+              value="past" 
+              className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
+            >
+              Past Classes
+            </TabsTrigger>
+            <TabsTrigger 
+              value="all" 
+              className="text-white data-[state=active]:bg-white data-[state=active]:text-black cursor-pointer"
+            >
+              All Classes
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="current" className="mt-6 mb-3">
-              <ClassesList 
-                classes={filteredClasses.filter(c => c.category === "current")} 
-                view={view} 
-                navigateToClass={navigateToClass} 
-              />
-            </TabsContent>
-            <TabsContent value="past" className="mt-6 mb-3">
-              <ClassesList 
-                classes={filteredClasses.filter(c => c.category === "past")} 
-                view={view} 
-                navigateToClass={navigateToClass} 
-              />
-            </TabsContent>
-            <TabsContent value="all" className="mt-6 mb-3">
-              <ClassesList 
-                classes={filteredClasses} 
-                view={view} 
-                navigateToClass={navigateToClass} 
-              />
-            </TabsContent>
-          </Tabs>
+          <TabsContent value="current" className="mt-6 mb-3">
+            <ClassesList 
+              classes={getPaginatedClasses("current")} 
+              view={view} 
+              navigateToClass={navigateToClass} 
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={getTotalPages("current")}
+              onPageChange={setCurrentPage}
+            />
+          </TabsContent>
+          <TabsContent value="past" className="mt-6 mb-3">
+            <ClassesList 
+              classes={getPaginatedClasses("past")} 
+              view={view} 
+              navigateToClass={navigateToClass} 
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={getTotalPages("past")}
+              onPageChange={setCurrentPage}
+            />
+          </TabsContent>
+          <TabsContent value="all" className="mt-6 mb-3">
+            <ClassesList 
+              classes={getPaginatedClasses("all")} 
+              view={view} 
+              navigateToClass={navigateToClass} 
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={getTotalPages("all")}
+              onPageChange={setCurrentPage}
+            />
+          </TabsContent>
+        </Tabs>
         </div>
 
         {/* New Class Modal */}

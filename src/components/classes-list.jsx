@@ -49,9 +49,9 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
             <Card
                 key={classItem.classid}
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => navigateToClass(classItem.classid)}
+                onClick={() => navigateToClass(classItem.classId)}
             >
-                <CardContent className="p-4">
+                <CardContent className="px-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
                     <h3 className="font-bold text-lg">{classItem.className}</h3> {/* Use `className` */}

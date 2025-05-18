@@ -2,6 +2,10 @@ import axios from "axios";
 
 const API_BASE_URL = 'http://localhost:8080/api/class'
 
+const axiosInstance = axios.create({
+  maxRedirects: 0, // Don't follow redirects automatically
+});
+
 // Modified to handle the teacher ID association
 export const createClass = async (classData) => {
     try {
@@ -58,11 +62,9 @@ export const getAllClasses = async (header) => {
 
 export const deleteClass = async (id, header) => {
     try {
-        const response = await axios.delete(`${API_BASE_URL}/deleteClass/${id}`,
-            {
-                headers: header
-            }
-        );
+        const response = await axios.delete(`${API_BASE_URL}/deleteclass/${id}`, {
+            headers: header
+        });
         return response.data;
     } catch (error) {
         console.error("Error deleting class:", error);

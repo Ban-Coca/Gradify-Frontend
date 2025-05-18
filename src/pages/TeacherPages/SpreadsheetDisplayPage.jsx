@@ -2,7 +2,7 @@ import Layout from "@/components/layout"
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
-import { getSpreadsheetById } from "@/services/teacher/spreadsheetServices";
+import { getSpreadsheetById } from "@/services/teacher/spreadsheetservices";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SpreadsheetDisplayPage() {
