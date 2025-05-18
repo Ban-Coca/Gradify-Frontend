@@ -23,8 +23,8 @@ export default function SpreadsheetsPage() {
             setSelectedFile(file);
             console.log("Selected file:", file);
             toast.success(`File "${file.name}" selected`, {
-                duration: 2000,
-                position: 'top-center',
+                duration: 3000,
+                position: 'bottom-right',
                 icon: '📄',
             });
         }
@@ -118,13 +118,20 @@ export default function SpreadsheetsPage() {
             <div>
                 <Tabs defaultValue="upload" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="upload" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                        <TabsTrigger
+                            value="upload"
+                            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+                            >
                             Upload Spreadsheet
                         </TabsTrigger>
-                        <TabsTrigger value="link" className="w-full text-center duration-300 text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                        <TabsTrigger
+                            value="link"
+                            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+                            >
                             Link Spreadsheet
                         </TabsTrigger>
                     </TabsList>
+
 
                     <TabsContent value="upload" className="mt-4">
                         <div className="flex flex-col items-center justify-center bg-gray-300/40 rounded-sm p-4 h-full transition-all duration-300 ease-in-out hover:bg-gray-300/50">

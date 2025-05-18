@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter, Activity } from "lucide-react";
+import { 
+  ArrowLeft, Download, Upload, Edit, Users, FileText, 
+  BarChart, Search, UserPlus, Filter
+} from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
@@ -13,6 +16,8 @@ import { getClassById, updateClassById, getClassAverage, getStudentCount } from 
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
+import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
+
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -64,6 +69,18 @@ const ClassDetailPage = () => {
     } catch (error) {
       console.error("Error updating class:", error);
     }
+  };
+
+  const handleClassDeleted = (className) => {
+    // Navigate back to classes list after successful deletion
+    navigate("/classes", { 
+      state: { 
+        notification: {
+          type: "success",
+          message: `${className} has been successfully deleted.`
+        }
+      }
+    });
   };
 
   const formatDate = (dateString) => {
@@ -124,6 +141,12 @@ const ClassDetailPage = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Data
               </Button>
+              <DeleteClassConfirmation 
+                classId={id} 
+                className={classData?.className}
+                onClassDeleted={handleClassDeleted}
+                getAuthHeader={getAuthHeader}
+              />
             </div>
           </div>
 
