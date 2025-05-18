@@ -73,7 +73,7 @@ const ClassDetailPage = () => {
 
   const handleClassDeleted = (className) => {
     // Navigate back to classes list after successful deletion
-    navigate("/classes", { 
+    navigate("/teacher/classes", { 
       state: { 
         notification: {
           type: "success",
@@ -111,7 +111,7 @@ const ClassDetailPage = () => {
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/classes")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/teacher/classes")}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Classes
           </Button>

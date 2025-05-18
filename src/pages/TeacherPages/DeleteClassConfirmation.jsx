@@ -127,7 +127,6 @@ export default function DeleteClassConfirmation({ classId, className, onClassDel
       <Button 
         variant="destructive" 
         onClick={() => setOpen(true)}
-        size="sm"
       >
         <Trash2 className="h-4 w-4 mr-2" />
         Delete Class

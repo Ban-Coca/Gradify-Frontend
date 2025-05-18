@@ -104,9 +104,9 @@ function App() {
         <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
         <Route path="/teacher/spreadsheets" element={<SpreadsheetsPage />} />
         <Route path="/teacher/spreadsheets/display/:id" element={<SpreadsheetDisplayPage />} />
-        <Route path="/classes/:tab?" element={<ClassesPage />} />
-        <Route path="/classes/classdetail/:id?" element={<ClassDetailPage />} />    
-        <Route path="/reports" element={<ReportsPage/>} />      
+        <Route path="/teacher/classes/:tab?" element={<ClassesPage />} />
+        <Route path="/teacher/classes/classdetail/:id?" element={<ClassDetailPage />} />    
+        <Route path="/teacher/reports" element={<ReportsPage/>} />      
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>

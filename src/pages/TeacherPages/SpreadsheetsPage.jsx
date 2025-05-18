@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FolderOpen, Upload } from 'lucide-react';
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/authentication-context";
-import { uploadSpreadsheet } from "@/services/teacher/spreadsheetServices";
+import { uploadSpreadsheet } from "@/services/teacher/spreadsheetservices";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import toast from 'react-hot-toast';
