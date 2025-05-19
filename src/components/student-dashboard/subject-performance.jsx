@@ -96,8 +96,14 @@ export function SubjectPerformance() {
       <CardContent>
         <Tabs defaultValue="currentSemester">
           <TabsList className="mb-4">
-            <TabsTrigger value="currentSemester">Current Semester</TabsTrigger>
-            <TabsTrigger value="previousSemester">Previous Semester</TabsTrigger>
+            <TabsTrigger 
+              value="currentSemester"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              >Current Semester</TabsTrigger>
+            <TabsTrigger 
+              value="previousSemester"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              >Previous Semester</TabsTrigger>
           </TabsList>
           <TabsContent value="currentSemester">
             <div className="space-y-6">

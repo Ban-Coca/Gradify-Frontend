@@ -8,9 +8,12 @@ import { Progress } from "../../components/ui/progress"
 import { Input } from "../../components/ui/input"
 import { Search } from "lucide-react"
 
-export function CourseGrades({ courseId }) {
+export function CourseGrades({ classData }) {
   const [searchQuery, setSearchQuery] = useState("")
 
+  if (!classData) {
+    return <div>Class not found</div>
+  }
   // This would typically come from an API based on courseId
   const getCourseData = () => {
     const courses = {

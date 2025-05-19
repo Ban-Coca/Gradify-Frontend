@@ -11,10 +11,11 @@ export const metadata = {
 export default function FeedbackPage() {
   return (
     <Layout>
-        <DashboardShell>
-        <DashboardHeader heading="Feedback" text="Review teacher comments and suggestions on your work." />
+        <div className='bg-inherited p-2 rounded-lg mt-4 mb-4'>
+            <h1 className="text-xl md:text-2xl font-bold">Feedback</h1>
+            <p className="text-sm text-muted">Review teacher comments and suggestions on your work.</p>
+        </div>
         <FeedbackView />
-        </DashboardShell>
     </Layout>
   )
 }

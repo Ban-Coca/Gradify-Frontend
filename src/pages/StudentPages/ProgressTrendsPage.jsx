@@ -11,10 +11,11 @@ export const metadata = {
 export default function ProgressTrendsPage() {
   return (
     <Layout>
-        <DashboardShell>
-        <DashboardHeader heading="Progress Trends" text="Track your academic progress and identify improvement areas." />
+        <div className='bg-inherited p-2 rounded-lg mt-4 mb-4'>
+            <h1 className="text-xl md:text-2xl font-bold">Progress Trends</h1>
+            <p className="text-sm text-muted">Track your academic progress and identify improvement areas.</p>
+        </div>
         <ProgressView />
-        </DashboardShell>
     </Layout>
   )
 }
