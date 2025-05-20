@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { requestPasswordReset } from "@/services/authenticationService"
+import { requestPasswordReset } from "@/services/user/authenticationService"
 export function ForgotPasswordForm({
   className,
   ...props

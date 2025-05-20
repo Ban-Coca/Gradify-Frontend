@@ -15,10 +15,13 @@ import {
 import { getClassRoster } from "@/services/teacher/classServices"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/contexts/authentication-context"
+import { useNavigate } from "react-router-dom"
+
 export function StudentTable({ searchQuery, classId }) {
   const [sortColumn, setSortColumn] = useState(null)
   const [sortDirection, setSortDirection] = useState("asc")
-  const { getAuthHeader } = useAuth()
+  const { currentUser, getAuthHeader } = useAuth()
+  const navigate = useNavigate()
   const { 
     data: studentsData, 
     isLoading, 
@@ -28,9 +31,9 @@ export function StudentTable({ searchQuery, classId }) {
     queryFn: () => getClassRoster(classId, getAuthHeader()),
     enabled: !!classId,
     select: (data) => data.map(student => ({
-      id: student.studentId,
+      id: student.userId,
       name: student.studentName,
-      studentId: student.studentId,
+      studentId: student.studentNumber,
       grade: student.grade,
       // Fix the percentage formatting - divide by 100 if over 100
       percentage: parseFloat((student.percentage > 100 ? student.percentage/100 : student.percentage).toFixed(1)),
@@ -41,14 +44,13 @@ export function StudentTable({ searchQuery, classId }) {
         student.status,
     }))
   })
-  console.log(studentsData)
   // Filter students based on search query
   const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase()),
   ) : []
-
+  console.log(studentsData)
   // Sort students based on column and direction
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortColumn) return 0
@@ -152,17 +154,30 @@ export function StudentTable({ searchQuery, classId }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Eye className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem className="cursor-pointer" onClick={() =>
+                        navigate(`/teacher/student-details/${student.id}`)}>
+                        <Eye className="hover:text-white mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer">
-                        <MessageSquare className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem
+                        onClick={() => 
+                          navigate("/teacher/reports", { 
+                            state: { 
+                              studentId: student.id, 
+                              studentName: student.name, 
+                              classId: Number(classId), 
+                              teacherId: currentUser.userId 
+                            }
+                          })
+                        }
+                        className="cursor-pointer"
+                      >
+                        <MessageSquare className="hover:text-white mr-2 h-4 w-4" />
                         Send Feedback
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="cursor-pointer">
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="hover:text-white mr-2 h-4 w-4" />
                         Export Report
                       </DropdownMenuItem>
                     </DropdownMenuContent>

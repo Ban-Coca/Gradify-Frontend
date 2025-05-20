@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from "@/components/layout";
 import { Loading } from '@/components/loading-state';
-import { getSpreadsheetById } from '@/services/teacher/spreadsheetServices';
+import { getSpreadsheetById } from '@/services/teacher/spreadsheetservices';
 import { 
     Table, 
     TableBody, 
@@ -29,11 +29,9 @@ export default function DisplaySpreadsheetPage(){
             try {
                 setLoading(true);
                 const data = await getSpreadsheetById(id, getAuthHeader());
-                console.log('Fetched spreadsheet data:', data);
                 setSpreadsheet(data);
                 setLoading(false);
             } catch (err) {
-                console.error('Error fetching spreadsheet:', err);
                 setError('Failed to load spreadsheet data');
                 setLoading(false);
             }

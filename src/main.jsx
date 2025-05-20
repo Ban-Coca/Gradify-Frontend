@@ -5,15 +5,17 @@ import './index.css'
 import App from './App.jsx'
 import { AuthenticationProvider } from './contexts/authentication-context'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
+import { OnboardingProvider } from './contexts/onboarding-context'
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <AuthenticationProvider>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <OnboardingProvider> {/* <-- wrap here */}
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </OnboardingProvider>
     </AuthenticationProvider>
   </BrowserRouter>,
 )

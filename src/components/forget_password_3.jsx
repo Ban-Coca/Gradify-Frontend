@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { InputOTPPattern } from "./code_input"
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { resetPassword } from "@/services/authenticationService"
+import { resetPassword } from "@/services/user/authenticationService"
 
 export function PasswordResetForm({
   className,

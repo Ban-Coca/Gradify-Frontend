@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, Upload, Edit, Users, FileText, BarChart, Search, UserPlus, Filter, Activity } from "lucide-react";
+import { 
+  ArrowLeft, Download, Upload, Edit, Users, FileText, 
+  BarChart, Search, UserPlus, Filter
+} from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
@@ -13,6 +16,10 @@ import { getClassById, updateClassById, getClassAverage, getStudentCount } from 
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
+import { ReportsTab } from "@/components/reports-tab";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
+import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
+
 const ClassDetailPage = () => {
   const navigate = useNavigate()
   const { id } = useParams();
@@ -23,6 +30,8 @@ const ClassDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+
   
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
     queryKey: ["classAverage", id],
@@ -37,11 +46,17 @@ const ClassDetailPage = () => {
   })
 
   const average = parseFloat(classAverageData/100).toFixed(2)
+
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
         const response = await getClassById(id, getAuthHeader());
-        setClassData(response);
+        console.log("Class Details:", response);
+        setClassData({
+          ...response,
+          startTimeZone: response.startTimeZone || "AM",
+          endTimeZone: response.endTimeZone || "AM",
+        });
         console.log("Class Data:", classData);
       } catch (err) {
         console.error("Error fetching class details:", err);
@@ -54,14 +69,92 @@ const ClassDetailPage = () => {
     fetchClassDetails();
   }, [id]);
 
+  const openEditModal = () => {
+    setEditForm({ ...classData });
+    setIsModalOpen(true);
+  };
+
+  const allTimes = [];
+
+  for (let hour = 7; hour <= 22; hour++) {
+    for (let min = 0; min < 60; min += 30) {
+      if (hour === 22 && min > 0) continue;
+      const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+      let displayHour = hour % 12 === 0 ? 12 : hour % 12;
+      let ampm = hour < 12 ? "AM" : "PM";
+      const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
+      allTimes.push({ value, display, hour, min, ampm });
+    }
+  }
+  const getFilteredTimes = (zone) => {
+    if (zone === "AM") {
+      return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
+    } else {
+      return allTimes.filter(
+        t =>
+          t.ampm === "PM" &&
+          t.hour >= 12 &&
+          (t.hour < 22 || (t.hour === 22 && t.min === 0))
+      );
+    }
+  };
+
+  // Helper for days
+  const handleEditDaysChange = (e) => {
+    const { value, checked } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
+    }));
+  };
+
+  const handleEditSelectChange = (name, value) => {
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Helper for schedule string
+  const getEditScheduleString = () => {
+    if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
+    const days = editForm.days.map(d => d.slice(0, 3)).join("/");
+    const formatTime = (t) => {
+      const [h, m] = t.split(":");
+      const hour = ((+h + 11) % 12) + 1;
+      return `${hour}:${m}`;
+    };
+    if (editForm.startTimeZone === editForm.endTimeZone) {
+      return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
+    }
+    return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
+  };
+
+
   const handleUpdateClass = async () => {
     try {
-      const response = await updateClassById(id, classData, getAuthHeader);
+      const updatedData = {
+        ...editForm,
+        schedule: getEditScheduleString(),
+      };
+      const header = getAuthHeader();
+      console.log("Header in handleUpdateClass", header);
+      const response = await updateClassById(id, updatedData, header);
       console.log("Class updated successfully:", response);
+      setClassData(editForm);
       toggleModal();
     } catch (error) {
       console.error("Error updating class:", error);
     }
+  };
+
+  const handleClassDeleted = (className) => {
+    // Navigate back to classes list after successful deletion
+    navigate("/teacher/classes", { 
+      state: { 
+        notification: {
+          type: "success",
+          message: `${className} has been successfully deleted.`
+        }
+      }
+    });
   };
 
   const formatDate = (dateString) => {
@@ -92,7 +185,7 @@ const ClassDetailPage = () => {
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/classes")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/teacher/classes")}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Classes
           </Button>
@@ -104,17 +197,17 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} semester
+                {classData.semester} - {classData.schedule} - {classData.room}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
               <GradingSchemeModal
                 open={gradingSchemeModal}
                 onOpenChange={setGradingSchemeModal}
                 classId={id}
                 //initialData = {classData.gradingScheme}
                 />
-              <Button variant="outline" onClick={toggleModal}>
+              <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
               </Button>
@@ -122,6 +215,11 @@ const ClassDetailPage = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Data
               </Button>
+              <DeleteClassConfirmation 
+                classId={id} 
+                className={classData?.className}
+                onClassDeleted={handleClassDeleted}
+              />
             </div>
           </div>
 
@@ -155,73 +253,66 @@ const ClassDetailPage = () => {
         </div>
 
         {/* Modal */}
-        {isModalOpen && (
-          <div
-            className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
-            onClick={(e) => {
-              // Close the modal if the user clicks outside the modal content
-              if (e.target === e.currentTarget) {
-                toggleModal();
-              }
-            }}
-          >
-            <div className="bg-white w-1/3 h-full shadow-lg p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Edit Class</h2>
-                <Button variant="ghost" onClick={toggleModal}>
-                  Close
-                </Button>
+        <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle>Edit Class</SheetTitle>
+              <SheetDescription>Make changes to your class information.</SheetDescription>
+            </SheetHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleUpdateClass()
+              }}
+              className="space-y-4 p-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Class Name</label>
+                <input
+                  type="text"
+                  value={classData.className}
+                  onChange={(e) => setClassData({ ...classData, className: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdateClass();
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Class Name</label>
-                  <input
-                    type="text"
-                    value={classData.className}
-                    onChange={(e) => setClassData({ ...classData, className: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
-                  <input
-                    type="text"
-                    value={classData.semester}
-                    onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Schedule</label>
-                  <input
-                    type="text"
-                    value={classData.schedule}
-                    onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Room</label>
-                  <input
-                    type="text"
-                    value={classData.room}
-                    onChange={(e) => setClassData({ ...classData, room: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <Button type="submit" className="w-full mt-4">
-                  Save Changes
-                </Button>
-              </form>
-            </div>
-          </div>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <input
+                  type="text"
+                  value={classData.semester}
+                  onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Schedule</label>
+                <input
+                  type="text"
+                  value={classData.schedule}
+                  onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Room</label>
+                <input
+                  type="text"
+                  value={classData.room}
+                  onChange={(e) => setClassData({ ...classData, room: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <SheetClose asChild>
+                  <Button variant="outline" type="button">
+                    Cancel
+                  </Button>
+                </SheetClose>
+                <Button type="submit">Save Changes</Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
 
         {/* Main Content Tabs */}
         <Card className="mb-5">
@@ -313,84 +404,7 @@ const ClassDetailPage = () => {
 
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Performance Reports</CardTitle>
-                      <CardDescription>Generate student performance reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Individual Student Reports</p>
-                              <p className="text-sm text-gray-500">Generate reports for each student</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <BarChart className="h-5 w-5 text-green-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Class Summary Report</p>
-                              <p className="text-sm text-gray-500">Overall class performance</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <Users className="h-5 w-5 text-purple-600 mr-3" />
-                            <div>
-                              <p className="font-medium">At-Risk Students Report</p>
-                              <p className="text-sm text-gray-500">Identify students needing help</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Recent Reports</CardTitle>
-                      <CardDescription>Previously generated reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Midterm Performance Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 15, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Monthly Progress Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 1, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ReportsTab classId={id}/>
                 </div>
               </TabsContent>
             </Tabs>
