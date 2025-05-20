@@ -7,7 +7,7 @@ import { GPASection } from "./gpa-section"
 import { Badge } from "../../components/ui/badge"
 import { useAuth } from "@/contexts/authentication-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import { getStudentClasses, getStudentCourseTableData } from "@/services/student/classStudentService"
+import { getCalculatedGrade, getStudentClasses, getStudentCourseTableData, getSchemesByClass, getTeacherByClass } from "@/services/student/studentService"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export function GradesView() {
@@ -16,13 +16,19 @@ export function GradesView() {
   const [selectedPeriod, setSelectedPeriod] = useState("current")
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [schemeLoading, setSchemeLoading] = useState(true)
+  const [teacherLoading, setTeacherLoading] = useState(true)
   const { currentUser, getAuthHeader } = useAuth()
   const studentId = currentUser?.userId;
   const [error, setError] = useState(null)
-  const [tableData, setTableData] = useState([])
+  const [tableData, setTableData] = useState({})
   const [gradesLoading, setGradesLoading] = useState(false)
   const [gradesError, setGradesError] = useState(null)
+  const [scheme, setScheme] = useState([])
+  const [teacher, setTeacher] = useState(null)
+  const [calculatedGrade, setCalculatedGrade] = useState(null);
 
+  // Fetch classes
   useEffect(() => {
     async function loadClasses() {
       setLoading(true);
@@ -40,7 +46,6 @@ export function GradesView() {
             lastUpdated: cls.updatedAt ? new Date(cls.updatedAt).toLocaleDateString() : "",
           }))
         );
-        console.log("Classes data:", data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -50,7 +55,7 @@ export function GradesView() {
     if (studentId) loadClasses();
   }, [studentId, getAuthHeader]);
 
-  // Fetch table data when a class is selected
+  // Fetch table data (grades) when a class is selected
   useEffect(() => {
     async function loadTableData() {
       if (!selectedClass) return;
@@ -59,8 +64,7 @@ export function GradesView() {
       try {
         const header = getAuthHeader ? getAuthHeader() : {};
         const data = await getStudentCourseTableData(studentId, selectedClass, header);
-        setTableData(data && typeof data === "object" ? data : {}); // <-- store as object
-        console.log("Table data:", data);
+        setTableData(data && typeof data === "object" ? data : {});
       } catch (err) {
         setTableData({});
         setGradesError(err.message);
@@ -71,6 +75,63 @@ export function GradesView() {
     if (selectedClass) loadTableData();
   }, [selectedClass, studentId, getAuthHeader]);
 
+  // Fetch teacher info
+  useEffect(() => {
+    async function fetchTeacher() {
+      if (!selectedClass) return;
+      setTeacherLoading(true)
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getTeacherByClass(selectedClass, header)
+        console.log("Teacher data:", data)
+        setTeacher(data)
+      } catch {
+        setTeacher(null)
+      } finally {
+        setTeacherLoading(false)
+      }
+    }
+    if (selectedClass) fetchTeacher();
+  }, [selectedClass, getAuthHeader]);
+
+  // Fetch grading scheme
+  useEffect(() => {
+    async function fetchScheme() {
+      if (!selectedClass) return;
+      setSchemeLoading(true)
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getSchemesByClass(selectedClass, header)
+        console.log("Scheme data:", data)
+        setScheme(Array.isArray(data) ? data : [])
+      } catch {
+        setScheme([])
+      } finally {
+        setSchemeLoading(false)
+      }
+    }
+    if (selectedClass) fetchScheme();
+  }, [selectedClass, getAuthHeader]);
+
+  // Fetch calculated grade
+  useEffect(() => {
+    async function fetchCalculatedGrade() {
+      if (!selectedClass) return;
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        let grade = await getCalculatedGrade(studentId, selectedClass, header);
+        // Apply your condition and formatting
+        grade = parseFloat(
+          (grade > 100 ? grade / 100 : grade).toFixed(1)
+        );
+        setCalculatedGrade(grade);
+        console.log("Calculated grade:", grade);
+      } catch {
+        setCalculatedGrade(null);
+      }
+    }
+    if (selectedClass) fetchCalculatedGrade();
+  }, [selectedClass, studentId, getAuthHeader]);
 
   const periods = [
     { id: "current", name: "Current Semester" },
@@ -78,7 +139,7 @@ export function GradesView() {
   ]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-6">
       <Card>
         <CardHeader>
           <CardTitle>Your Classes</CardTitle>
@@ -114,16 +175,6 @@ export function GradesView() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export All Grades
-              </Button>
-              <Button variant="outline" size="icon">
-                <FileText className="h-4 w-4" />
-                <span className="sr-only">Print grades</span>
-              </Button>
-            </div>
           </div>
 
           <Tabs defaultValue="classes" className="w-full">
@@ -149,20 +200,20 @@ export function GradesView() {
                   .map((cls) => (
                     <Card
                       key={cls.id}
-                      className="cursor-pointer hover:bg-accent/50 transition-colors"
+                      className="group cursor-pointer transition-colors hover:bg-[#198754]/10"
                       onClick={() => setSelectedClass(cls.id)}
                     >
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-medium">
+                            <h3 className="text-lg font-medium group-hover:text-[#198754] transition-colors">
                               {cls.className} - {cls.section} - {cls.room || "No Room"}
                             </h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground group-hover:text-[#198754] transition-colors">
                               {cls.schedule || "No Schedule"}
                             </p>
                           </div>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" className="group-hover:text-[#198754] transition-colors">
                             View Grades
                           </Button>
                         </div>
@@ -263,46 +314,91 @@ export function GradesView() {
               </Button>
             </div>
           </div>
-          {/* Table Data */}
           <Card>
             <CardHeader>
-              <CardTitle>Class Grade Table</CardTitle>
+              <CardTitle className="flex justify-between items-center">
+                <span>
+                  {(classes.find(cls => cls.id === selectedClass)?.className) || "Class"}
+                </span>
+                <span className="text-base font-normal text-muted-foreground ml-4">
+                  Final Grade: <span className="font-semibold text-black">
+                    {calculatedGrade !== null ? calculatedGrade : "N/A"}%
+                  </span>
+                </span>
+              </CardTitle>
               <CardDescription>
-                {gradesLoading
-                  ? "Loading grades..."
-                  : gradesError
-                  ? `Error: ${gradesError}`
-                  : tableData.length === 0
-                  ? "No grade data found for this class."
-                  : "Your grade details for this class:"}
+                Instructor:{" "}
+                {teacherLoading
+                  ? "Loading..."
+                  : teacher
+                  ? teacher
+                  : "N/A"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {!gradesLoading && !gradesError && Object.keys(tableData).length > 0 && (
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className="text-left p-2">Student Number</th>
-                      <th className="text-left p-2">Last Name</th>
-                      <th className="text-left p-2">First Name</th>
-                      <th className="text-left p-2">Q1</th>
-                      <th className="text-left p-2">Q2</th>
-                      <th className="text-left p-2">ME</th>
-                      <th className="text-left p-2">FE</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="p-2">{tableData["Student Number"] || "N/A"}</td>
-                      <td className="p-2">{tableData["Last Name"] || "N/A"}</td>
-                      <td className="p-2">{tableData["First Name"] || "N/A"}</td>
-                      <td className="p-2">{tableData["Q1"] || "N/A"}</td>
-                      <td className="p-2">{tableData["Q2"] || "N/A"}</td>
-                      <td className="p-2">{tableData["ME"] || "N/A"}</td>
-                      <td className="p-2">{tableData["FE"] || "N/A"}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {gradesLoading ? (
+                <div>Loading grades...</div>
+              ) : Object.keys(tableData).length === 0 ? (
+                <div>No grade data found for this class.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Midterm Card */}
+                  <Card className="bg-blue-50">
+                    <CardHeader>
+                      <CardTitle>Midterm Grades</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-2">
+                        <span className="font-semibold">Q1:</span>{" "}
+                        {tableData["Q1"] || "N/A"}
+                      </div>
+                      <div className="mb-2">
+                        <span className="font-semibold">Q2:</span>{" "}
+                        {tableData["Q2"] || "N/A"}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Midterm Exam (ME):</span>{" "}
+                        {tableData["ME"] || "N/A"}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  {/* Finals Card */}
+                  <Card className="bg-green-50">
+                    <CardHeader>
+                      <CardTitle>Final Grades</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-2">
+                        <span className="font-semibold">Final Exam (FE):</span>{" "}
+                        {tableData["FE"] || "N/A"}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  {/* Grade Scheme Card */}
+                  <Card className="col-span-1 md:col-span-2 bg-gray-50">
+                    <CardHeader>
+                      <CardTitle>Grade Scheme</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {schemeLoading ? (
+                        <div>Loading scheme...</div>
+                      ) : scheme && Array.isArray(scheme) && scheme.length > 0 ? (
+                        <div className="flex flex-row gap-4">
+                          {scheme.map((item, idx) => (
+                            <Card key={item.id || idx} className="flex-1 min-w-[150px] bg-white border border-gray-200 shadow-sm">
+                              <CardContent className="p-4 text-center">
+                                <div className="font-semibold text-lg">{item.name}</div>
+                                <div className="text-2xl font-bold mt-2">{item.weight ? `${item.weight}%` : "N/A"}</div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div>No grading scheme found for this class.</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               )}
             </CardContent>
           </Card>
