@@ -37,7 +37,8 @@ export function FeedbackView() {
       date: "2023-10-15",
       status: "unread",
       teacher: {
-        name: "Dr. Smith",
+        firstName: "Dr. John",
+        lastName: "Smith",
         avatar: "/placeholder.svg?height=40&width=40",
       },
       content: `
@@ -75,7 +76,8 @@ export function FeedbackView() {
       date: "2023-10-08",
       status: "read",
       teacher: {
-        name: "Dr. Smith",
+        firstName: "Dr. Jane",
+        lastName: "Doe",
         avatar: "/placeholder.svg?height=40&width=40",
       },
       content: `
@@ -109,7 +111,8 @@ export function FeedbackView() {
       date: "2023-10-10",
       status: "read",
       teacher: {
-        name: "Prof. Johnson",
+        firstName: "Prof. John",
+        lastName: "Doe",
         avatar: "/placeholder.svg?height=40&width=40",
       },
       content: `
@@ -144,7 +147,8 @@ export function FeedbackView() {
       date: "2023-10-05",
       status: "unread",
       teacher: {
-        name: "Ms. Davis",
+        firstName: "Dr. Alice",
+        lastName: "Green",
         avatar: "/placeholder.svg?height=40&width=40",
       },
       content: `
@@ -182,7 +186,8 @@ export function FeedbackView() {
       date: "2023-10-01",
       status: "read",
       teacher: {
-        name: "Dr. Wilson",
+        firstName: "Dr. James",
+        lastName: "Brown",
         avatar: "/placeholder.svg?height=40&width=40",
       },
       content: `
@@ -224,6 +229,12 @@ export function FeedbackView() {
       ],
     },
   ]
+
+  // Get user initials for avatar fallback
+  const getUserInitials = (currentUser) => {
+    if (!currentUser?.firstName && !currentUser?.lastName) return "U"
+    return `${currentUser?.firstName?.charAt(0) || ""}${currentUser?.lastName?.charAt(0) || ""}`
+  }
 
   // Filter feedback based on course selection, status, and search query
   const filteredFeedback = feedbackItems.filter((feedback) => {
@@ -284,7 +295,7 @@ export function FeedbackView() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-8">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px]">
@@ -303,38 +314,8 @@ export function FeedbackView() {
             onClick={() => setShowFilters(!showFilters)}
             className={showFilters ? "bg-muted" : ""}
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-4 w-4 " />
             <span className="sr-only">Filter</span>
-          </Button>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant={statusFilter === "all" ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setStatusFilter("all")}
-            >
-              All
-            </Badge>
-            <Badge
-              variant={statusFilter === "unread" ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setStatusFilter("unread")}
-            >
-              Unread
-            </Badge>
-            <Badge
-              variant={statusFilter === "read" ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => setStatusFilter("read")}
-            >
-              Read
-            </Badge>
-          </div>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Feedback
           </Button>
         </div>
 
@@ -387,12 +368,6 @@ export function FeedbackView() {
               <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedCourse("all")} />
             </Badge>
           )}
-          {statusFilter !== "all" && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {statusFilter === "unread" ? "Unread" : "Read"}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setStatusFilter("all")} />
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -405,297 +380,74 @@ export function FeedbackView() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="all" className="mb-4">
-              <TabsList className="w-full grid grid-cols-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="assignments">Assignments</TabsTrigger>
-                <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
-                <TabsTrigger value="exams">Exams</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="all" className="mt-4">
-                <div className="space-y-4">
-                  {filteredFeedback.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No feedback found matching your filters.
-                    </div>
-                  ) : (
-                    filteredFeedback.map((feedback) => (
-                      <div
-                        key={feedback.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                          selectedFeedback === feedback.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                        }`}
-                        onClick={() => setSelectedFeedback(feedback.id)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage
-                                src={feedback.teacher.avatar || "/placeholder.svg"}
-                                alt={feedback.teacher.name}
-                              />
-                              <AvatarFallback>{feedback.teacher.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{feedback.teacher.name}</div>
-                              <div className="text-xs text-muted-foreground">{formatDate(feedback.date)}</div>
-                            </div>
+            <div className="space-y-4">
+              {filteredFeedback.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No feedback found matching your filters.
+                </div>
+              ) : (
+                filteredFeedback.map((feedback) => (
+                  <div
+                    key={feedback.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                      selectedFeedback === feedback.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedFeedback(feedback.id)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={feedback.teacher?.profileImage} alt={feedback.teacher?.firstName} />
+                          <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials(feedback.teacher)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="text-sm font-medium">
+                            {feedback.teacher.firstName} {feedback.teacher.lastName}
                           </div>
-                          <Badge variant={feedback.status === "unread" ? "default" : "outline"}>
-                            {feedback.status === "unread" ? "Unread" : "Read"}
-                          </Badge>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="font-medium">{feedback.title}</div>
-                          <div className="text-sm text-muted-foreground">{feedback.course}</div>
-                          <Badge variant="secondary">{feedback.category}</Badge>
+                          <div className="text-xs text-muted-foreground">{formatDate(feedback.date)}</div>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="assignments" className="mt-4">
-                <div className="space-y-4">
-                  {filteredFeedback.filter((f) => f.category === "Assignment").length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No assignment feedback found.</div>
-                  ) : (
-                    filteredFeedback
-                      .filter((f) => f.category === "Assignment")
-                      .map((feedback) => (
-                        <div
-                          key={feedback.id}
-                          className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                            selectedFeedback === feedback.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                          }`}
-                          onClick={() => setSelectedFeedback(feedback.id)}
-                        >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage
-                                  src={feedback.teacher.avatar || "/placeholder.svg"}
-                                  alt={feedback.teacher.name}
-                                />
-                                <AvatarFallback>{feedback.teacher.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{feedback.teacher.name}</div>
-                                <div className="text-xs text-muted-foreground">{formatDate(feedback.date)}</div>
-                              </div>
-                            </div>
-                            <Badge variant={feedback.status === "unread" ? "default" : "outline"}>
-                              {feedback.status === "unread" ? "Unread" : "Read"}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1">
-                            <div className="font-medium">{feedback.title}</div>
-                            <div className="text-sm text-muted-foreground">{feedback.course}</div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="quizzes" className="mt-4">
-                <div className="space-y-4">
-                  {filteredFeedback.filter((f) => f.category === "Quiz").length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No quiz feedback found.</div>
-                  ) : (
-                    filteredFeedback
-                      .filter((f) => f.category === "Quiz")
-                      .map((feedback) => (
-                        <div
-                          key={feedback.id}
-                          className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                            selectedFeedback === feedback.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                          }`}
-                          onClick={() => setSelectedFeedback(feedback.id)}
-                        >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage
-                                  src={feedback.teacher.avatar || "/placeholder.svg"}
-                                  alt={feedback.teacher.name}
-                                />
-                                <AvatarFallback>{feedback.teacher.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{feedback.teacher.name}</div>
-                                <div className="text-xs text-muted-foreground">{formatDate(feedback.date)}</div>
-                              </div>
-                            </div>
-                            <Badge variant={feedback.status === "unread" ? "default" : "outline"}>
-                              {feedback.status === "unread" ? "Unread" : "Read"}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1">
-                            <div className="font-medium">{feedback.title}</div>
-                            <div className="text-sm text-muted-foreground">{feedback.course}</div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="exams" className="mt-4">
-                <div className="space-y-4">
-                  {filteredFeedback.filter((f) => f.category === "Exam").length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">No exam feedback found.</div>
-                  ) : (
-                    filteredFeedback
-                      .filter((f) => f.category === "Exam")
-                      .map((feedback) => (
-                        <div
-                          key={feedback.id}
-                          className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                            selectedFeedback === feedback.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                          }`}
-                          onClick={() => setSelectedFeedback(feedback.id)}
-                        >
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage
-                                  src={feedback.teacher.avatar || "/placeholder.svg"}
-                                  alt={feedback.teacher.name}
-                                />
-                                <AvatarFallback>{feedback.teacher.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{feedback.teacher.name}</div>
-                                <div className="text-xs text-muted-foreground">{formatDate(feedback.date)}</div>
-                              </div>
-                            </div>
-                            <Badge variant={feedback.status === "unread" ? "default" : "outline"}>
-                              {feedback.status === "unread" ? "Unread" : "Read"}
-                            </Badge>
-                          </div>
-                          <div className="space-y-1">
-                            <div className="font-medium">{feedback.title}</div>
-                            <div className="text-sm text-muted-foreground">{feedback.course}</div>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="font-medium">{feedback.title}</div>
+                      <div className="text-sm text-muted-foreground">{feedback.course}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="h-[600px] overflow-auto">
           {selectedFeedbackDetails ? (
-            <CardContent className="p-6">
+            <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium">{selectedFeedbackDetails.title}</h3>
-                  <Badge variant={selectedFeedbackDetails.status === "unread" ? "default" : "outline"}>
-                    {selectedFeedbackDetails.status === "unread" ? "Unread" : "Read"}
-                  </Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={selectedFeedbackDetails.teacher.avatar || "/placeholder.svg"}
-                      alt={selectedFeedbackDetails.teacher.name}
-                    />
-                    <AvatarFallback>{selectedFeedbackDetails.teacher.name.charAt(0)}</AvatarFallback>
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={selectedFeedbackDetails.teacher.avatar} alt={selectedFeedbackDetails.teacher.firstName} />
+                    <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials(selectedFeedbackDetails.teacher)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="text-sm font-medium">{selectedFeedbackDetails.teacher.name}</div>
+                    <div className="text-sm font-medium">
+                      {selectedFeedbackDetails.teacher.firstName} {selectedFeedbackDetails.teacher.lastName}
+                    </div>
                     <div className="text-xs text-muted-foreground">{formatDate(selectedFeedbackDetails.date)}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{selectedFeedbackDetails.course}</Badge>
-                  <Badge variant="secondary">{selectedFeedbackDetails.category}</Badge>
                 </div>
 
                 <div
                   className="prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: selectedFeedbackDetails.content }}
                 />
-
-                {selectedFeedbackDetails.attachments && selectedFeedbackDetails.attachments.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="text-sm font-medium mb-2">Attachments</h4>
-                    <div className="space-y-2">
-                      {selectedFeedbackDetails.attachments.map((attachment, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 border rounded-md">
-                          <div className="flex items-center gap-2">
-                            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{attachment.name}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{attachment.size}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Previous replies */}
-                {selectedFeedbackDetails.replies && selectedFeedbackDetails.replies.length > 0 && (
-                  <div className="mt-6">
-                    <h4 className="text-sm font-medium mb-2">Conversation</h4>
-                    <div className="space-y-3">
-                      {selectedFeedbackDetails.replies.map((reply, index) => (
-                        <div
-                          key={index}
-                          className={`p-3 rounded-lg ${
-                            reply.sender === "student" ? "bg-primary/10 ml-8" : "bg-muted mr-8"
-                          }`}
-                        >
-                          <div className="text-xs text-muted-foreground mb-1">
-                            {reply.sender === "student" ? "You" : selectedFeedbackDetails.teacher.name} •{" "}
-                            {formatDate(reply.date)}
-                          </div>
-                          <div className="text-sm">{reply.content}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Reply form */}
-                {replyMode ? (
-                  <div className="mt-4 space-y-2">
-                    <Textarea
-                      placeholder="Type your reply here..."
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      className="min-h-[100px]"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setReplyMode(false)}>
-                        Cancel
-                      </Button>
-                      <Button size="sm" onClick={handleSendReply}>
-                        Send Reply
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex gap-2 mt-4">
-                    {selectedFeedbackDetails.status === "unread" && (
-                      <Button className="flex-1" variant="outline" onClick={handleMarkAsRead}>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Mark as Read
-                      </Button>
-                    )}
-                    <Button className="flex-1" variant="outline" onClick={() => setReplyMode(true)}>
-                      <Reply className="h-4 w-4 mr-2" />
-                      Reply
-                    </Button>
-                  </div>
-                )}
               </div>
             </CardContent>
           ) : (

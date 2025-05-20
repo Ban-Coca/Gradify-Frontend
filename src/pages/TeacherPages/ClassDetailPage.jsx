@@ -30,6 +30,8 @@ const ClassDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+
   
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
     queryKey: ["classAverage", id],
@@ -50,7 +52,11 @@ const ClassDetailPage = () => {
       try {
         const response = await getClassById(id, getAuthHeader());
         console.log("Class Details:", response);
-        setClassData(response);
+        setClassData({
+          ...response,
+          startTimeZone: response.startTimeZone || "AM",
+          endTimeZone: response.endTimeZone || "AM",
+        });
         console.log("Class Data:", classData);
       } catch (err) {
         console.error("Error fetching class details:", err);
@@ -63,10 +69,76 @@ const ClassDetailPage = () => {
     fetchClassDetails();
   }, [id]);
 
+  const openEditModal = () => {
+    setEditForm({ ...classData });
+    setIsModalOpen(true);
+  };
+
+  const allTimes = [];
+
+  for (let hour = 7; hour <= 22; hour++) {
+    for (let min = 0; min < 60; min += 30) {
+      if (hour === 22 && min > 0) continue;
+      const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+      let displayHour = hour % 12 === 0 ? 12 : hour % 12;
+      let ampm = hour < 12 ? "AM" : "PM";
+      const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
+      allTimes.push({ value, display, hour, min, ampm });
+    }
+  }
+  const getFilteredTimes = (zone) => {
+    if (zone === "AM") {
+      return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
+    } else {
+      return allTimes.filter(
+        t =>
+          t.ampm === "PM" &&
+          t.hour >= 12 &&
+          (t.hour < 22 || (t.hour === 22 && t.min === 0))
+      );
+    }
+  };
+
+  // Helper for days
+  const handleEditDaysChange = (e) => {
+    const { value, checked } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
+    }));
+  };
+
+  const handleEditSelectChange = (name, value) => {
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Helper for schedule string
+  const getEditScheduleString = () => {
+    if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
+    const days = editForm.days.map(d => d.slice(0, 3)).join("/");
+    const formatTime = (t) => {
+      const [h, m] = t.split(":");
+      const hour = ((+h + 11) % 12) + 1;
+      return `${hour}:${m}`;
+    };
+    if (editForm.startTimeZone === editForm.endTimeZone) {
+      return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
+    }
+    return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
+  };
+
+
   const handleUpdateClass = async () => {
     try {
-      const response = await updateClassById(id, classData, getAuthHeader);
+      const updatedData = {
+        ...editForm,
+        schedule: getEditScheduleString(),
+      };
+      const header = getAuthHeader();
+      console.log("Header in handleUpdateClass", header);
+      const response = await updateClassById(id, updatedData, header);
       console.log("Class updated successfully:", response);
+      setClassData(editForm);
       toggleModal();
     } catch (error) {
       console.error("Error updating class:", error);
@@ -125,7 +197,7 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} semester
+                {classData.semester} - {classData.schedule} - {classData.room}
               </p>
             </div>
             <div className="flex flex-col md:flex-row gap-2">
@@ -135,7 +207,7 @@ const ClassDetailPage = () => {
                 classId={id}
                 //initialData = {classData.gradingScheme}
                 />
-              <Button variant="outline" onClick={toggleModal}>
+              <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
               </Button>

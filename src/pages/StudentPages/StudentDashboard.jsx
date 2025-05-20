@@ -17,8 +17,8 @@ export const metadata = {
 const StudentDashboard = () => {
   return (
     <Layout>
-      <DashboardShell>
       <DashboardHeader heading="Dashboard" text="Welcome back! Here's an overview of your academic performance." />
+      <DashboardShell>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <GradeOverview />
         <UpcomingAssignments />

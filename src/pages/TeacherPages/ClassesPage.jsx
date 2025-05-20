@@ -60,14 +60,20 @@
     
           // Categorize classes into current and past
           const categorizedClasses = allClasses.map((classItem) => {
-            const { semester } = classItem; // Assuming classItem has `semester` and `year` fields
+            const { semester } = classItem;
             let schoolYear = classItem.schoolYear;
+            // Ensure schedule and room are always present
+            const safeClassItem = {
+              ...classItem,
+              schedule: classItem.schedule || "",
+              room: classItem.room || "",
+            };
             if (semester === currentSemester && schoolYear === currentYear.toString()) {
-              return { ...classItem, category: "current" };
+              return { ...safeClassItem, category: "current" };
             } else if (parseInt(schoolYear) < currentYear || (schoolYear === currentYear.toString() && semester !== currentSemester)) {
-              return { ...classItem, category: "past" };
+              return { ...safeClassItem, category: "past" };
             } else {
-              return { ...classItem, category: "all" };
+              return { ...safeClassItem, category: "all" };
             }
           });
     
@@ -163,10 +169,10 @@
       <Layout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="mt-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Your Classes</h1>
-              <p className="text-gray-500">Manage your class rosters, grades, and engagement</p>
+          <div className="mt-5 flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="p-2">
+              <h1 className="text-xl md:text-2xl font-bold">Your Classes</h1>
+              <p className="text-sm text-muted">Manage your class rosters, grades, and engagement</p>
             </div>
             <div className="flex gap-2">
               <Button className="cursor-pointer" onClick={() => setIsNewClassModalOpen(true)}>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
+import logo from "@/assets/gradifyLogo.svg"; 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -76,8 +77,8 @@ export default function TeacherOnboarding() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
       <Link href="/" className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white">
-          G
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
+          <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
         <span className="text-xl font-semibold text-gray-900">Gradify</span>
       </Link>
@@ -89,7 +90,7 @@ export default function TeacherOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>

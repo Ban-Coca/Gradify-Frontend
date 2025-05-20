@@ -1,5 +1,5 @@
 import { Calendar, LineChart, FileSpreadsheet, Inbox, Folder, LayoutDashboard, ClipboardList } from "lucide-react";
-
+import { Link } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -110,10 +110,10 @@ export default function AppSidebar() {
                   isActive={isActive(item.url)}
                   asChild
                 >
-                  <a href={Array.isArray(item.url) ? item.url[0] : item.url} className="gap-4">
+                  <Link to={Array.isArray(item.url) ? item.url[0] : item.url} className="gap-4">
                     <item.icon />
                     <span>{item.title}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

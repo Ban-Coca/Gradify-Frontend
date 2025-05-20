@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
+import logo from "@/assets/gradifyLogo.svg";
 import { updateUserRole } from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
 
@@ -20,8 +21,10 @@ export default function RoleSelection() {
 
   const handleContinue = async () => {
     if (selectedRole === "teacher") {
+      console.log("Updated formData:",formData);
       navigate("/onboarding/teacher");
     } else if (selectedRole === "student") {
+      console.log("Updated formData:",formData);
       navigate("/onboarding/student");
     }
   };
@@ -29,8 +32,8 @@ export default function RoleSelection() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
       <Link href="/" className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white">
-          G
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
+         <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
         <span className="text-xl font-semibold text-gray-900">Gradify</span>
       </Link>

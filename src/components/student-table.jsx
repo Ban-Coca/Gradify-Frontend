@@ -50,7 +50,7 @@ export function StudentTable({ searchQuery, classId }) {
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase()),
   ) : []
-
+  console.log(studentsData)
   // Sort students based on column and direction
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortColumn) return 0
