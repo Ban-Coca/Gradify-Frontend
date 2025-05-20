@@ -29,10 +29,6 @@ export const getSpreadsheetById = async (id, header) => {
     }
     
     try {
-        // Note: We're not using formData for a GET request
-        console.log(`Making GET request to: ${API_BASE_URL}/get/${id}`);
-        console.log("Headers:", header);
-        
         const response = await axios.get(`${API_BASE_URL}/get/${id}`, {
             headers: {
                 "Content-Type": "application/json",

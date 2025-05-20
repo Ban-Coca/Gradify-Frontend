@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { useAuth} from "@/contexts/authentication-context"
 import { loginUser, googleLogin, microsoftLogin} from "@/services/user/authenticationService"
+import { Link } from "react-router-dom"
 export function LoginForm({
   className,
   ...props
@@ -148,9 +149,9 @@ export function LoginForm({
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
-        <a href="/signup" className="underline underline-offset-4">
+        <Link to="/signup" className="underline underline-offset-4">
           Sign up
-        </a>
+        </Link>
       </div>
     </form>)
   );

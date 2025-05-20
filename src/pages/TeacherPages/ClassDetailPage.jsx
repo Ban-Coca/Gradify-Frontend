@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
 import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
 
 const ClassDetailPage = () => {
@@ -127,7 +128,7 @@ const ClassDetailPage = () => {
                 {classData.semester} semester
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
               <GradingSchemeModal
                 open={gradingSchemeModal}
                 onOpenChange={setGradingSchemeModal}
@@ -146,7 +147,6 @@ const ClassDetailPage = () => {
                 classId={id} 
                 className={classData?.className}
                 onClassDeleted={handleClassDeleted}
-                getAuthHeader={getAuthHeader}
               />
             </div>
           </div>
@@ -181,73 +181,66 @@ const ClassDetailPage = () => {
         </div>
 
         {/* Modal */}
-        {isModalOpen && (
-          <div
-            className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
-            onClick={(e) => {
-              // Close the modal if the user clicks outside the modal content
-              if (e.target === e.currentTarget) {
-                toggleModal();
-              }
-            }}
-          >
-            <div className="bg-white w-1/3 h-full shadow-lg p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Edit Class</h2>
-                <Button variant="ghost" onClick={toggleModal}>
-                  Close
-                </Button>
+        <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle>Edit Class</SheetTitle>
+              <SheetDescription>Make changes to your class information.</SheetDescription>
+            </SheetHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleUpdateClass()
+              }}
+              className="space-y-4 p-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Class Name</label>
+                <input
+                  type="text"
+                  value={classData.className}
+                  onChange={(e) => setClassData({ ...classData, className: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdateClass();
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Class Name</label>
-                  <input
-                    type="text"
-                    value={classData.className}
-                    onChange={(e) => setClassData({ ...classData, className: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
-                  <input
-                    type="text"
-                    value={classData.semester}
-                    onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Schedule</label>
-                  <input
-                    type="text"
-                    value={classData.schedule}
-                    onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Room</label>
-                  <input
-                    type="text"
-                    value={classData.room}
-                    onChange={(e) => setClassData({ ...classData, room: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <Button type="submit" className="w-full mt-4">
-                  Save Changes
-                </Button>
-              </form>
-            </div>
-          </div>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <input
+                  type="text"
+                  value={classData.semester}
+                  onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Schedule</label>
+                <input
+                  type="text"
+                  value={classData.schedule}
+                  onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Room</label>
+                <input
+                  type="text"
+                  value={classData.room}
+                  onChange={(e) => setClassData({ ...classData, room: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <SheetClose asChild>
+                  <Button variant="outline" type="button">
+                    Cancel
+                  </Button>
+                </SheetClose>
+                <Button type="submit">Save Changes</Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
 
         {/* Main Content Tabs */}
         <Card className="mb-5">

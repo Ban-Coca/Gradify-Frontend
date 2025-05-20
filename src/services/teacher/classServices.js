@@ -61,6 +61,8 @@ export const getAllClasses = async (header) => {
 }
 
 export const deleteClass = async (id, header) => {
+    console.log("Header in deleteClass", header)
+    console.log("ID in deleteClass", id)
     try {
         const response = await axios.delete(`${API_BASE_URL}/deleteclass/${id}`, {
             headers: header
@@ -73,8 +75,6 @@ export const deleteClass = async (id, header) => {
 }
 
 export const getClassById = async (id, header) => {
-    console.log("Header in getClassById", header)
-    console.log("ID in getClassById", id)
     try {
         const response = await axios.get(`${API_BASE_URL}/getclassbyid/${id}`, {
             headers: header
@@ -130,7 +130,6 @@ export const getClassRoster = async (classId, header) => {
         const response = await axios.get(`${API_BASE_URL}/${classId}/roster`, {
             headers: header
         });
-        console.log(response.data)
         return response.data;
     } catch (error) {
         console.error("Error fetching class roster:", error);
@@ -143,7 +142,6 @@ export const getClassAverage = async (classId, header) => {
         const response = await axios.get(`${API_BASE_URL}/${classId}/avgclassgrade`, {
             headers: header
         });
-        console.log(response.data)
         return response.data;
     } catch (error) {
         console.error("Error fetching class average:", error);
@@ -156,10 +154,21 @@ export const getStudentCount = async (classId, header) => {
         const response = await axios.get(`${API_BASE_URL}/${classId}/studentcount`, {
             headers: header
         });
-        console.log(response.data)
         return response.data;
     } catch (error) {
         console.error("Error fetching student count:", error);
+        throw error;
+    }
+}
+
+export const getStudentByClass = async (classId, header) => {
+    try{
+        const response = await axios.get(`${API_BASE_URL}/${classId}/students`, {
+            headers: header
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching students by class:", error);
         throw error;
     }
 }

@@ -1,4 +1,3 @@
-"use client"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -32,13 +31,15 @@ export function ReportDetailsModal({ report, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent aria-describedby="report-details-description" className="sm:max-w-[600px]">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Report Details</DialogTitle>
           </div>
         </DialogHeader>
-
+        <p id="report-details-description" className="sr-only">
+          Detailed information about the selected report.
+        </p>
         <div className="space-y-6">
           {/* Report Type & Date */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

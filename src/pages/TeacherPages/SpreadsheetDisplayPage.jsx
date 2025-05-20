@@ -15,7 +15,7 @@ export default function SpreadsheetDisplayPage() {
     useEffect(() => {
 
         const fetchSpreadsheetData = async () => {
-            console.log("SpreadsheetDisplayPage - Current ID param:", id);
+            
             
             if (!id || id === 'undefined') {
                 setError(`Invalid spreadsheet ID: ${id}`);
@@ -24,9 +24,9 @@ export default function SpreadsheetDisplayPage() {
             }
 
             try {
-                console.log("Attempting to fetch spreadsheet with ID:", id);
+                
                 const data = await getSpreadsheetById(id, getAuthHeader());
-                console.log("Fetched spreadsheet data:", data);
+                
                 
                 // Check if we got valid data back
                 if (!data) {

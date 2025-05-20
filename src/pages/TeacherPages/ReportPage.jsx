@@ -21,42 +21,93 @@ import { Bell, Download, Printer, Share2 } from "lucide-react";
 import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useReports } from "@/hooks/use-reports";
 import { useAuth } from "@/contexts/authentication-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportsHistory } from "@/components/reports-history";
+import {
+  getClassByTeacherId,
+  getStudentByClass,
+} from "@/services/teacher/classServices";
+import { useQuery } from "@tanstack/react-query";
+
 function ReportsPage() {
+  const { tab } = useParams();
   const location = useLocation();
-  const { studentId, studentName, classId, teacherId } = location.state || {};
-  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, getAuthHeader } = useAuth();
+  const {
+    studentId: initialStudentId,
+    studentName: initialStudentName,
+    classId: initialClassId,
+    teacherId: initialTeacherId,
+  } = location.state || {};
   const [notificationType, setNotificationType] = useState("grade-alert");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState(
     "<p>Enter your feedback or notification message</p>"
   );
-  const [activeTab, setActiveTab] = useState("create")
+  const defaultTab = "create";
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [selectedClassId, setSelectedClassId] = useState(initialClassId || "");
+  const [selectedStudentId, setSelectedStudentId] = useState(
+    initialStudentId || ""
+  );
+
+  const activeTeacher = initialTeacherId || currentUser?.userId;
+  const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
+    queryKey: ["classes", activeTeacher],
+    queryFn: () => getClassByTeacherId(activeTeacher, getAuthHeader()),
+    enabled: !!activeTeacher,
+  });
+
+  // Fetch students in the selected class
+  const { data: studentsData = [], isLoading: isLoadingStudents } = useQuery({
+    queryKey: ["students", selectedClassId],
+    queryFn: () => getStudentByClass(selectedClassId, getAuthHeader()),
+    enabled: !!selectedClassId,
+  });
+  console.log("Students Data:", studentsData);
+  const students = Array.isArray(studentsData)
+    ? studentsData
+    : studentsData?.students || [];
+
+  const selectedStudent = students.find(
+    (student) => student.userId === selectedStudentId
+  );
+  const selectedStudentName =
+    selectedStudent?.firstName || initialStudentName || "";
+
   const { createReportMutation } = useReports(
     currentUser,
-    classId,
-    studentId,
-    teacherId,
+    selectedClassId,
+    selectedClassId,
+    activeTeacher,
     null
   );
 
   const handleSendReport = async () => {
     const payload = {
-      teacherId,
-      studentId,
-      classId,
+      teacherId: activeTeacher,
+      studentId: selectedStudentId,
+      classId: selectedClassId,
       notificationType,
       subject,
       message,
     };
     createReportMutation.mutateAsync(payload);
   };
-
+  useEffect(() => {
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [tab]);
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    navigate(`/teacher/reports/${tab}`);
+  };
   return (
     <Layout>
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -84,10 +135,24 @@ function ReportsPage() {
         </div>
       </div>
       <div className="mb-4 mt-4 items-center space-y-5">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="create" className="data-[state=inactive]:text-white">Create Report</TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=inactive]:text-white">Report History</TabsTrigger>
+            <TabsTrigger
+              value="create"
+              className="data-[state=inactive]:text-white"
+            >
+              Create Report
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="data-[state=inactive]:text-white"
+            >
+              Report History
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="create" className="mt-4">
             <Card>
@@ -95,18 +160,89 @@ function ReportsPage() {
                 <CardTitle className="font-bold">
                   Send Feedback and Notifications
                 </CardTitle>
-                <CardDescription>
-                  Provide feedback to students or send class-wide notifications
-                </CardDescription>
+                <CardDescription>Provide feedback to students</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid w-full gap-4">
-                  <div className="grid gap-2">
-                    <div>
-                      <h1 className="font-bold">Recipient</h1>
-                      <p>Student Name: {studentName}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="class-select">Select Class</Label>
+                      <Select
+                        value={selectedClassId}
+                        onValueChange={(value) => {
+                          setSelectedClassId(value);
+                          setSelectedStudentId(""); // Reset student when class changes
+                        }}
+                      >
+                        <SelectTrigger id="class-select">
+                          <SelectValue placeholder="Select a class" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {isLoadingClasses ? (
+                            <SelectItem value="loading" disabled>
+                              Loading classes...
+                            </SelectItem>
+                          ) : classes.length > 0 ? (
+                            classes.map((classItem) => (
+                              <SelectItem
+                                key={classItem.classId}
+                                value={classItem.classId}
+                              >
+                                {classItem.className}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>
+                              No classes found
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="student-select">Select Student</Label>
+                      <Select
+                        value={selectedStudentId}
+                        onValueChange={setSelectedStudentId}
+                        disabled={!selectedClassId || isLoadingStudents}
+                      >
+                        <SelectTrigger id="student-select">
+                          <SelectValue placeholder="Select a student" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {isLoadingStudents ? (
+                            <SelectItem value="loading" disabled>
+                              Loading students...
+                            </SelectItem>
+                          ) : students.length > 0 ? (
+                            students.map((student) => (
+                              <SelectItem
+                                key={student.userId}
+                                value={student.userId}
+                              >
+                                {student.firstName} {student.lastName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>
+                              No students in this class
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
+
+                  {/* Recipient Information
+                  {selectedStudentId && (
+                    <div className="grid gap-2">
+                      <div>
+                        <h1 className="font-bold">Recipient</h1>
+                        <p>Student Name: {selectedStudentName}</p>
+                      </div>
+                    </div>
+                  )} */}
                   <div className="grid gap-2">
                     <Label htmlFor="notification-type">Notification Type</Label>
                     <Select
@@ -150,9 +286,9 @@ function ReportsPage() {
 
           <TabsContent value="history" className="mt-4">
             <ReportsHistory
-              classId={classId}
-              studentId={studentId}
-              teacherId={teacherId}
+              classId={selectedClassId}
+              studentId={selectedStudentId}
+              teacherId={activeTeacher}
             />
           </TabsContent>
         </Tabs>

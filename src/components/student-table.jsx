@@ -44,7 +44,6 @@ export function StudentTable({ searchQuery, classId }) {
         student.status,
     }))
   })
-  console.log(studentsData)
   // Filter students based on search query
   const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
@@ -155,13 +154,14 @@ export function StudentTable({ searchQuery, classId }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem className="cursor-pointer" onClick={() =>
+                        navigate(`/teacher/student-details/${student.id}`)}>
                         <Eye className="hover:text-white mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => 
-                          navigate("/reports", { 
+                          navigate("/teacher/reports", { 
                             state: { 
                               studentId: student.id, 
                               studentName: student.name, 

@@ -54,7 +54,9 @@ export function ReportsHistory({ classId, studentId }) {
 
   const handleViewDetails = (report) => {
     setSelectedReport(report);
-    setIsDetailsModalOpen(true);
+    requestAnimationFrame(() => {
+      setIsDetailsModalOpen(true)
+    })
   };
 
   if (isLoading) {
@@ -128,7 +130,7 @@ export function ReportsHistory({ classId, studentId }) {
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="More options">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -136,10 +138,11 @@ export function ReportsHistory({ classId, studentId }) {
                         <DropdownMenuItem
                           onClick={() => handleViewDetails(report)}
                         >
+                          <Eye className="text-inherit mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="text-destructive mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

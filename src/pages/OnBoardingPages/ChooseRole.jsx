@@ -15,9 +15,7 @@ export default function RoleSelection() {
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     const userRole = role.toUpperCase();
-    console.log(formData);
     setFormData(prev => ({ ...prev, role: userRole }));
-    console.log("Updated formData:",formData);
   };
 
   const handleContinue = async () => {
