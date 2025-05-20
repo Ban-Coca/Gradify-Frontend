@@ -42,9 +42,9 @@ export function ProgressView() {
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? "bg-muted" : ""}
+              className={showFilters ? "bg-muted text-white" : ""}
             >
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className={`h-4 w-4 ${showFilters ? "text-white" : ""}`} />
               Filters
             </Button>
 
@@ -105,9 +105,6 @@ export function ProgressView() {
                   >
                     <X className="h-4 w-4 mr-2" />
                     Reset Filters
-                  </Button>
-                  <Button size="sm" onClick={() => setShowFilters(false)}>
-                    Apply Filters
                   </Button>
                 </div>
               </div>
