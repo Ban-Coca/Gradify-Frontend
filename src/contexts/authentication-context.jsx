@@ -24,6 +24,18 @@ export const AuthenticationProvider = ({ children }) => {
     }
   };
 
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+    try {
+      const decoded = jwtDecode(token);
+      if (!decoded.exp) return true;
+      // exp is in seconds, Date.now() is in ms
+      return decoded.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = () => {
       try {
@@ -31,7 +43,7 @@ export const AuthenticationProvider = ({ children }) => {
         const storedUser = localStorage.getItem("user");
         const storedAuthStatus = localStorage.getItem("isAuthenticated");
 
-        if (storedToken && storedUser && storedAuthStatus === "true") {
+        if (storedToken && storedUser && storedAuthStatus === "true" && !isTokenExpired(storedToken)) {
           setToken(storedToken);
           setCurrentUser(JSON.parse(storedUser));
           setIsAuthenticated(true);
@@ -39,6 +51,8 @@ export const AuthenticationProvider = ({ children }) => {
           const role = extractRoleFromToken(storedToken);
           setUserRole(role);
           localStorage.setItem("role", role);
+        } else {
+          logout();
         }
       } catch (error) {
         console.error("Error initializing auth state:", error);

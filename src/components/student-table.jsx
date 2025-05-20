@@ -154,7 +154,8 @@ export function StudentTable({ searchQuery, classId }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem className="cursor-pointer">
+                      <DropdownMenuItem className="cursor-pointer" onClick={() =>
+                        navigate(`/teacher/student-details/${student.id}`)}>
                         <Eye className="hover:text-white mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>

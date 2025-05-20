@@ -29,11 +29,9 @@ export default function DisplaySpreadsheetPage(){
             try {
                 setLoading(true);
                 const data = await getSpreadsheetById(id, getAuthHeader());
-                console.log('Fetched spreadsheet data:', data);
                 setSpreadsheet(data);
                 setLoading(false);
             } catch (err) {
-                console.error('Error fetching spreadsheet:', err);
                 setError('Failed to load spreadsheet data');
                 setLoading(false);
             }

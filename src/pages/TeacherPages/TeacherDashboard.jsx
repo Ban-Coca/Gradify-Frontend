@@ -93,7 +93,7 @@ const TeacherDashboard = () => {
   return (
     <Layout>
       {/* Welcome Banner */}
-      <div className="mt-5 mb-6 bg-gradient-to-r from-primary to-green-400 text-white font-bold text-2xl md:text-4xl p-6 rounded-lg shadow-md mt-4 mb-2 items-center">
+      <div className="mt-5 mb-6 bg-gradient-to-r from-primary to-green-400 text-white font-bold text-2xl md:text-4xl p-6 rounded-lg shadow-md items-center">
           <div>
             <h1>Welcome back, Teacher!</h1>
             <p className="text-sm md:text-base font-normal mt-2">

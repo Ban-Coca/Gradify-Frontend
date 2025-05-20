@@ -13,15 +13,15 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { deleteClass } from "@/services/teacher/classServices";
 import { toast } from "react-hot-toast";
-
-export default function DeleteClassConfirmation({ classId, className, onClassDeleted, getAuthHeader }) {
+import { useAuth } from "@/contexts/authentication-context";
+export default function DeleteClassConfirmation({ classId, className, onClassDeleted }) {
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
+  const { getAuthHeader } = useAuth();
   const navigate = useNavigate();
-
   // Function to handle authentication issues
   const handleAuthError = () => {
     console.log("Authentication error detected, redirecting to login");
@@ -52,8 +52,7 @@ export default function DeleteClassConfirmation({ classId, className, onClassDel
       setError(null);
       setIsCheckingConnection(true);
       
-      // Get the authentication header
-      const authHeader = getAuthHeader ? getAuthHeader() : {};
+      const authHeader = getAuthHeader();
       
       // Basic validation of auth header
       if (!authHeader || !authHeader.Authorization) {
@@ -61,9 +60,6 @@ export default function DeleteClassConfirmation({ classId, className, onClassDel
         handleAuthError();
         return;
       }
-
-      console.log(`Attempting to delete class ${classId} - ${className}`);
-      
       // Call the API
       await deleteClass(classId, authHeader);
       

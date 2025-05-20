@@ -26,6 +26,8 @@ import GradesPage from './pages/StudentPages/GradesPage'
 import FeedbackPage from './pages/StudentPages/FeedbackPage'
 import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
 import { Toaster } from 'react-hot-toast';
+import StudentDetailsPage from './pages/TeacherPages/StudentDetailsPage'
+
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -106,7 +108,8 @@ function App() {
         <Route path="/teacher/spreadsheets/display/:id" element={<SpreadsheetDisplayPage />} />
         <Route path="/teacher/classes/:tab?" element={<ClassesPage />} />
         <Route path="/teacher/classes/classdetail/:id?" element={<ClassDetailPage />} />    
-        <Route path="/teacher/reports" element={<ReportsPage/>} />      
+        <Route path="/teacher/reports/:tab?" element={<ReportsPage/>} />
+        <Route path="/teacher/student-detais/:studentId" element={<StudentDetailsPage />} />   
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>

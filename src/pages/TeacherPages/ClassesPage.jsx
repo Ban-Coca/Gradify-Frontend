@@ -20,12 +20,10 @@
     const { currentUser, getAuthHeader } = useAuth();
     const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false); // State for modal visibility
     const [filteredClasses, setFilteredClasses] = useState([]);
-    
-    // Default to "current" if no tab is provided
+
     const defaultTab = "current";
     const [activeTab, setActiveTab] = useState(defaultTab);
 
-    // Pagination state and helpers
     const classesPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -79,7 +77,7 @@
             }
           });
     
-          setClasses(categorizedClasses); // Set the categorized classes
+          setClasses(categorizedClasses);
         } catch (err) {
           console.error("Error fetching classes:", err);
         }

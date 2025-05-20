@@ -3,7 +3,9 @@ import axios from 'axios';
 const API_BASE_URL = 'http://localhost:8080/api/reports'
 
 export const createReport = async (reportDTO, authHeader) => {
+    console.log(reportDTO);
     const response = await axios.post(API_BASE_URL, reportDTO, { headers: authHeader });
+    console.log(response.data);
     return response.data;
 };
 

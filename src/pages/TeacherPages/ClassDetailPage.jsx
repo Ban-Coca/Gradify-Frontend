@@ -16,6 +16,8 @@ import { getClassById, updateClassById, getClassAverage, getStudentCount } from 
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery } from "@tanstack/react-query";
+import { ReportsTab } from "@/components/reports-tab";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
 import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
 
 const ClassDetailPage = () => {
@@ -198,7 +200,7 @@ const ClassDetailPage = () => {
                 {classData.semester} - {classData.schedule} - {classData.room}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col md:flex-row gap-2">
               <GradingSchemeModal
                 open={gradingSchemeModal}
                 onOpenChange={setGradingSchemeModal}
@@ -217,7 +219,6 @@ const ClassDetailPage = () => {
                 classId={id} 
                 className={classData?.className}
                 onClassDeleted={handleClassDeleted}
-                getAuthHeader={getAuthHeader}
               />
             </div>
           </div>
@@ -252,132 +253,66 @@ const ClassDetailPage = () => {
         </div>
 
         {/* Modal */}
-        {isModalOpen && (
-          <div
-            className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                toggleModal();
-              }
-            }}
-          >
-            <div className="bg-white w-1/3 h-full shadow-lg p-6 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Edit Class</h2>
-                <Button variant="ghost" onClick={toggleModal}>
-                  Close
-                </Button>
+        <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle>Edit Class</SheetTitle>
+              <SheetDescription>Make changes to your class information.</SheetDescription>
+            </SheetHeader>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleUpdateClass()
+              }}
+              className="space-y-4 p-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Class Name</label>
+                <input
+                  type="text"
+                  value={classData.className}
+                  onChange={(e) => setClassData({ ...classData, className: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
               </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUpdateClass();
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Class Name</label>
-                  <input
-                    type="text"
-                    value={editForm?.className || ""}
-                    onChange={(e) => setEditForm({ ...editForm, className: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
-                  <input
-                    type="text"
-                    value={editForm?.semester || ""}
-                    onChange={(e) => setEditForm({ ...editForm, semester: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Days</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-                      <label key={day} className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="days"
-                          value={day}
-                          checked={editForm?.days?.includes(day)}
-                          onChange={handleEditDaysChange}
-                          className="accent-green-600"
-                        />
-                        <span>{day}</span>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                      <div className="flex gap-2">
-                        <select
-                          value={editForm?.startTime || ""}
-                          onChange={e => handleEditSelectChange("startTime", e.target.value)}
-                          className="border rounded-md px-3 py-2"
-                        >
-                          <option value="">Select time</option>
-                          {getFilteredTimes(editForm?.startTimeZone || "AM").map(time => (
-                            <option key={time.value} value={time.value}>{time.display}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={editForm?.startTimeZone || "AM"}
-                          onChange={e => handleEditSelectChange("startTimeZone", e.target.value)}
-                          className="border rounded-md px-3 py-2 w-20"
-                        >
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                      <div className="flex gap-2">
-                        <select
-                          value={editForm?.endTime || ""}
-                          onChange={e => handleEditSelectChange("endTime", e.target.value)}
-                          className="border rounded-md px-3 py-2"
-                        >
-                          <option value="">Select time</option>
-                          {getFilteredTimes(editForm?.endTimeZone || "AM").map(time => (
-                            <option key={time.value} value={time.value}>{time.display}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={editForm?.endTimeZone || "AM"}
-                          onChange={e => handleEditSelectChange("endTimeZone", e.target.value)}
-                          className="border rounded-md px-3 py-2 w-20"
-                        >
-                          <option value="AM">AM</option>
-                          <option value="PM">PM</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-gray-500">
-                    Preview: {getEditScheduleString() || "No schedule set"}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Room</label>
-                  <input
-                    type="text"
-                    value={editForm?.room || ""}
-                    onChange={(e) => setEditForm({ ...editForm, room: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
-                </div>
-                <Button type="submit" className="w-full mt-4">
-                  Save Changes
-                </Button>
-              </form>
-            </div>
-          </div>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <input
+                  type="text"
+                  value={classData.semester}
+                  onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Schedule</label>
+                <input
+                  type="text"
+                  value={classData.schedule}
+                  onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Room</label>
+                <input
+                  type="text"
+                  value={classData.room}
+                  onChange={(e) => setClassData({ ...classData, room: e.target.value })}
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <SheetClose asChild>
+                  <Button variant="outline" type="button">
+                    Cancel
+                  </Button>
+                </SheetClose>
+                <Button type="submit">Save Changes</Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
 
         {/* Main Content Tabs */}
         <Card className="mb-5">
@@ -469,84 +404,7 @@ const ClassDetailPage = () => {
 
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Performance Reports</CardTitle>
-                      <CardDescription>Generate student performance reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-blue-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Individual Student Reports</p>
-                              <p className="text-sm text-gray-500">Generate reports for each student</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <BarChart className="h-5 w-5 text-green-600 mr-3" />
-                            <div>
-                              <p className="font-medium">Class Summary Report</p>
-                              <p className="text-sm text-gray-500">Overall class performance</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <Users className="h-5 w-5 text-purple-600 mr-3" />
-                            <div>
-                              <p className="font-medium">At-Risk Students Report</p>
-                              <p className="text-sm text-gray-500">Identify students needing help</p>
-                            </div>
-                          </div>
-                          <Button size="sm">Generate</Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Recent Reports</CardTitle>
-                      <CardDescription>Previously generated reports</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Midterm Performance Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 15, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-md">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-gray-500 mr-3" />
-                            <div>
-                              <p className="font-medium">Monthly Progress Report</p>
-                              <p className="text-sm text-gray-500">Generated on Oct 1, 2023</p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Download
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <ReportsTab classId={id}/>
                 </div>
               </TabsContent>
             </Tabs>
