@@ -28,6 +28,8 @@ const ClassDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+
   
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
     queryKey: ["classAverage", id],
@@ -48,7 +50,11 @@ const ClassDetailPage = () => {
       try {
         const response = await getClassById(id, getAuthHeader());
         console.log("Class Details:", response);
-        setClassData(response);
+        setClassData({
+          ...response,
+          startTimeZone: response.startTimeZone || "AM",
+          endTimeZone: response.endTimeZone || "AM",
+        });
         console.log("Class Data:", classData);
       } catch (err) {
         console.error("Error fetching class details:", err);
@@ -61,10 +67,76 @@ const ClassDetailPage = () => {
     fetchClassDetails();
   }, [id]);
 
+  const openEditModal = () => {
+    setEditForm({ ...classData });
+    setIsModalOpen(true);
+  };
+
+  const allTimes = [];
+
+  for (let hour = 7; hour <= 22; hour++) {
+    for (let min = 0; min < 60; min += 30) {
+      if (hour === 22 && min > 0) continue;
+      const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+      let displayHour = hour % 12 === 0 ? 12 : hour % 12;
+      let ampm = hour < 12 ? "AM" : "PM";
+      const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
+      allTimes.push({ value, display, hour, min, ampm });
+    }
+  }
+  const getFilteredTimes = (zone) => {
+    if (zone === "AM") {
+      return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
+    } else {
+      return allTimes.filter(
+        t =>
+          t.ampm === "PM" &&
+          t.hour >= 12 &&
+          (t.hour < 22 || (t.hour === 22 && t.min === 0))
+      );
+    }
+  };
+
+  // Helper for days
+  const handleEditDaysChange = (e) => {
+    const { value, checked } = e.target;
+    setEditForm((prev) => ({
+      ...prev,
+      days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
+    }));
+  };
+
+  const handleEditSelectChange = (name, value) => {
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Helper for schedule string
+  const getEditScheduleString = () => {
+    if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
+    const days = editForm.days.map(d => d.slice(0, 3)).join("/");
+    const formatTime = (t) => {
+      const [h, m] = t.split(":");
+      const hour = ((+h + 11) % 12) + 1;
+      return `${hour}:${m}`;
+    };
+    if (editForm.startTimeZone === editForm.endTimeZone) {
+      return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
+    }
+    return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
+  };
+
+
   const handleUpdateClass = async () => {
     try {
-      const response = await updateClassById(id, classData, getAuthHeader);
+      const updatedData = {
+        ...editForm,
+        schedule: getEditScheduleString(),
+      };
+      const header = getAuthHeader();
+      console.log("Header in handleUpdateClass", header);
+      const response = await updateClassById(id, updatedData, header);
       console.log("Class updated successfully:", response);
+      setClassData(editForm);
       toggleModal();
     } catch (error) {
       console.error("Error updating class:", error);
@@ -123,7 +195,7 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} semester
+                {classData.semester} - {classData.schedule} - {classData.room}
               </p>
             </div>
             <div className="flex gap-2">
@@ -133,7 +205,7 @@ const ClassDetailPage = () => {
                 classId={id}
                 //initialData = {classData.gradingScheme}
                 />
-              <Button variant="outline" onClick={toggleModal}>
+              <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class
               </Button>
@@ -184,7 +256,6 @@ const ClassDetailPage = () => {
           <div
             className="mt-15 h-vh fixed inset-0 backdrop-blur-sm bg-opacity-50 flex justify-end z-1"
             onClick={(e) => {
-              // Close the modal if the user clicks outside the modal content
               if (e.target === e.currentTarget) {
                 toggleModal();
               }
@@ -208,8 +279,8 @@ const ClassDetailPage = () => {
                   <label className="block text-sm font-medium text-gray-700">Class Name</label>
                   <input
                     type="text"
-                    value={classData.className}
-                    onChange={(e) => setClassData({ ...classData, className: e.target.value })}
+                    value={editForm?.className || ""}
+                    onChange={(e) => setEditForm({ ...editForm, className: e.target.value })}
                     className="mt-1 block w-full border rounded-md px-3 py-2"
                   />
                 </div>
@@ -217,26 +288,86 @@ const ClassDetailPage = () => {
                   <label className="block text-sm font-medium text-gray-700">Semester</label>
                   <input
                     type="text"
-                    value={classData.semester}
-                    onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
+                    value={editForm?.semester || ""}
+                    onChange={(e) => setEditForm({ ...editForm, semester: e.target.value })}
                     className="mt-1 block w-full border rounded-md px-3 py-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Schedule</label>
-                  <input
-                    type="text"
-                    value={classData.schedule}
-                    onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
-                    className="mt-1 block w-full border rounded-md px-3 py-2"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Days</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
+                      <label key={day} className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="days"
+                          value={day}
+                          checked={editForm?.days?.includes(day)}
+                          onChange={handleEditDaysChange}
+                          className="accent-green-600"
+                        />
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={editForm?.startTime || ""}
+                          onChange={e => handleEditSelectChange("startTime", e.target.value)}
+                          className="border rounded-md px-3 py-2"
+                        >
+                          <option value="">Select time</option>
+                          {getFilteredTimes(editForm?.startTimeZone || "AM").map(time => (
+                            <option key={time.value} value={time.value}>{time.display}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={editForm?.startTimeZone || "AM"}
+                          onChange={e => handleEditSelectChange("startTimeZone", e.target.value)}
+                          className="border rounded-md px-3 py-2 w-20"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={editForm?.endTime || ""}
+                          onChange={e => handleEditSelectChange("endTime", e.target.value)}
+                          className="border rounded-md px-3 py-2"
+                        >
+                          <option value="">Select time</option>
+                          {getFilteredTimes(editForm?.endTimeZone || "AM").map(time => (
+                            <option key={time.value} value={time.value}>{time.display}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={editForm?.endTimeZone || "AM"}
+                          onChange={e => handleEditSelectChange("endTimeZone", e.target.value)}
+                          className="border rounded-md px-3 py-2 w-20"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    Preview: {getEditScheduleString() || "No schedule set"}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Room</label>
                   <input
                     type="text"
-                    value={classData.room}
-                    onChange={(e) => setClassData({ ...classData, room: e.target.value })}
+                    value={editForm?.room || ""}
+                    onChange={(e) => setEditForm({ ...editForm, room: e.target.value })}
                     className="mt-1 block w-full border rounded-md px-3 py-2"
                   />
                 </div>

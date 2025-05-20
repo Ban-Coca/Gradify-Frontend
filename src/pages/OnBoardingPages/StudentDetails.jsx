@@ -3,12 +3,18 @@ import {Link, useNavigate} from "react-router-dom"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { ArrowLeft } from "lucide-react";
+import logo from '@/assets/gradifyLogo.svg'; // adjust the path as needed
+
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/authentication-context";
+import { signUpUser } from "@/services/user/authenticationService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useOnboarding } from "@/contexts/onboarding-context";
 
 const formSchema = z.object({
   studentNumber: z.string().min(1, { message: "Student number is required." }),
@@ -17,42 +23,76 @@ const formSchema = z.object({
 })
 
 export default function StudentOnboarding() {
-  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
-
+  const { formData, setFormData } = useOnboarding();
+  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const { login } = useAuth();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      studentNumber: "",
-      major: "",
-      yearLevel: "",
+      studentNumber: formData.studentNumber || "",
+      major: formData.major || "",
+      yearLevel: formData.yearLevel || "",
     },
   })
 
   async function onSubmit(values) {
-    setIsLoading(true)
-
+    setIsLoading(true);
+    console.log("Form Values:", formData);
     try {
-      // Here you would typically call your API to update the student profile
-      console.log("Student profile data:", values)
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      navigate("/dashboard")
+      const onboardingData = {
+        role: formData.role || "STUDENT",
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        ...values,
+      };
+      console.log("Onboarding Data:", onboardingData);
+      try {
+        setIsLoading(true);
+        const response = await signUpUser(onboardingData);
+        console.log("Onboarding Response:", onboardingData);
+        localStorage.removeItem("onboardingFormData")
+        login(response.user, response.token);
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "An error occurred during signup."
+        );
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     } catch (error) {
-      console.error("Profile update failed:", error)
+      console.error("Profile update failed:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
       <Link to="/" className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-white">G</div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
+          <img src={logo} alt="Logo" className="h-8 w-8" />
+        </div>
         <span className="text-xl font-semibold text-gray-900">Gradify</span>
       </Link>
+
+      {/* Improved Back Button */}
+      <div className="w-full max-w-md">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900 hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
+        </Button>
+      </div>
 
       <div className="mx-auto max-w-md text-center">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Complete your student profile</h1>
@@ -116,7 +156,11 @@ export default function StudentOnboarding() {
                 )}
               />
 
-              <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={isLoading}
+              >
                 {isLoading ? "Saving..." : "Complete Setup"}
               </Button>
             </form>

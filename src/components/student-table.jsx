@@ -44,14 +44,13 @@ export function StudentTable({ searchQuery, classId }) {
         student.status,
     }))
   })
-  console.log(studentsData)
   // Filter students based on search query
   const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase()),
   ) : []
-
+  console.log(studentsData)
   // Sort students based on column and direction
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortColumn) return 0
@@ -161,7 +160,7 @@ export function StudentTable({ searchQuery, classId }) {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => 
-                          navigate("/reports", { 
+                          navigate("/teacher/reports", { 
                             state: { 
                               studentId: student.id, 
                               studentName: student.name, 

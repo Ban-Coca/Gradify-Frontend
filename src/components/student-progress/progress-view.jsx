@@ -134,10 +134,22 @@ export function ProgressView() {
 
       <Tabs defaultValue="performance" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="distribution">Grade Distribution</TabsTrigger>
-          <TabsTrigger value="comparison">Course Comparison</TabsTrigger>
-          <TabsTrigger value="improvement">Improvement Areas</TabsTrigger>
+          <TabsTrigger 
+            value="performance"
+            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            >Performance</TabsTrigger>
+          <TabsTrigger 
+            value="distribution"
+            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            >Grade Distribution</TabsTrigger>
+          <TabsTrigger 
+            value="comparison"
+            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            >Course Comparison</TabsTrigger>
+          <TabsTrigger 
+            value="improvement"
+            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            >Improvement Areas</TabsTrigger>
         </TabsList>
         <TabsContent value="performance">
           <Card>
