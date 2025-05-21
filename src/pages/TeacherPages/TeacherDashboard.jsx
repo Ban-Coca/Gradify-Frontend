@@ -25,6 +25,8 @@ import Pagination from "@/components/ui/pagination";
 import { GradeDistributionChart } from "@/components/charts/grade-distribution"
 import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
 import { useAuth } from "@/contexts/authentication-context"
+import NewClass from "@/pages/TeacherPages/NewClass.jsx"
+
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState("math101")
   const [selectedPeriod, setSelectedPeriod] = useState("current")
@@ -33,6 +35,9 @@ const TeacherDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const classesPerPage = 6; // Max cards per page
   const { currentUser, getAuthHeader } = useAuth();
+  // Add state for new class modal
+  const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  
   // Sample data for charts
   const performanceData = {
     labels: ["Math 101", "Science 202", "History 303", "English 404"],
@@ -89,6 +94,34 @@ const TeacherDashboard = () => {
   const navigateToClass = (classId) => {
     navigate(`/teacher/classes/classdetail/${classId}`)
   }
+
+  // Handle new class creation
+  const handleClassCreated = (newClass) => {
+    // Add category to the new class based on current date
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    let currentSemester;
+
+    if (currentMonth >= 1 && currentMonth <= 5) {
+      currentSemester = "2nd Semester";
+    } else if (currentMonth >= 8 && currentMonth <= 12) {
+      currentSemester = "1st Semester";
+    } else {
+      currentSemester = null;
+    }
+
+    let category = "all";
+    if (newClass.semester === currentSemester && newClass.schoolYear === currentYear.toString()) {
+      category = "current";
+    } else if (parseInt(newClass.schoolYear) < currentYear || 
+              (newClass.schoolYear === currentYear.toString() && newClass.semester !== currentSemester)) {
+      category = "past";
+    }
+
+    const classWithCategory = { ...newClass, category };
+    setClasses(prev => [...prev, classWithCategory]);
+  };
 
   return (
     <Layout>
@@ -225,19 +258,23 @@ const TeacherDashboard = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full justify-start" onClick={() => router.push("/upload")}>
+              <Button className="w-full justify-start" onClick={() => navigate("/upload")}>
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Spreadsheet
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/classes/new")}>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={() => setIsNewClassModalOpen(true)}
+              >
                 <BookOpen className="mr-2 h-4 w-4" />
                 Create New Class
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/reports")}>
+              <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/reports")}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Generate Reports
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/integrations")}>
+              <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/integrations")}>
                 <Database className="mr-2 h-4 w-4" />
                 Manage Integrations
               </Button>
@@ -282,7 +319,7 @@ const TeacherDashboard = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => router.push("/uploads")}>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/uploads")}>
                 View All Uploads
               </Button>
             </CardFooter>
@@ -315,6 +352,13 @@ const TeacherDashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* New Class Modal */}
+      <NewClass 
+        isOpen={isNewClassModalOpen}
+        onClose={() => setIsNewClassModalOpen(false)}
+        onClassCreated={handleClassCreated}
+      />
     </Layout>
   )
 }
