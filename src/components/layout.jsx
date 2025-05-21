@@ -4,10 +4,22 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Toaster } from "sonner";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
-
+import { useEffect, useState } from "react";
 const Layout = ({ children }) => {
+  const [defaultOpen, setDefaultOpen] = useState(true)
+
+  useEffect(() => {
+    // Read the sidebar state from cookie when component mounts
+    const cookies = document.cookie.split(";")
+    const sidebarCookie = cookies.find((cookie) => cookie.trim().startsWith("sidebar:state="))
+    if (sidebarCookie) {
+      const sidebarState = sidebarCookie.split("=")[1]
+      setDefaultOpen(sidebarState === "true")
+    }
+  }, [])
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar className="bg-sidebar" />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center bg-background border-b border-border p-4 shadow-sm">

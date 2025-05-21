@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Download, Printer, Share2 } from "lucide-react";
+import { Bell, Download, Printer, Share2, Sparkles } from "lucide-react";
 import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
@@ -46,6 +46,7 @@ function ReportsPage() {
   } = location.state || {};
   const [notificationType, setNotificationType] = useState("grade-alert");
   const [subject, setSubject] = useState("");
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [message, setMessage] = useState(
     "<p>Enter your feedback or notification message</p>"
   );
@@ -108,6 +109,7 @@ function ReportsPage() {
     setActiveTab(tab);
     navigate(`/teacher/reports/${tab}`);
   };
+  const generateAIReport = {};
   return (
     <Layout>
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -188,7 +190,7 @@ function ReportsPage() {
                                 key={classItem.classId}
                                 value={classItem.classId}
                               >
-                                {classItem.className}
+                                {classItem.className} - {classItem.section}
                               </SelectItem>
                             ))
                           ) : (
@@ -278,8 +280,28 @@ function ReportsPage() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button onClick={handleSendReport}>Send Report</Button>
+              <CardFooter className="flex gap-4">
+                <Button
+                  variant="outline"
+                  onClick={generateAIReport}
+                  disabled={
+                    isGeneratingAI || !selectedStudentId || !selectedClassId
+                  }
+                  className="flex items-center gap-2"
+                >
+                  {isGeneratingAI ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate AI Report
+                    </>
+                  )}
+                </Button>
+                <Button onClick={handleSendReport} className="cursor-pointer">Send Report</Button>
               </CardFooter>
             </Card>
           </TabsContent>
