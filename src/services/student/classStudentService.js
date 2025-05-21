@@ -24,7 +24,7 @@ export const getStudentCourseTableData = async (studentId, classId, header = {})
     const response = await axios.get(
       `${API_BASE_URL}/${studentId}/classes/${classId}/grades`,
       { headers: header }
-    );
+    );``
     return response.data;
   } catch (error) {
     console.error("Error fetching student course table data:", error);
