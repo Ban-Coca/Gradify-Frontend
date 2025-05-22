@@ -1,175 +1,138 @@
-"use client"
-
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import { PerformanceChart } from "./performance-chart"
+import { AveragePerClass } from "./average-class"
 import { GradeDistribution } from "./grade-distribution"
-import { SubjectComparison } from "./subject-comparison"
+import { SubjectComparison } from "./class-comparison"
 import { ImprovementAreas } from "./improvement-areas"
-import { Button } from "../../components/ui/button"
-import { Filter, X, Download, Calendar, BarChart } from "lucide-react"
-import { Badge } from "../../components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import { useEffect, useState } from "react"
+import { PseudoTrendChart } from "./psuedo-trend";
+import { useAuth } from "@/contexts/authentication-context"
+import { getClassAveragesByStudent, getClassGradesByStudent, getStudentClasses } from "@/services/student/studentService"
+
 
 export function ProgressView() {
-  const [selectedPeriod, setSelectedPeriod] = useState("current")
-  const [selectedSubject, setSelectedSubject] = useState("all")
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [classes, setClasses] = useState([]);
   const [showFilters, setShowFilters] = useState(false)
+  const [allGrades, setAllGrades] = useState([]);
+  const [allGradesLoading, setAllGradesLoading] = useState(true);
+  const [classAverages, setClassAverages] = useState([]);
 
-  // This would typically come from an API
-  const periods = [
-    { id: "current", name: "Current Semester" },
-    { id: "previous", name: "Previous Semester" },
-    { id: "year", name: "Academic Year" },
-    { id: "custom", name: "Custom Range" },
-  ]
+  const { currentUser, getAuthHeader } = useAuth();
+  const studentId = currentUser?.userId;
 
-  const subjects = [
-    { id: "all", name: "All Courses" },
-    { id: "cs101", name: "CS101 - Introduction to Programming" },
-    { id: "cs201", name: "CS201 - Data Structures" },
-    { id: "cs301", name: "CS301 - Algorithms" },
-    { id: "cs401", name: "CS401 - Software Engineering" },
-  ]
+  useEffect(() => {
+    async function fetchClassAverages() {
+      try{
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getClassAveragesByStudent(studentId, header);
+        console.log("All grades data:", data);
+        setClassAverages(data);
+      } catch (error) {
+        console.error("Error fetching class averages:", error);
+      } finally {
+        setAllGradesLoading(false);
+      }
+    }
 
+    async function fetchClasses() {
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getStudentClasses(studentId, header);
+        setClasses(data);
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+      } finally {
+        setAllGradesLoading(false);
+      }
+    }
+
+    async function fetchAllGrades() {
+      if (!studentId) return;
+      setAllGradesLoading(true);
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getClassGradesByStudent(studentId, header);
+        const gradesArray = data && typeof data === "object"
+          ? Object.entries(data).map(([classId, grade]) => ({ classId, grade }))
+          : Array.isArray(data)
+            ? data
+            : [];
+
+        const gradesAsPercent = gradesArray.map(g => ({
+          ...g,
+          grade: parseFloat(
+              (g.grade > 100 ? Number(g.grade) / 100 : Number(g.grade)).toFixed(1)
+            )
+        }));
+        setAllGrades(gradesAsPercent);
+      } catch {
+        setAllGrades([]);
+      } finally {
+        setAllGradesLoading(false);
+      }
+    }
+
+    fetchClassAverages();
+    fetchAllGrades();
+    fetchClasses();
+  }, [studentId, getAuthHeader]);
+
+  // Combining allGrades and classAverages for comparison
+  const comparisonData = allGrades.map(g => {
+    // Convert g.classId to number for comparison
+    const classAverageObj = classAverages.find(avg => avg.classId === Number(g.classId));
+    const classAveragePercent = classAverageObj
+      ? parseFloat(
+          (classAverageObj.average > 100
+            ? Number(classAverageObj.average) / 100
+            : Number(classAverageObj.average)
+          ).toFixed(1)
+        )
+      : null;
+    return {
+      className: classAverageObj?.className,
+      grade: g.grade,
+      classAverage: classAveragePercent
+    };
+  });
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? "bg-muted text-white" : ""}
-            >
-              <Filter className={`h-4 w-4 ${showFilters ? "text-white" : ""}`} />
-              Filters
-            </Button>
-
-            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select period" />
-              </SelectTrigger>
-              <SelectContent>
-                {periods.map((period) => (
-                  <SelectItem key={period.id} value={period.id}>
-                    {period.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export Report
-            </Button>
-            <Button variant="outline" size="sm">
-              <Calendar className="h-4 w-4 mr-2" />
-              Set Goals
-            </Button>
-          </div>
-        </div>
-
-        {showFilters && (
-          <Card className="border border-input">
-            <CardContent className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Course</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {subjects.map((subject) => (
-                      <Badge
-                        key={subject.id}
-                        variant={selectedSubject === subject.id ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedSubject(subject.id)}
-                      >
-                        {subject.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-between pt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedPeriod("current")
-                      setSelectedSubject("all")
-                    }}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Reset Filters
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Active filters display */}
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedPeriod !== "current" && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {periods.find((p) => p.id === selectedPeriod)?.name}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedPeriod("current")} />
-            </Badge>
-          )}
-          {selectedSubject !== "all" && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {subjects.find((s) => s.id === selectedSubject)?.name}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedSubject("all")} />
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <Tabs defaultValue="performance" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+    <div className="space-y-4 mt-8">
+      <Tabs defaultValue="average" className="w-full mb-6 gap-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger 
-            value="performance"
+            value="average"
             className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-            >Performance</TabsTrigger>
+          > Average Per Class</TabsTrigger>
           <TabsTrigger 
             value="distribution"
             className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-            >Grade Distribution</TabsTrigger>
+          > Grade Distribution</TabsTrigger>
           <TabsTrigger 
             value="comparison"
             className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-            >Course Comparison</TabsTrigger>
+          > Class Comparison</TabsTrigger>
+          <TabsTrigger 
+            value="trend"
+            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+          > Pseudo-Trend</TabsTrigger>
           <TabsTrigger 
             value="improvement"
             className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-            >Improvement Areas</TabsTrigger>
+          > Improvement Suggestions</TabsTrigger>
         </TabsList>
-        <TabsContent value="performance">
+        <TabsContent value="average">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle>Performance Trend</CardTitle>
-                <CardDescription>
-                  Your academic performance over{" "}
-                  {selectedPeriod === "current"
-                    ? "the current semester"
-                    : selectedPeriod === "previous"
-                      ? "the previous semester"
-                      : "the academic year"}
-                  {selectedSubject !== "all" && ` for ${subjects.find((s) => s.id === selectedSubject)?.name}`}
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <BarChart className="h-4 w-4 mr-2" />
-                Change Chart Type
-              </Button>
+            <CardHeader>
+              <CardTitle>Average Grade Per Class</CardTitle>
+              <CardDescription>See your average grade for each class.</CardDescription>
             </CardHeader>
             <CardContent>
-              <PerformanceChart period={selectedPeriod} subject={selectedSubject} />
+              <AveragePerClass
+                allGrades={allGrades}
+                allGradesLoading={allGradesLoading}
+                classes={classes}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -177,32 +140,48 @@ export function ProgressView() {
           <Card>
             <CardHeader>
               <CardTitle>Grade Distribution</CardTitle>
-              <CardDescription>Distribution of your grades across different assignments</CardDescription>
+              <CardDescription>See how your grades are distributed.</CardDescription>
             </CardHeader>
             <CardContent>
-              <GradeDistribution period={selectedPeriod} subject={selectedSubject} />
+              <GradeDistribution
+                allGrades={allGrades}
+                allGradesLoading={allGradesLoading}
+              />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="comparison">
           <Card>
             <CardHeader>
-              <CardTitle>Course Comparison</CardTitle>
-              <CardDescription>Compare your performance across different courses</CardDescription>
+              <CardTitle>Comparison to Class Average</CardTitle>
+              <CardDescription>Compare your grades to the class average.</CardDescription>
             </CardHeader>
             <CardContent>
-              <SubjectComparison period={selectedPeriod} />
+              <SubjectComparison comparisonData={comparisonData} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="trend">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pseudo-Trend by Class Order</CardTitle>
+              <CardDescription>See your grades in the order you enrolled in classes.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PseudoTrendChart allGrades={allGrades} classes={classes} />
             </CardContent>
           </Card>
         </TabsContent>
         <TabsContent value="improvement">
           <Card>
             <CardHeader>
-              <CardTitle>Improvement Areas</CardTitle>
-              <CardDescription>Areas where you can focus to improve your performance</CardDescription>
+              <CardTitle>Improvement Suggestions</CardTitle>
+              <CardDescription>Actionable tips based on your grades.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ImprovementAreas period={selectedPeriod} subject={selectedSubject} />
+              <CardContent>
+                <ImprovementAreas classes={classes} allGrades={allGrades} />
+              </CardContent>
             </CardContent>
           </Card>
         </TabsContent>

@@ -5,9 +5,10 @@ import { Download, Search, FileText } from "lucide-react"
 import { useEffect, useState } from "react"
 import { GPASection } from "./gpa-section"
 import { Badge } from "../../components/ui/badge"
+import Pagination from "@/components/ui/pagination"
 import { useAuth } from "@/contexts/authentication-context"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
-import { getCalculatedGrade, getStudentClasses, getStudentCourseTableData, getSchemesByClass, getTeacherByClass } from "@/services/student/studentService"
+import { getClassGradesByStudent, getCalculatedGrade, getStudentClasses, getStudentCourseTableData, getSchemesByClass, getTeacherByClass } from "@/services/student/studentService"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export function GradesView() {
@@ -27,6 +28,24 @@ export function GradesView() {
   const [scheme, setScheme] = useState([])
   const [teacher, setTeacher] = useState(null)
   const [calculatedGrade, setCalculatedGrade] = useState(null);
+  const [allGrades, setAllGrades] = useState([]);
+  const [allGradesLoading, setAllGradesLoading] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const COURSES_PER_PAGE = 6;
+  const filteredClasses = classes.filter((cls) =>
+    cls.className.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredClasses.length / COURSES_PER_PAGE);
+  const paginatedClasses = filteredClasses.slice(
+    (page - 1) * COURSES_PER_PAGE,
+    page * COURSES_PER_PAGE
+  );
+
+  // Reset to first page if classes change and current page is out of range
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [totalPages]);
 
   // Fetch classes
   useEffect(() => {
@@ -43,9 +62,11 @@ export function GradesView() {
             section: cls.section,
             room: cls.room,
             schedule: cls.schedule,
+            schoolYear: cls.schoolYear,
             lastUpdated: cls.updatedAt ? new Date(cls.updatedAt).toLocaleDateString() : "",
           }))
         );
+        console.log("Classes data:", data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -133,10 +154,56 @@ export function GradesView() {
     if (selectedClass) fetchCalculatedGrade();
   }, [selectedClass, studentId, getAuthHeader]);
 
+  // Fetch all grades in each class of the student
+  useEffect(() => {
+    async function fetchAllGrades() {
+      if (!studentId) return;
+      setAllGradesLoading(true);
+      try {
+        const header = getAuthHeader ? getAuthHeader() : {};
+        const data = await getClassGradesByStudent(studentId, header);
+        const gradesArray = data && typeof data === "object"
+          ? Object.entries(data).map(([classId, grade]) => ({ classId, grade }))
+          : Array.isArray(data)
+            ? data
+            : [];
+
+        const gradesAsPercent = gradesArray.map(g => ({
+          ...g,
+          grade: parseFloat(
+              (g.grade > 100 ? Number(g.grade) / 100 : Number(g.grade)).toFixed(1)
+            )
+        }));
+        console.log("All grades data:", gradesAsPercent);
+        setAllGrades(gradesAsPercent);
+      } catch {
+        setAllGrades([]);
+      } finally {
+        setAllGradesLoading(false);
+      }
+    }
+    fetchAllGrades();
+  }, [studentId, getAuthHeader]);
+
   const periods = [
     { id: "current", name: "Current Semester" },
     { id: "previous", name: "Previous Semesters" },
   ]
+
+  const gradeRanges = ["90-100%", "80-89%", "70-79%", "60-69%", "Below 60%"];
+  const gradeCounts = gradeRanges.map(
+    (range) =>
+      allGrades.filter((g) => getGradeRange(Number(g.grade)) === range).length
+  );
+  const totalGrades = allGrades.length;
+
+  function getGradeRange(grade) {
+    if (grade >= 90) return "90-100%";
+    if (grade >= 80) return "80-89%";
+    if (grade >= 70) return "70-79%";
+    if (grade >= 60) return "60-69%";
+    return "Below 60%";
+  }
 
   return (
     <div className="space-y-4 mb-6">
@@ -200,20 +267,20 @@ export function GradesView() {
                   .map((cls) => (
                     <Card
                       key={cls.id}
-                      className="group cursor-pointer transition-colors hover:bg-[#198754]/10"
+                      className="group cursor-pointer transition-colors hover:bg-gray-50"
                       onClick={() => setSelectedClass(cls.id)}
                     >
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-medium group-hover:text-[#198754] transition-colors">
+                            <h3 className="text-lg font-medium transition-colors">
                               {cls.className} - {cls.section} - {cls.room || "No Room"}
                             </h3>
-                            <p className="text-sm text-muted-foreground group-hover:text-[#198754] transition-colors">
+                            <p className="text-sm text-muted-foreground transition-colors">
                               {cls.schedule || "No Schedule"}
                             </p>
                           </div>
-                          <Button variant="ghost" size="sm" className="group-hover:text-[#198754] transition-colors">
+                          <Button variant="ghost" size="sm" className="transition-colors">
                             View Grades
                           </Button>
                         </div>
@@ -221,6 +288,11 @@ export function GradesView() {
                     </Card>
                   ))}
               </div>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
             </TabsContent>
 
             <TabsContent value="summary" className="mt-4">
@@ -229,69 +301,70 @@ export function GradesView() {
               <Card className="mt-4">
                 <CardHeader>
                   <CardTitle>Grade Distribution</CardTitle>
-                  <CardDescription>Overview of your grades by category</CardDescription>
+                  <CardDescription>Overview of your grades by percentage range</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-5 gap-4">
-                      {["4.5-5.0", "4.0-4.4", "3.5-3.9", "3.0-3.4", "1.0-2.9"].map((range, index) => {
-                        const count = [5, 8, 6, 3, 1][index]
-                        const total = 23
-                        const percentage = Math.round((count / total) * 100)
-
-                        return (
-                          <Card key={range} className="text-center">
-                            <CardContent className="p-4">
-                              <Badge
-                                variant={
-                                  index === 0
-                                    ? "success"
-                                    : index === 1
+                  {allGradesLoading ? (
+                    <div>Loading grade distribution...</div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-5 gap-4">
+                        {gradeRanges.map((range, index) => {
+                          const count = gradeCounts[index];
+                          const percentage = totalGrades ? Math.round((count / totalGrades) * 100) : 0;
+                          return (
+                            <Card key={range} className="text-center">
+                              <CardContent className="p-4">
+                                <Badge
+                                  variant={
+                                    index === 0
+                                      ? "success"
+                                      : index === 1
                                       ? "default"
                                       : index === 2
-                                        ? "secondary"
-                                        : index === 3
-                                          ? "warning"
-                                          : "destructive"
-                                }
-                                className="mb-2"
-                              >
-                                {range}
-                              </Badge>
-                              <div className="text-2xl font-bold">{count}</div>
-                              <div className="text-xs text-muted-foreground">{percentage}%</div>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
+                                      ? "secondary"
+                                      : index === 3
+                                      ? "warning"
+                                      : "destructive"
+                                  }
+                                  className="mb-2"
+                                >
+                                  {range}
+                                </Badge>
+                                <div className="text-2xl font-bold">{count}</div>
+                                <div className="text-xs text-muted-foreground">{percentage}%</div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                      <div className="h-8 w-full bg-muted rounded-full overflow-hidden flex">
+                        {gradeRanges.map((range, index) => {
+                          const count = gradeCounts[index];
+                          const percentage = totalGrades ? (count / totalGrades) * 100 : 0;
+                          const colors = [
+                            "hsl(var(--success))",
+                            "hsl(var(--primary))",
+                            "hsl(var(--secondary))",
+                            "hsl(var(--warning))",
+                            "hsl(var(--destructive))",
+                          ];
+                          return percentage > 0 ? (
+                            <div
+                              key={range}
+                              className="h-full flex items-center justify-center text-xs font-medium text-white"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: colors[index],
+                              }}
+                            >
+                              {percentage > 10 ? `${range}: ${Math.round(percentage)}%` : ""}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
                     </div>
-
-                    <div className="h-8 w-full bg-muted rounded-full overflow-hidden flex">
-                      {[
-                        { range: "4.5-5.0", count: 5, color: "hsl(var(--success))" },
-                        { range: "4.0-4.4", count: 8, color: "hsl(var(--primary))" },
-                        { range: "3.5-3.9", count: 6, color: "hsl(var(--secondary))" },
-                        { range: "3.0-3.4", count: 3, color: "hsl(var(--warning))" },
-                        { range: "1.0-2.9", count: 1, color: "hsl(var(--destructive))" },
-                      ].map((item) => {
-                        const total = 23
-                        const percentage = (item.count / total) * 100
-
-                        return percentage > 0 ? (
-                          <div
-                            key={item.range}
-                            className="h-full flex items-center justify-center text-xs font-medium text-white"
-                            style={{
-                              width: `${percentage}%`,
-                              backgroundColor: item.color,
-                            }}
-                          >
-                            {percentage > 10 ? `${item.range}: ${Math.round(percentage)}%` : ""}
-                          </div>
-                        ) : null
-                      })}
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -317,9 +390,14 @@ export function GradesView() {
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
-                <span>
-                  {(classes.find(cls => cls.id === selectedClass)?.className) || "Class"}
-                </span>
+                <div className="flex flex-col gap-2">
+                  <span>
+                    {(classes.find(cls => cls.id === selectedClass)?.className) || "N/A"} - {(classes.find(cls => cls.id === selectedClass)?.section) || "No Section"} - {(classes.find(cls => cls.id === selectedClass)?.room) || "No Room"}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {(classes.find(cls => cls.id === selectedClass)?.schedule) || "No Schedule"} - {classes.find(cls => cls.id === selectedClass)?.schoolYear || "No School Year"}
+                  </span>
+                </div>
                 <span className="text-base font-normal text-muted-foreground ml-4">
                   Final Grade: <span className="font-semibold text-black">
                     {calculatedGrade !== null ? calculatedGrade : "N/A"}%
@@ -341,43 +419,36 @@ export function GradesView() {
               ) : Object.keys(tableData).length === 0 ? (
                 <div>No grade data found for this class.</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Midterm Card */}
-                  <Card className="bg-blue-50">
+                <div className="grid grid-cols-1 gap-6">
+                  <Card>
                     <CardHeader>
-                      <CardTitle>Midterm Grades</CardTitle>
+                      <CardTitle>Grades Table</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="mb-2">
-                        <span className="font-semibold">Q1:</span>{" "}
-                        {tableData["Q1"] || "N/A"}
-                      </div>
-                      <div className="mb-2">
-                        <span className="font-semibold">Q2:</span>{" "}
-                        {tableData["Q2"] || "N/A"}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Midterm Exam (ME):</span>{" "}
-                        {tableData["ME"] || "N/A"}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  {/* Finals Card */}
-                  <Card className="bg-green-50">
-                    <CardHeader>
-                      <CardTitle>Final Grades</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="mb-2">
-                        <span className="font-semibold">Final Exam (FE):</span>{" "}
-                        {tableData["FE"] || "N/A"}
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border text-sm">
+                          <thead>
+                            <tr className="bg-muted">
+                              <th className="px-4 py-2 border-b text-left text-white">Component</th>
+                              <th className="px-4 py-2 border-b text-left text-white">Grade</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(tableData).map(([key, value]) => (
+                              <tr key={key}>
+                                <td className="px-4 py-2 border-b font-medium">{key}</td>
+                                <td className="px-4 py-2 border-b">{value || "N/A"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>
                   {/* Grade Scheme Card */}
                   <Card className="col-span-1 md:col-span-2 bg-gray-50">
                     <CardHeader>
-                      <CardTitle>Grade Scheme</CardTitle>
+                      <CardTitle>Class Grading System</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {schemeLoading ? (
