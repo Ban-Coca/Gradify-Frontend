@@ -2,8 +2,6 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080/api/student";
 
-// Remove axiosInstance, use axios directly
-
 export const getStudentClasses = async (studentId, header = {}) => {
   try {
     console.log(`Getting classes for studentId: ${studentId}`);
@@ -25,6 +23,7 @@ export const getStudentCourseTableData = async (studentId, classId, header = {})
       `${API_BASE_URL}/${studentId}/classes/${classId}/grades`,
       { headers: header }
     );
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching student course table data:", error);
@@ -64,7 +63,7 @@ export const getTeacherByClass = async (classId, header = {}) => {
 export const getReportsByStudentId = async (studentId, header = {}) => {
   try {
     const response = await axios.get(
-      `http://localhost:8080/api/student/${studentId}/reports`,
+     `${API_BASE_URL}/${studentId}/reports`,
       { headers: header }
     );
     console.log(response.data)
@@ -88,3 +87,47 @@ export const getCalculatedGrade = async (studentId, classId, header = {}) => {
     throw error;
   }
 };
+
+// Get calculated grade for a student in a class
+export const getCalculatedGPA = async (studentId, header = {}) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/${studentId}/average-percentage`,
+      { headers: header }
+    );
+    console.log("GPA response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching calculated GPA:", error);
+    throw error;
+  }
+};
+
+// Get calculated grade for a student in a class
+export const getClassGradesByStudent = async (studentId, header = {}) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/${studentId}/all-grades`,
+      { headers: header }
+    );
+    console.log("Class grades response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching calculated GPA:", error);
+    throw error;
+  }
+};
+
+export const getClassAveragesByStudent = async (studentId, header = {}) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/${studentId}/class-averages`,
+      { headers: header }
+    );
+    console.log("Class averages response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching class averages:", error);
+    throw error;
+  }
+}

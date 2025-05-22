@@ -197,7 +197,7 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester} semester - {classData.section} - {classData.room}
+                {classData.semester || "No semester"} - {classData.schedule || "No Schedule"} - {classData.room || "No Room"}
               </p>
             </div>
             <div className="flex flex-col md:flex-row gap-2">
