@@ -26,6 +26,12 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useReports } from "@/hooks/use-reports";
 import { useAuth } from "@/contexts/authentication-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ReportsHistory } from "@/components/reports-history";
 import {
   getClassByTeacherId,
@@ -58,6 +64,7 @@ function ReportsPage() {
   );
 
   const activeTeacher = initialTeacherId || currentUser?.userId;
+
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
     queryKey: ["classes", activeTeacher],
     queryFn: () => getClassByTeacherId(activeTeacher, getAuthHeader()),
@@ -70,7 +77,7 @@ function ReportsPage() {
     queryFn: () => getStudentByClass(selectedClassId, getAuthHeader()),
     enabled: !!selectedClassId,
   });
-  console.log("Students Data:", studentsData);
+
   const students = Array.isArray(studentsData)
     ? studentsData
     : studentsData?.students || [];
@@ -81,10 +88,10 @@ function ReportsPage() {
   const selectedStudentName =
     selectedStudent?.firstName || initialStudentName || "";
 
-  const { createReportMutation } = useReports(
+  const { createReportMutation, aiGeneratedReportQuery } = useReports(
     currentUser,
     selectedClassId,
-    selectedClassId,
+    selectedStudentId,
     activeTeacher,
     null
   );
@@ -98,7 +105,22 @@ function ReportsPage() {
       subject,
       message,
     };
-    createReportMutation.mutateAsync(payload);
+    try {
+      await createReportMutation.mutateAsync(payload);
+      // Clear form fields
+      setSubject("");
+      setMessage("<p>Enter your feedback or notification message</p>");
+      setNotificationType("grade-alert");
+      setSelectedClassId("");
+      setSelectedStudentId("");
+      
+      // Navigate to history tab
+      setActiveTab("history");
+      navigate("/teacher/reports/history");
+    } catch (error) {
+      // Optionally handle error (already shown in UI)
+      console.error("Failed to send report:", error);
+    }
   };
   useEffect(() => {
     if (tab && tab !== activeTab) {
@@ -109,7 +131,41 @@ function ReportsPage() {
     setActiveTab(tab);
     navigate(`/teacher/reports/${tab}`);
   };
-  const generateAIReport = {};
+
+  const generateAIReport = async () => {
+    setIsGeneratingAI(true);
+    try {
+      const result = await aiGeneratedReportQuery.refetch();
+      console.log("AI Generated Report:", result.data.message);
+      if (result.data) {
+        // Convert plain text to HTML for LexicalEditor
+        const plain = result.data.message || "";
+
+        // Better HTML conversion logic
+        let html = plain
+          // First, replace single newlines with <br /> tags
+          .replace(/\n/g, "<br />")
+          // Then wrap the entire content in a paragraph
+          .replace(/^(.+)$/s, "<p>$1</p>")
+          // Handle multiple consecutive <br /> tags and convert them to separate paragraphs
+          .replace(/(<br \/>){2,}/g, "</p><p>")
+          // Clean up any empty paragraphs
+          .replace(/<p><\/p>/g, "")
+          // Ensure we don't have <br /> at the start or end of paragraphs
+          .replace(/<p><br \/>/g, "<p>")
+          .replace(/<br \/><\/p>/g, "</p>");
+
+        // Alternative simpler approach - just replace all newlines with <br />
+        // const html = `<p>${plain.replace(/\n/g, '<br />')}</p>`;
+
+        console.log("Converted HTML:", html);
+        setMessage(html);
+      }
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
@@ -236,15 +292,6 @@ function ReportsPage() {
                     </div>
                   </div>
 
-                  {/* Recipient Information
-                  {selectedStudentId && (
-                    <div className="grid gap-2">
-                      <div>
-                        <h1 className="font-bold">Recipient</h1>
-                        <p>Student Name: {selectedStudentName}</p>
-                      </div>
-                    </div>
-                  )} */}
                   <div className="grid gap-2">
                     <Label htmlFor="notification-type">Notification Type</Label>
                     <Select
@@ -274,6 +321,7 @@ function ReportsPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="message">Message</Label>
                     <LexicalEditor
+                      key={message}
                       onChange={setMessage}
                       initialContent={message}
                     />
@@ -281,27 +329,72 @@ function ReportsPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex gap-4">
-                <Button
-                  variant="outline"
-                  onClick={generateAIReport}
-                  disabled={
-                    isGeneratingAI || !selectedStudentId || !selectedClassId
-                  }
-                  className="flex items-center gap-2"
-                >
-                  {isGeneratingAI ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Generating...
-                    </>
+                <TooltipProvider>
+                  {isGeneratingAI || !selectedStudentId || !selectedClassId ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            variant="outline"
+                            onClick={generateAIReport}
+                            disabled={
+                              isGeneratingAI ||
+                              aiGeneratedReportQuery.isLoading ||
+                              aiGeneratedReportQuery.isFetching ||
+                              !selectedStudentId ||
+                              !selectedClassId
+                            }
+                            className="flex items-center gap-2"
+                          >
+                            {isGeneratingAI ||
+                            aiGeneratedReportQuery.isLoading ||
+                            aiGeneratedReportQuery.isFetching ? (
+                              <>
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                Generate AI Report
+                              </>
+                            )}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {isGeneratingAI ||
+                        aiGeneratedReportQuery.isLoading ||
+                        aiGeneratedReportQuery.isFetching
+                          ? "AI report is currently being generated."
+                          : !selectedClassId
+                          ? "Select a class to enable."
+                          : !selectedStudentId
+                          ? "Select a student to enable."
+                          : ""}
+                      </TooltipContent>
+                    </Tooltip>
                   ) : (
-                    <>
+                    <Button
+                      variant="outline"
+                      onClick={generateAIReport}
+                      disabled={false}
+                      className="flex items-center gap-2"
+                    >
                       <Sparkles className="h-4 w-4" />
                       Generate AI Report
-                    </>
+                    </Button>
                   )}
+                </TooltipProvider>
+                <Button onClick={handleSendReport} className="cursor-pointer">
+                  Send Report
                 </Button>
-                <Button onClick={handleSendReport} className="cursor-pointer">Send Report</Button>
+                {aiGeneratedReportQuery.error && (
+                  <div className="text-red-500 text-sm ml-2">
+                    Error generating AI report:{" "}
+                    {aiGeneratedReportQuery.error.message || "Unknown error"}
+                  </div>
+                )}
               </CardFooter>
             </Card>
           </TabsContent>

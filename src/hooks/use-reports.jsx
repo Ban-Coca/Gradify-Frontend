@@ -8,6 +8,7 @@ import {
   getReportsByClassId,
   updateReport,
   deleteReport,
+  getAIGeneratedReport,
 } from "@/services/reports/reportsService";
 
 export function useReports(
@@ -70,6 +71,12 @@ export function useReports(
       queryClient.invalidateQueries({ queryKey: ["reports"] });
     },
   });
+  // Fetch AI-generated report
+  const aiGeneratedReportQuery = useQuery({
+    queryKey: ["reports", "generate-suggestion", studentId, classId],
+    queryFn: () => getAIGeneratedReport(studentId, classId, getAuthHeader()),
+    enabled: !!studentId && !!classId,
+  });
 
   return {
     reportQuery,
@@ -79,5 +86,6 @@ export function useReports(
     createReportMutation,
     updateReportMutation,
     deleteReportMutation,
+    aiGeneratedReportQuery,
   };
 }
