@@ -18,6 +18,7 @@ import { LinkToolbarPlugin } from "./lexical-plugins/link-toolbar-plugin"
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin"
 import { $getRoot, $getSelection } from "lexical"
 import { $generateHtmlFromNodes } from "@lexical/html"
+import { $generateNodesFromDOM } from "@lexical/html"
 import { useRef } from "react"
 
 export function LexicalEditor({ onChange, initialContent = "<p></p>" }) {
@@ -57,6 +58,17 @@ export function LexicalEditor({ onChange, initialContent = "<p></p>" }) {
       AutoLinkNode,
       LinkNode,
     ],
+    editorState: (editor) => {
+      // Parse HTML and set as initial state
+      const parser = new DOMParser();
+      const dom = parser.parseFromString(initialContent, "text/html");
+      const nodes = $generateNodesFromDOM(editor, dom);
+      editor.update(() => {
+        const root = $getRoot();
+        root.clear();
+        root.append(...nodes);
+      });
+    },
   }
 
   const handleEditorChange = (editorState, editor) => {

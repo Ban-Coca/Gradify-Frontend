@@ -21,6 +21,15 @@ export function FeedbackView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Handle page change
+  useEffect(() => {
+    const id = localStorage.getItem("selectedFeedbackId");
+    if (id) {
+      setSelectedFeedback(id);
+      localStorage.removeItem("selectedFeedbackId");
+    }
+  }, []);
+
   // Fetch classes
   useEffect(() => {
     async function loadClasses() {
@@ -52,7 +61,7 @@ export function FeedbackView() {
       try {
         const header = getAuthHeader ? getAuthHeader() : {};
         const data = await getReportsByStudentId(studentId, header);
-        setFeedbackItems(data);
+        setFeedbackItems(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -133,7 +142,8 @@ export function FeedbackView() {
                 <div>
                   <h3 className="text-sm font-medium mb-2">Classes</h3>
                   <div className="flex flex-wrap gap-2">
-                    {classes.map((cls) => (
+                    {[{ id: "all", className: "All" }, ...classes].map((cls) => (
+
                       <Badge
                         key={cls.id}
                         variant={selectedClass === cls.id ? "default" : "outline"}

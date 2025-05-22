@@ -1,4 +1,12 @@
-import { Calendar, LineChart, FileSpreadsheet, Inbox, Folder, LayoutDashboard, ClipboardList } from "lucide-react";
+import {
+  Calendar,
+  LineChart,
+  FileSpreadsheet,
+  Inbox,
+  Folder,
+  LayoutDashboard,
+  ClipboardList, 
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   Sidebar,
@@ -35,7 +43,7 @@ const teacherItems = [
   {
     title: "Class Spreadsheets",
     url: "/teacher/spreadsheets/",
-    icon: Calendar,
+    icon: FileSpreadsheet,
   },
 ];
 
@@ -76,7 +84,7 @@ export default function AppSidebar() {
     if (Array.isArray(path)) {
       return path.some((p) => location.pathname.startsWith(p));
     }
-  
+
     // Handle specific conditions
     if (path === "/" && location.pathname === "/") {
       return true;
@@ -84,7 +92,7 @@ export default function AppSidebar() {
     if (location.pathname === "/notifications") {
       return path === "/home";
     }
-  
+
     // Default condition for single URL
     return location.pathname.startsWith(path);
   };
@@ -93,7 +101,6 @@ export default function AppSidebar() {
     logout();
     navigate("/login");
   };
-
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -102,27 +109,34 @@ export default function AppSidebar() {
             GRADIFY
           </SidebarGroupLabel>
           <SidebarGroupContent>
-          <SidebarMenu className="mt-6">
-            {items.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  className="text-base h-12 hover:bg-primary hover:text-white"
-                  isActive={isActive(item.url)}
-                  asChild
-                >
-                  <Link to={Array.isArray(item.url) ? item.url[0] : item.url} className="gap-4">
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+            <SidebarMenu className="mt-6">
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    className="text-base h-12 hover:bg-primary hover:text-white"
+                    isActive={isActive(item.url)}
+                    asChild
+                  >
+                    <Link
+                      to={Array.isArray(item.url) ? item.url[0] : item.url}
+                      className="gap-4"
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser currentUser={currentUser} onLogout={handleLogout} isCollapsed={state === "collapsed"} />
+        <NavUser
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          isCollapsed={state === "collapsed"}
+        />
       </SidebarFooter>
     </Sidebar>
   );

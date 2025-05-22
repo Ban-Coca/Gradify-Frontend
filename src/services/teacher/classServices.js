@@ -152,6 +152,7 @@ export const getClassAverage = async (classId, header) => {
         const response = await axios.get(`${API_BASE_URL}/${classId}/avgclassgrade`, {
             headers: header
         });
+        console.log("Class average response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching class average:", error);

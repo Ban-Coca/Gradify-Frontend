@@ -19,19 +19,21 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
                     <CardTitle>{classItem.className}</CardTitle> {/* Use `className` */}
                 </div>
                 <CardDescription>
-                    {classItem.semester} {classItem.schoolYear} • {classItem.classCode} • {classItem.room}
+                    {(classItem.semester ? `${classItem.semester} Semester` : "No Semester")} • {classItem.schoolYear || "No School Year"} • {classItem.classCode || "No Class Code"} • {classItem.room || "No Room"}
                 </CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pb-2">
                 <div className="space-y-2">
-                    <div className="flex items-center text-sm">
-                    <Users className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>Section: {classItem.section}</span> {/* Use `section` */}
-                    </div>
-                    <div className="flex items-center text-sm">
+                    <div className="space-y-2">
+                        <div className="flex items-center text-sm">
+                        <Users className="h-4 w-4 mr-2 text-gray-500" />
+                        <span>Section: {classItem.section || "No Section"}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
                         <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{classItem.schedule}</span> {/* Use `schedule` */}
+                        <span>{classItem.schedule || "No Schedule"}</span>
                     </div>
+                </div>
                 </div>
                 </CardContent>
                 <CardFooter className="mt-auto">

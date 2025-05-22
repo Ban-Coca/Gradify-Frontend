@@ -25,6 +25,9 @@ import Pagination from "@/components/ui/pagination";
 import { GradeDistributionChart } from "@/components/charts/grade-distribution"
 import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
 import { useAuth } from "@/contexts/authentication-context"
+import NewClass from "@/pages/TeacherPages/NewClass.jsx"
+import { useTeacher } from "@/hooks/use-teacher"
+
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState("math101")
   const [selectedPeriod, setSelectedPeriod] = useState("current")
@@ -33,6 +36,9 @@ const TeacherDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1); // State for current page
   const classesPerPage = 6; // Max cards per page
   const { currentUser, getAuthHeader } = useAuth();
+  // Add state for new class modal
+  const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  const { studentCountQuery, atRiskStudentsQuery, topStudentsQuery } = useTeacher(currentUser.userId);
   // Sample data for charts
   const performanceData = {
     labels: ["Math 101", "Science 202", "History 303", "English 404"],
@@ -90,6 +96,34 @@ const TeacherDashboard = () => {
     navigate(`/teacher/classes/classdetail/${classId}`)
   }
 
+  // Handle new class creation
+  const handleClassCreated = (newClass) => {
+    // Add category to the new class based on current date
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    let currentSemester;
+
+    if (currentMonth >= 1 && currentMonth <= 5) {
+      currentSemester = "2nd Semester";
+    } else if (currentMonth >= 8 && currentMonth <= 12) {
+      currentSemester = "1st Semester";
+    } else {
+      currentSemester = null;
+    }
+
+    let category = "all";
+    if (newClass.semester === currentSemester && newClass.schoolYear === currentYear.toString()) {
+      category = "current";
+    } else if (parseInt(newClass.schoolYear) < currentYear || 
+              (newClass.schoolYear === currentYear.toString() && newClass.semester !== currentSemester)) {
+      category = "past";
+    }
+
+    const classWithCategory = { ...newClass, category };
+    setClasses(prev => [...prev, classWithCategory]);
+  };
+
   return (
     <Layout>
       {/* Welcome Banner */}
@@ -103,12 +137,12 @@ const TeacherDashboard = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Total Students</p>
-              <h3 className="text-2xl font-bold">128</h3>
+              <h3 className="text-2xl font-bold">{studentCountQuery.data}</h3>
               <p className="text-xs text-muted-foreground">Across all classes</p>
             </div>
             <div className="p-2 bg-blue-100 rounded-full">
@@ -120,8 +154,13 @@ const TeacherDashboard = () => {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Students at Risk</p>
-              <h3 className="text-2xl font-bold">4</h3>
-              <p className="text-xs text-muted-foreground">8% of class</p>
+              <h3 className="text-2xl font-bold">{atRiskStudentsQuery.data}</h3>
+              <p className="text-xs text-muted-foreground">
+                {studentCountQuery.data > 0
+                  ? ((atRiskStudentsQuery.data / studentCountQuery.data) * 100).toFixed(2)
+                  : "0.00"
+                }% of class
+              </p>
             </div>
             <div className="p-2 bg-red-100 rounded-full">
               <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -132,26 +171,19 @@ const TeacherDashboard = () => {
           <CardContent className="p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Top Performers</p>
-              <h3 className="text-2xl font-bold">12</h3>
-              <p className="text-xs text-muted-foreground">24% of class</p>
+              <h3 className="text-2xl font-bold">{topStudentsQuery.data}</h3>
+              <p className="text-xs text-muted-foreground">
+                {studentCountQuery.data > 0
+                  ? ((topStudentsQuery.data / studentCountQuery.data) * 100).toFixed(2)
+                  : "0.00"
+                }% of class
+              </p>
             </div>
             <div className="p-2 bg-green-100 rounded-full">
               <Star className="h-6 w-6 text-green-600" />
             </div>
           </CardContent>
         </Card> 
-        <Card>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Missing Assignments</p>
-              <h3 className="text-2xl font-bold">15</h3>
-              <p className="text-xs text-muted-foreground">Across all students</p>
-            </div>
-            <div className="p-2 bg-amber-100 rounded-full">
-              <ClipboardList className="h-6 w-6 text-amber-600" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Dashboard Content */}
@@ -225,21 +257,21 @@ const TeacherDashboard = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full justify-start" onClick={() => router.push("/upload")}>
+              <Button className="w-full justify-start" onClick={() => navigate("/teacher/spreadsheets")}>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Spreadsheet
+                Upload Spreadsheet or Link a Spreadsheet
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/classes/new")}>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline" 
+                onClick={() => setIsNewClassModalOpen(true)}
+              >
                 <BookOpen className="mr-2 h-4 w-4" />
                 Create New Class
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/reports")}>
+              <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/teacher/reports")}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Generate Reports
-              </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => router.push("/integrations")}>
-                <Database className="mr-2 h-4 w-4" />
-                Manage Integrations
               </Button>
             </CardContent>
           </Card>
@@ -282,7 +314,7 @@ const TeacherDashboard = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => router.push("/uploads")}>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/uploads")}>
                 View All Uploads
               </Button>
             </CardFooter>
@@ -315,6 +347,13 @@ const TeacherDashboard = () => {
           </Card>
         </div>
       </div>
+
+      {/* New Class Modal */}
+      <NewClass 
+        isOpen={isNewClassModalOpen}
+        onClose={() => setIsNewClassModalOpen(false)}
+        onClassCreated={handleClassCreated}
+      />
     </Layout>
   )
 }

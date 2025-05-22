@@ -55,7 +55,7 @@ export function ReportDetailsModal({ report, isOpen, onClose }) {
           </div>
 
           {/* Message */}
-          <div className="bg-primary text-white p-4 rounded-md">
+          <div className="bg-primary text-white p-4 rounded-md max-h-60 overflow-auto">
             <div dangerouslySetInnerHTML={{ __html: report.message }} className="prose prose-sm max-w-none" />
           </div>
 

@@ -27,6 +27,13 @@ export function Notifications() {
       time: "2 days ago",
       type: "reminder",
     },
+    {
+      id: 4,
+      title: "Assignment reminder",
+      description: "CS301 homework due tomorrow",
+      time: "2 days ago",
+      type: "reminder",
+    },
   ]
 
   const getIcon = (type) => {

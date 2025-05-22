@@ -164,9 +164,9 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
       let currentSemester
 
       if (currentMonth >= 1 && currentMonth <= 5) {
-        currentSemester = "2nd Semester"
+        currentSemester = "2nd"
       } else if (currentMonth >= 8 && currentMonth <= 12) {
-        currentSemester = "1st Semester"
+        currentSemester = "1st"
       } else {
         currentSemester = null
       }
@@ -180,8 +180,8 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
       else if (
         // Next semester in same year
         (formData.schoolYear === currentYear.toString() &&
-          ((currentSemester === "1st Semester" && formData.semester === "2nd Semester") ||
-            (currentSemester === "Summer" && formData.semester === "1st Semester"))) ||
+          ((currentSemester === "1st" && formData.semester === "2nd") ||
+            (currentSemester === "Summer" && formData.semester === "1st"))) ||
         // Next year's classes
         Number.parseInt(formData.schoolYear) > currentYear
       ) {
@@ -191,8 +191,8 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
       else if (
         Number.parseInt(formData.schoolYear) < currentYear ||
         (formData.schoolYear === currentYear.toString() &&
-          ((currentSemester === "2nd Semester" && formData.semester === "1st Semester") ||
-            (currentSemester === "1st Semester" && formData.semester === "Summer")))
+          ((currentSemester === "2nd" && formData.semester === "1st") ||
+            (currentSemester === "1st" && formData.semester === "Summer")))
       ) {
         category = "past"
       }
@@ -398,8 +398,8 @@ const NewClass = ({ isOpen, onClose, onClassCreated }) => {
                   <SelectValue placeholder="Select semester" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1st Semester">1st Semester</SelectItem>
-                  <SelectItem value="2nd Semester">2nd Semester</SelectItem>
+                  <SelectItem value="1st">1st Semester</SelectItem>
+                  <SelectItem value="2nd">2nd Semester</SelectItem>
                 </SelectContent>
               </Select>
             </div>

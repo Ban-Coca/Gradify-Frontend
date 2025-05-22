@@ -82,7 +82,7 @@ export function StudentTable({ searchQuery, classId }) {
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="hover:bg-[#198754]/10">
             <TableHead className="w-[250px]">
               <Button variant="ghost" onClick={() => handleSort("name")} className="flex items-center gap-1 px-0">
                 Student Name
@@ -125,7 +125,7 @@ export function StudentTable({ searchQuery, classId }) {
             </TableRow>
           ) : (
             sortedStudents.map((student) => (
-              <TableRow key={student.id}>
+              <TableRow key={student.id} className="hover:bg-[#198754]/10">
                 <TableCell className="font-medium">{student.name}</TableCell>
                 <TableCell >{student.studentId}</TableCell>
                 <TableCell>{student.grade}</TableCell>
