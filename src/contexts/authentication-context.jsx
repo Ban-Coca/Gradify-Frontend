@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { requestNotificationPermission } from "@/services/notification/firebaseService";
 const AuthenticationContext = createContext(null);
 
 export const AuthenticationProvider = ({ children }) => {
@@ -65,7 +66,7 @@ export const AuthenticationProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = (userData, authToken) => {
+  const login = async (userData, authToken) => {
     const role = extractRoleFromToken(authToken);
     setUserRole(role);
     setCurrentUser(userData);
@@ -76,7 +77,7 @@ export const AuthenticationProvider = ({ children }) => {
     localStorage.setItem("token", authToken);
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("role", role);
-
+    await requestNotificationPermission(userData.userId);
     if (role === "TEACHER") {
       navigate("/teacher/dashboard");
     } else if (role === "STUDENT") {
