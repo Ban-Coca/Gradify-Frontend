@@ -1,112 +1,76 @@
-"use client"
-
-import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp } from "lucide-react"
+import { AlertTriangle, CheckCircle, TrendingDown, TrendingUp, XCircle } from "lucide-react"
 
-export function ImprovementAreas({ period, subject }) {
-  const [mounted, setMounted] = useState(false)
+export function ImprovementAreas({ classes = [], allGrades = [] }) {
+  // Map classId to grade for quick lookup
+  const classIdToGrade = {};
+  allGrades.forEach(g => {
+    classIdToGrade[String(g.classId)] = g.grade;
+  });
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  // Recommendation based on actual grade from allGrades
+  const getRecommendation = (grade) => {
+    if (grade == null) return "No grade data available for this class.";
+    if (grade < 60) return "Urgent: Seek help from your instructor and review class materials immediately.";
+    if (grade < 75) return "Danger zone: Strongly consider extra practice and tutoring support.";
+    if (grade < 80) return "Keep practicing and focus on areas where you lost points.";
+    if (grade < 90) return "Good job! You're doing well, keep up the consistent effort.";
+    return "Excellent work! Maintain your performance and help peers if you can.";
+  };
 
-  // This would typically come from an API based on period and subject
-  const getImprovementData = () => {
-    return [
-      {
-        area: "Algorithm Analysis",
-        subject: "CS301 - Algorithms",
-        courseId: "cs301",
-        currentScore: 3.8,
-        previousScore: 3.4,
-        trend: "up",
-        skillCategory: "Analytical Skills",
-        recommendation: "Continue practicing time complexity analysis and review optimization techniques.",
-      },
-      {
-        area: "Code Quality",
-        subject: "CS101 - Introduction to Programming",
-        courseId: "cs101",
-        currentScore: 4.1,
-        previousScore: 4.3,
-        trend: "down",
-        skillCategory: "Software Craftsmanship",
-        recommendation: "Review code organization principles and practice writing cleaner, more maintainable code.",
-      },
-      {
-        area: "Data Structure Implementation",
-        subject: "CS201 - Data Structures",
-        courseId: "cs201",
-        currentScore: 3.9,
-        previousScore: 3.6,
-        trend: "up",
-        skillCategory: "Implementation Skills",
-        recommendation: "Focus on efficient implementations and memory management techniques.",
-      },
-      {
-        area: "Project Planning",
-        subject: "CS401 - Software Engineering",
-        courseId: "cs401",
-        currentScore: 3.4,
-        previousScore: 3.7,
-        trend: "down",
-        skillCategory: "Project Management",
-        recommendation:
-          "Review agile methodologies and practice creating detailed project plans with clear milestones.",
-      },
-    ]
-  }
-
-  const improvementData = getImprovementData().filter((item) => subject === "all" || item.courseId === subject)
-
-  if (!mounted) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <div className="animate-pulse bg-muted h-48 w-full rounded-md"></div>
-      </div>
-    )
+  if (!classes.length || !allGrades.length) {
+    return <div className="text-muted-foreground">No improvement suggestions available.</div>;
   }
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {improvementData.map((item, index) => (
-        <Card key={index}>
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between">
-              <div>
+      {classes.map((cls, idx) => {
+        const grade = classIdToGrade[String(cls.classId)];
+        return (
+          <Card key={cls.classId || idx} className="p-0">
+            <CardContent className="p-8">
+              <div className="flex items-start justify-between">
                 <h3 className="font-medium flex items-center gap-2">
-                  {item.area}
-                  {item.trend === "up" ? (
+                  {cls.className}
+                  {grade >= 90 ? (
                     <TrendingUp className="h-4 w-4 text-green-500" />
-                  ) : (
+                  ) : grade >= 80 ? (
+                    <TrendingUp className="h-4 w-4 text-blue-500" />
+                  ) : grade >= 75 ? (
+                    <TrendingDown className="h-4 w-4 text-yellow-500" />
+                  ) : grade >= 60 ? (
                     <TrendingDown className="h-4 w-4 text-red-500" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-700" />
                   )}
                 </h3>
-                <p className="text-sm text-muted-foreground">{item.subject}</p>
                 <Badge variant="outline" className="mt-1">
-                  {item.skillCategory}
+                  {grade != null ? `${grade}%` : "No Grade"}
                 </Badge>
               </div>
-              <Badge variant={item.trend === "up" ? "outline" : "destructive"} className="ml-2">
-                {item.currentScore.toFixed(1)} ({item.trend === "up" ? "+" : "-"}
-                {Math.abs(item.currentScore - item.previousScore).toFixed(1)})
-              </Badge>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-start gap-2">
-                {item.trend === "up" ? (
-                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                ) : (
-                  <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
-                )}
-                <p className="text-sm">{item.recommendation}</p>
+              <div className="mt-4">
+                <div className="flex items-start gap-2">
+                  {grade == null ? (
+                    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+                  ) : grade < 60 ? (
+                    <XCircle className="h-5 w-5 text-red-700 mt-0.5" />
+                  ) : grade < 75 ? (
+                    <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                  ) : grade < 80 ? (
+                    <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+                  ) : grade < 90 ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
+                  )}
+                  <p className="text-sm">{getRecommendation(grade)}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
-  )
+  );
 }

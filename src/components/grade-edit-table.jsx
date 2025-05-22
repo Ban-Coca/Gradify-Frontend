@@ -182,7 +182,7 @@ export function GradeEditTable({ classId }) {
       <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="hover:bg-[#198754]/10">
               <TableHead className="font-bold">Student Number</TableHead>
               <TableHead className="font-bold">First Name</TableHead>
               <TableHead className="font-bold">Last Name</TableHead>
@@ -204,7 +204,7 @@ export function GradeEditTable({ classId }) {
               const uniqueKey = studentId || record.id || `student-${index}`;
 
               return (
-                <TableRow key={uniqueKey}>
+                <TableRow key={uniqueKey} className="hover:bg-[#198754]/10">
                   <TableCell>{studentId}</TableCell>
                   <TableCell>{record.grades["First Name"] || ""}</TableCell>
                   <TableCell>{record.grades["Last Name"] || ""}</TableCell>
