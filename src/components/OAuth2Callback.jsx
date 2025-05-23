@@ -1,36 +1,81 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
+import { useOnboarding } from "@/contexts/onboarding-context";
+import { jwtDecode } from "jwt-decode";
+
+const getOAuthParams = (search) => {
+  const params = new URLSearchParams(search);
+  return {
+    exists: params.get("exists"),
+    token: params.get("token"),
+    email: params.get("email"),
+    firstName: params.get("firstName"),
+    lastName: params.get("lastName"),
+    provider: params.get("provider"),
+    role: params.get("role"),
+  };
+};
 
 const OAuth2Callback = () => {
-  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+    provider: "Email"
+  });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const { setFormData: setOnboardingData } = useOnboarding();
+  const actionRef = useRef(false);
 
   useEffect(() => {
-    const fetchOAuth2Success = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/api/user/oauth2/success", {
-          credentials: "include", // Include cookies if needed
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const { token, user } = data;
+    if (actionRef.current) return; // Prevent repeated actions
 
-          // Call the login function from the AuthenticationContext
-          login(user, token);
-        } else {
-          console.error("OAuth2 login failed");
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error("Error during OAuth2 callback:", error);
-        navigate("/login");
-      }
-    };
+    const {
+      exists,
+      token,
+      email,
+      firstName,
+      lastName,
+      provider,
+      role,
+    } = getOAuthParams(location.search);
 
-    fetchOAuth2Success();
-  }, [login, navigate]);
+    if (exists === "true" && token) {
+      const userData = jwtDecode(token);
+      actionRef.current = true;
+      login(userData, token);
+    } else if (exists === "false") {
+      setFormData({
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email: email || "",
+        provider: provider || "",
+        role: role || "",
+      });
+      setOnboardingData({
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email: email || "",
+        provider: provider || "",
+        role: role || "",
+      });
+      actionRef.current = true;
+      navigate("/onboarding/role");
+    } else {
+      actionRef.current = true;
+      navigate("/login");
+    }
+    // Only run on mount or when location.search changes
+    // eslint-disable-next-line
+  }, [location.search]);
 
-  return <div>Processing login...</div>;
+  return null;
 };
 
 export default OAuth2Callback;

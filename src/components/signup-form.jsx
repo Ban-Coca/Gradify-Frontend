@@ -22,6 +22,7 @@ export function SignupForm({
     password: "",
     confirmPassword: "",
     role: "",
+    provider: "Email"
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
