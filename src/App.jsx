@@ -99,7 +99,7 @@ function App() {
           <SignupPage />
         </RedirectIfAuthenticated>
       }/>
-      <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/oauth2/callback" element={<RedirectIfAuthenticated><OAuth2Callback /></RedirectIfAuthenticated>} />
       <Route path="/forgot-password" element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>} />
       <Route path="/verify-code" element={<RedirectIfAuthenticated><VerifyCode /></RedirectIfAuthenticated>} />
       <Route path="/reset-password" element={<RedirectIfAuthenticated><PasswordReset /></RedirectIfAuthenticated>} />

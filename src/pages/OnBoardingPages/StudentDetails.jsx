@@ -47,6 +47,7 @@ export default function StudentOnboarding() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        provider: formData.provider,
         ...values,
       };
       console.log("Onboarding Data:", onboardingData);

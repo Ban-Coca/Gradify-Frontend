@@ -1,34 +1,104 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
+import { useOnboarding } from "@/contexts/onboarding-context";
+import { jwtDecode } from "jwt-decode";
+
+const getOAuthParams = (search) => {
+  const params = new URLSearchParams(search);
+  return {
+    exists: params.get("exists"),
+    token: params.get("token"),
+    email: params.get("email"),
+    firstName: params.get("firstName"),
+    lastName: params.get("lastName"),
+    provider: params.get("provider"),
+    role: params.get("role"),
+  };
+};
 
 const OAuth2Callback = () => {
-  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: "",
+      provider: "Email"
+    });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const {setFormData: setOnboardingData } = useOnboarding();
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
-    const fetchOAuth2Success = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/api/user/oauth2/success", {
-          credentials: "include", // Include cookies if needed
+    const {
+      exists,
+      token,
+      email,
+      firstName,
+      lastName,
+      provider,
+      role,
+    } = getOAuthParams(location.search);
+
+    if (exists === "true" && token) {
+      const userData = jwtDecode(token);
+      login(userData, token);
+    } else if (exists === "false") {
+      const shouldUpdate =
+        formData.email !== email ||
+        formData.firstName !== firstName ||
+        formData.lastName !== lastName ||
+        formData.provider !== provider ||
+        formData.role !== role;
+
+      if (shouldUpdate) {
+        setFormData({
+          firstName: firstName || "",
+          lastName: lastName || "",
+          email: email || "",
+          provider: provider || "",
+          role: role || "",
         });
-        if (response.ok) {
-          const data = await response.json();
-          const { token, user } = data;
-
-          // Call the login function from the AuthenticationContext
-          login(user, token);
-        } else {
-          console.error("OAuth2 login failed");
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error("Error during OAuth2 callback:", error);
-        navigate("/login");
+        navigatedRef.current = false;
+      } else if (!navigatedRef.current) {
+        navigatedRef.current = true;
+        navigate("/onboarding/role");
       }
-    };
+    } else {
+      navigate("/login");
+    }
+    // eslint-disable-next-line
+  }, [location.search, setFormData, navigate, formData,login]);
 
-    fetchOAuth2Success();
-  }, [login, navigate]);
+  // When formData changes and matches the params, navigate
+  useEffect(() => {
+    const {
+      exists,
+      email,
+      firstName,
+      lastName,
+      provider,
+      role,
+    } = getOAuthParams(location.search);
+
+    if (
+      exists === "false" &&
+      email === formData.email &&
+      firstName === formData.firstName &&
+      lastName === formData.lastName &&
+      provider === formData.provider &&
+      role === formData.role &&
+      !navigatedRef.current
+    ) {
+      navigatedRef.current = true;
+      navigate("/onboarding/role");
+    }
+    // eslint-disable-next-line
+  }, [formData, location.search, navigate]);
 
   return <div>Processing login...</div>;
 };
