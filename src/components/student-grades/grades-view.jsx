@@ -66,7 +66,6 @@ export function GradesView() {
             lastUpdated: cls.updatedAt ? new Date(cls.updatedAt).toLocaleDateString() : "",
           }))
         );
-        console.log("Classes data:", data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -262,31 +261,29 @@ export function GradesView() {
 
             <TabsContent value="classes" className="mt-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                {classes
-                  .filter((cls) => cls.className.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((cls) => (
-                    <Card
-                      key={cls.id}
-                      className="group cursor-pointer transition-colors hover:bg-gray-50"
-                      onClick={() => setSelectedClass(cls.id)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-medium transition-colors">
-                              {cls.className} - {cls.section} - {cls.room || "No Room"}
-                            </h3>
-                            <p className="text-sm text-muted-foreground transition-colors">
-                              {cls.schedule || "No Schedule"}
-                            </p>
-                          </div>
-                          <Button variant="ghost" size="sm" className="transition-colors">
-                            View Grades
-                          </Button>
+                {paginatedClasses.map((cls) => (
+                  <Card
+                    key={cls.id}
+                    className="group cursor-pointer transition-colors hover:bg-gray-50"
+                    onClick={() => setSelectedClass(cls.id)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium transition-colors">
+                            {cls.className} - {cls.section} - {cls.room || "No Room"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground transition-colors">
+                            {cls.schedule || "No Schedule"}
+                          </p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        <Button variant="ghost" size="sm" className="transition-colors">
+                          View Grades
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
               <Pagination
                 currentPage={page}
@@ -434,12 +431,18 @@ export function GradesView() {
                             </tr>
                           </thead>
                           <tbody>
-                            {Object.entries(tableData).map(([key, value]) => (
-                              <tr key={key}>
-                                <td className="px-4 py-2 border-b font-medium">{key}</td>
-                                <td className="px-4 py-2 border-b">{value || "N/A"}</td>
-                              </tr>
-                            ))}
+                            {Object.entries(tableData)
+                              .filter(([key]) =>
+                                !["firstName", "lastName", "studentNumber", "firstname", "lastname", "studentnumber"].includes(
+                                  key.replace(/\s+/g, "").toLowerCase()
+                                )
+                              )
+                              .map(([key, value]) => (
+                                <tr key={key}>
+                                  <td className="px-4 py-2 border-b font-medium">{key}</td>
+                                  <td className="px-4 py-2 border-b">{value || "N/A"}</td>
+                                </tr>
+                              ))}
                           </tbody>
                         </table>
                       </div>
