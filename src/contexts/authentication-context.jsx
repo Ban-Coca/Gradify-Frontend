@@ -44,6 +44,21 @@ export const AuthenticationProvider = ({ children }) => {
         const storedUser = localStorage.getItem("user");
         const storedAuthStatus = localStorage.getItem("isAuthenticated");
 
+        // Allow unauthenticated access to onboarding routes
+        const onboardingPaths = [
+          "/onboarding/role",
+          "/onboarding/student",
+          "/onboarding/teacher",
+          "/oauth2/callback"
+        ];
+        if (
+          onboardingPaths.includes(window.location.pathname) &&
+          (!storedToken || !storedUser || storedAuthStatus !== "true" || isTokenExpired(storedToken))
+        ) {
+          setLoading(false);
+          return;
+        }
+
         if (storedToken && storedUser && storedAuthStatus === "true" && !isTokenExpired(storedToken)) {
           setToken(storedToken);
           setCurrentUser(JSON.parse(storedUser));

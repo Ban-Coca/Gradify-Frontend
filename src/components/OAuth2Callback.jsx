@@ -19,21 +19,23 @@ const getOAuthParams = (search) => {
 
 const OAuth2Callback = () => {
   const [formData, setFormData] = useState({
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      role: "",
-      provider: "Email"
-    });
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+    provider: "Email"
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const {setFormData: setOnboardingData } = useOnboarding();
-  const navigatedRef = useRef(false);
+  const { setFormData: setOnboardingData } = useOnboarding();
+  const actionRef = useRef(false);
 
   useEffect(() => {
+    if (actionRef.current) return; // Prevent repeated actions
+
     const {
       exists,
       token,
@@ -46,61 +48,34 @@ const OAuth2Callback = () => {
 
     if (exists === "true" && token) {
       const userData = jwtDecode(token);
+      actionRef.current = true;
       login(userData, token);
     } else if (exists === "false") {
-      const shouldUpdate =
-        formData.email !== email ||
-        formData.firstName !== firstName ||
-        formData.lastName !== lastName ||
-        formData.provider !== provider ||
-        formData.role !== role;
-
-      if (shouldUpdate) {
-        setFormData({
-          firstName: firstName || "",
-          lastName: lastName || "",
-          email: email || "",
-          provider: provider || "",
-          role: role || "",
-        });
-        navigatedRef.current = false;
-      } else if (!navigatedRef.current) {
-        navigatedRef.current = true;
-        navigate("/onboarding/role");
-      }
+      setFormData({
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email: email || "",
+        provider: provider || "",
+        role: role || "",
+      });
+      setOnboardingData({
+        firstName: firstName || "",
+        lastName: lastName || "",
+        email: email || "",
+        provider: provider || "",
+        role: role || "",
+      });
+      actionRef.current = true;
+      navigate("/onboarding/role");
     } else {
+      actionRef.current = true;
       navigate("/login");
     }
+    // Only run on mount or when location.search changes
     // eslint-disable-next-line
-  }, [location.search, setFormData, navigate, formData,login]);
+  }, [location.search]);
 
-  // When formData changes and matches the params, navigate
-  useEffect(() => {
-    const {
-      exists,
-      email,
-      firstName,
-      lastName,
-      provider,
-      role,
-    } = getOAuthParams(location.search);
-
-    if (
-      exists === "false" &&
-      email === formData.email &&
-      firstName === formData.firstName &&
-      lastName === formData.lastName &&
-      provider === formData.provider &&
-      role === formData.role &&
-      !navigatedRef.current
-    ) {
-      navigatedRef.current = true;
-      navigate("/onboarding/role");
-    }
-    // eslint-disable-next-line
-  }, [formData, location.search, navigate]);
-
-  return <div>Processing login...</div>;
+  return null;
 };
 
 export default OAuth2Callback;
