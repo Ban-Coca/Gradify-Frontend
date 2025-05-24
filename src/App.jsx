@@ -121,7 +121,7 @@ function App() {
         <Route path="/student/*" element={<StudentDashboard />} />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/grades" element={<GradesPage />} />
-        <Route path="/student/feedback" element={<FeedbackPage />} />
+        <Route path="/student/feedback/:feedbackId?" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>

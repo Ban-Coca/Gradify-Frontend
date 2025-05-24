@@ -18,6 +18,12 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNotification } from "@/hooks/use-notifications";
+
+function truncateText(text, maxLength = 80) {
+  if (!text) return "";
+  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+}
+
 export function NotificationDropdown() {
   const { currentUser, getAuthHeader } = useAuth();
   const [open, setOpen] = useState(false);
@@ -68,15 +74,26 @@ export function NotificationDropdown() {
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
     }
   };
+  const cleanNotificationText = (html) => {
+    if (!html) return "";
+
+    try {
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+      return tempDiv.textContent || tempDiv.innerText || "";
+    } catch (error) {
+      return html.replace(/<[^>]*>/g, "").trim();
+    }
+  };
   const formatNotifications = (apiNotifications) => {
     if (!Array.isArray(apiNotifications)) return [];
 
     return apiNotifications.map((notification) => ({
-      id: notification.id,
-      title: notification.title,
-      description: notification.message || notification.description,
-      time: new Date(notification.createdAt).toLocaleString(),
-      type: notification.type || "info",
+      id: notification.notificationId,
+      title: notification.subject,
+      description: cleanNotificationText(notification.message || notification.description),
+      time: new Date(notification.date).toLocaleString(),
+      type: notification.notificationType || "info",
       read: notification.read,
     }));
   };
@@ -93,14 +110,18 @@ export function NotificationDropdown() {
         <Tooltip>
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative z-10 overflow-visible"
+              >
                 <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
+                {unreadCount?.count > 0 && (
                   <Badge
                     className="absolute -top-2 -right-2 h-5 min-w-[20px] px-1 flex items-center justify-center"
                     variant="destructive"
                   >
-                    {unreadCount > 99 ? "99+" : unreadCount}
+                    {unreadCount.count > 99 ? "99+" : unreadCount.count}
                   </Badge>
                 )}
                 <span className="sr-only">Notifications</span>
@@ -138,19 +159,31 @@ export function NotificationDropdown() {
                   key={notification.id}
                   className={cn(
                     "flex flex-col p-3 border-b last:border-b-0 transition-colors",
-                    notification.read ? "bg-background" : "bg-muted/30",
+                    notification.read ? "bg-background" : "bg-primary/10 border-l-4 border-primary shadow-sm"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={cn("h-6 px-2", getTypeStyles(notification.type))}>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "h-6 px-2",
+                            getTypeStyles(notification.type)
+                          )}
+                        >
                           {notification.type}
                         </Badge>
-                        <h4 className="font-medium text-sm">{notification.title}</h4>
+                        <h4 className="font-medium text-sm">
+                          {notification.title}
+                        </h4>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">{notification.description}</p>
-                      <span className="text-xs text-muted-foreground mt-2 block">{notification.time}</span>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {truncateText(notification.description, 80)}
+                      </p>
+                      <span className="text-xs text-muted-foreground mt-2 block">
+                        {notification.time}
+                      </span>
                     </div>
 
                     {!notification.read && (
@@ -173,16 +206,23 @@ export function NotificationDropdown() {
             <div className="flex flex-col items-center justify-center p-6 text-center">
               <BellOff className="h-10 w-10 text-muted-foreground mb-2" />
               <h4 className="font-medium">No notifications</h4>
-              <p className="text-sm text-muted-foreground">You're all caught up!</p>
+              <p className="text-sm text-muted-foreground">
+                You're all caught up!
+              </p>
             </div>
           )}
         </div>
         <div className="border-t p-2">
-          <Button variant="ghost" size="sm" className="w-full justify-center" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-center"
+            asChild
+          >
             <Link to="/notifications">View all notifications</Link>
           </Button>
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

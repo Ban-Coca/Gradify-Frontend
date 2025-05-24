@@ -41,3 +41,27 @@ export const getTopStudents = async (teacherId, header) => {
     }
 };
 
+export const getTeacherGradeDistribution = async (teacherId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/teacher-grade-distribution/${teacherId}`,
+            { headers: header }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching teacher grade distribution:", error);
+        throw error;
+    }
+}
+export const getClassPerformance = async (teacherId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/class-performance/${teacherId}`,
+            { headers: header }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching class performance:", error);
+        throw error;
+    }
+};
