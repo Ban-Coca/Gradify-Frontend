@@ -325,7 +325,7 @@ const ClassDetailPage = () => {
               <TabsList className="mb-4">
                 <TabsTrigger value="roster" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Class Roster</TabsTrigger>
                 <TabsTrigger value="grades"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Edit Grades</TabsTrigger>
-                <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger>
+                {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
                 <TabsTrigger value="reports"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Reports</TabsTrigger>
               </TabsList>
 
@@ -385,7 +385,7 @@ const ClassDetailPage = () => {
                   className="w-full" />
               </TabsContent>
 
-              <TabsContent value="engagement">
+              {/* <TabsContent value="engagement">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex gap-2 items-center">
                     <select className="border rounded-md px-3 py-2">
@@ -400,7 +400,7 @@ const ClassDetailPage = () => {
                   </Button>
                 </div>
                 <EngagementMetrics />
-              </TabsContent>
+              </TabsContent> */}
 
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

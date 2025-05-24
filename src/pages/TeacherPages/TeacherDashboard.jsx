@@ -1,9 +1,16 @@
-import { useNavigate } from "react-router-dom"
-import Layout from "@/components/layout"
-import { BarChartComponent } from "@/components/charts/bar-chart"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom";
+import Layout from "@/components/layout";
+import { BarChartComponent } from "@/components/charts/bar-chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   BookOpen,
   Upload,
@@ -16,21 +23,28 @@ import {
   FileSpreadsheet,
   AlertTriangle,
   CheckCircle,
-} from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react"
-import { getClassByTeacherId } from "@/services/teacher/classServices"
-import ClassesList from "@/components/classes-list"
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { getClassByTeacherId } from "@/services/teacher/classServices";
+import ClassesList from "@/components/classes-list";
 import Pagination from "@/components/ui/pagination";
-import { GradeDistributionChart } from "@/components/charts/grade-distribution"
-import { ClassPerformanceChart } from "@/components/charts/class-performance-chart"
-import { useAuth } from "@/contexts/authentication-context"
-import NewClass from "@/pages/TeacherPages/NewClass.jsx"
-import { useTeacher } from "@/hooks/use-teacher"
+import { GradeDistributionChart } from "@/components/charts/grade-distribution";
+import { ClassPerformanceChart } from "@/components/charts/class-performance-chart";
+import { useAuth } from "@/contexts/authentication-context";
+import NewClass from "@/pages/TeacherPages/NewClass.jsx";
+import { useTeacher } from "@/hooks/use-teacher";
+import { useReports } from "@/hooks/use-reports";
 
 const TeacherDashboard = () => {
-  const [selectedClass, setSelectedClass] = useState("math101")
-  const [selectedPeriod, setSelectedPeriod] = useState("current")
+  const [selectedClass, setSelectedClass] = useState("math101");
+  const [selectedPeriod, setSelectedPeriod] = useState("current");
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]); // State for classes
   const [currentPage, setCurrentPage] = useState(1); // State for current page
@@ -38,18 +52,8 @@ const TeacherDashboard = () => {
   const { currentUser, getAuthHeader } = useAuth();
   // Add state for new class modal
   const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
-  const { studentCountQuery, atRiskStudentsQuery, topStudentsQuery } = useTeacher(currentUser.userId);
-  // Sample data for charts
-  const performanceData = {
-    labels: ["Math 101", "Science 202", "History 303", "English 404"],
-    datasets: [
-      {
-        label: "Class Average (%)",
-        data: [78, 82, 75, 88],
-        backgroundColor: "rgba(59, 130, 246, 0.5)",
-      },
-    ],
-  }
+  const { studentCountQuery, atRiskStudentsQuery, topStudentsQuery } =
+    useTeacher(currentUser.userId);
   // Calculate the classes to display for the current page
   const indexOfLastClass = currentPage * classesPerPage;
   const indexOfFirstClass = indexOfLastClass - classesPerPage;
@@ -61,40 +65,45 @@ const TeacherDashboard = () => {
   };
 
   useEffect(() => {
-      const fetchClasses = async () => {
-        try {
-          const response = await getClassByTeacherId(currentUser.userId, getAuthHeader());
-          console.log("Full API Response:", response);
-    
-          let allClasses = [];
-          if (Array.isArray(response)) {
-            allClasses = response;
-          } else if (response && response.data && Array.isArray(response.data)) {
-            allClasses = response.data;
-          } else {
-            console.error("Unexpected API response:", response);
-            setClasses([]);
-            return;
-          }
-          setClasses(allClasses);
-        } catch (err) {
-          console.error("Error fetching classes:", err);
-          setError("Failed to fetch classes. Please try again later.");
+    const fetchClasses = async () => {
+      try {
+        const response = await getClassByTeacherId(
+          currentUser.userId,
+          getAuthHeader()
+        );
+        console.log("Full API Response:", response);
+
+        let allClasses = [];
+        if (Array.isArray(response)) {
+          allClasses = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          allClasses = response.data;
+        } else {
+          console.error("Unexpected API response:", response);
+          setClasses([]);
+          return;
         }
-      };
-    
-      fetchClasses();
+        setClasses(allClasses);
+      } catch (err) {
+        console.error("Error fetching classes:", err);
+        setError("Failed to fetch classes. Please try again later.");
+      }
+    };
+
+    fetchClasses();
   }, []);
- 
-  // Sample recent uploads
-  const recentUploads = [
-    { id: 1, filename: "math101_midterm.csv", date: "Oct 15, 2023", status: "Success", records: 28 },
-    { id: 2, filename: "science202_quiz3.xlsx", date: "Oct 10, 2023", status: "Success", records: 24 },
-  ]
+
+  const { reportsByTeacherQuery } = useReports(
+    currentUser,
+    null,
+    null,
+    currentUser.userId,
+    null
+  );
 
   const navigateToClass = (classId) => {
-    navigate(`/teacher/classes/classdetail/${classId}`)
-  }
+    navigate(`/teacher/classes/classdetail/${classId}`);
+  };
 
   // Handle new class creation
   const handleClassCreated = (newClass) => {
@@ -113,27 +122,33 @@ const TeacherDashboard = () => {
     }
 
     let category = "all";
-    if (newClass.semester === currentSemester && newClass.schoolYear === currentYear.toString()) {
+    if (
+      newClass.semester === currentSemester &&
+      newClass.schoolYear === currentYear.toString()
+    ) {
       category = "current";
-    } else if (parseInt(newClass.schoolYear) < currentYear || 
-              (newClass.schoolYear === currentYear.toString() && newClass.semester !== currentSemester)) {
+    } else if (
+      parseInt(newClass.schoolYear) < currentYear ||
+      (newClass.schoolYear === currentYear.toString() &&
+        newClass.semester !== currentSemester)
+    ) {
       category = "past";
     }
 
     const classWithCategory = { ...newClass, category };
-    setClasses(prev => [...prev, classWithCategory]);
+    setClasses((prev) => [...prev, classWithCategory]);
   };
 
   return (
     <Layout>
       {/* Welcome Banner */}
       <div className="mt-5 mb-6 bg-gradient-to-r from-primary to-green-400 text-white font-bold text-2xl md:text-4xl p-6 rounded-lg shadow-md items-center">
-          <div>
-            <h1>Welcome back, Teacher!</h1>
-            <p className="text-sm md:text-base font-normal mt-2">
-                Here's an overview of your classes and student performance
-            </p>
-          </div>
+        <div>
+          <h1>Welcome back, Teacher!</h1>
+          <p className="text-sm md:text-base font-normal mt-2">
+            Here's an overview of your classes and student performance
+          </p>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -141,9 +156,13 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Students</p>
+              <p className="text-sm font-medium text-gray-500">
+                Total Students
+              </p>
               <h3 className="text-2xl font-bold">{studentCountQuery.data}</h3>
-              <p className="text-xs text-muted-foreground">Across all classes</p>
+              <p className="text-xs text-muted-foreground">
+                Across all classes
+              </p>
             </div>
             <div className="p-2 bg-blue-100 rounded-full">
               <Users className="h-6 w-6 text-blue-600" />
@@ -153,13 +172,18 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Students at Risk</p>
+              <p className="text-sm font-medium text-gray-500">
+                Students at Risk
+              </p>
               <h3 className="text-2xl font-bold">{atRiskStudentsQuery.data}</h3>
               <p className="text-xs text-muted-foreground">
                 {studentCountQuery.data > 0
-                  ? ((atRiskStudentsQuery.data / studentCountQuery.data) * 100).toFixed(2)
-                  : "0.00"
-                }% of class
+                  ? (
+                      (atRiskStudentsQuery.data / studentCountQuery.data) *
+                      100
+                    ).toFixed(2)
+                  : "0.00"}
+                % of class
               </p>
             </div>
             <div className="p-2 bg-red-100 rounded-full">
@@ -170,20 +194,25 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">Top Performers</p>
+              <p className="text-sm font-medium text-gray-500">
+                Top Performers
+              </p>
               <h3 className="text-2xl font-bold">{topStudentsQuery.data}</h3>
               <p className="text-xs text-muted-foreground">
                 {studentCountQuery.data > 0
-                  ? ((topStudentsQuery.data / studentCountQuery.data) * 100).toFixed(2)
-                  : "0.00"
-                }% of class
+                  ? (
+                      (topStudentsQuery.data / studentCountQuery.data) *
+                      100
+                    ).toFixed(2)
+                  : "0.00"}
+                % of class
               </p>
             </div>
             <div className="p-2 bg-green-100 rounded-full">
               <Star className="h-6 w-6 text-green-600" />
             </div>
           </CardContent>
-        </Card> 
+        </Card>
       </div>
 
       {/* Main Dashboard Content */}
@@ -195,7 +224,9 @@ const TeacherDashboard = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Your Classes</CardTitle>
-                  <CardDescription>Quick overview of your active classes</CardDescription>
+                  <CardDescription>
+                    Quick overview of your active classes
+                  </CardDescription>
                 </div>
                 <Button onClick={() => navigate("/teacher/classes/all")}>
                   View All Classes
@@ -204,7 +235,11 @@ const TeacherDashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <ClassesList classes={currentClasses} view={"grid"} navigateToClass={navigateToClass} />
+              <ClassesList
+                classes={currentClasses}
+                view={"grid"}
+                navigateToClass={navigateToClass}
+              />
             </CardContent>
             <CardFooter className="flex justify-center items-center">
               <Pagination
@@ -220,7 +255,10 @@ const TeacherDashboard = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Class Performance</CardTitle>
-                  <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                  <Select
+                    value={selectedPeriod}
+                    onValueChange={setSelectedPeriod}
+                  >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Select period" />
                     </SelectTrigger>
@@ -240,7 +278,9 @@ const TeacherDashboard = () => {
             <Card className="col-span-1">
               <CardHeader>
                 <CardTitle>Grade Distribution</CardTitle>
-                <CardDescription>Distribution of grades across the class</CardDescription>
+                <CardDescription>
+                  Distribution of grades across the class
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <GradeDistributionChart />
@@ -257,71 +297,101 @@ const TeacherDashboard = () => {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full justify-start" onClick={() => navigate("/teacher/spreadsheets")}>
+              <Button
+                className="w-full justify-start"
+                onClick={() => navigate("/teacher/spreadsheets")}
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Spreadsheet or Link a Spreadsheet
               </Button>
-              <Button 
-                className="w-full justify-start" 
-                variant="outline" 
+              <Button
+                className="w-full justify-start"
+                variant="outline"
                 onClick={() => setIsNewClassModalOpen(true)}
               >
                 <BookOpen className="mr-2 h-4 w-4" />
                 Create New Class
               </Button>
-              <Button className="w-full justify-start" variant="outline" onClick={() => navigate("/teacher/reports")}>
+              <Button
+                className="w-full justify-start"
+                variant="outline"
+                onClick={() => navigate("/teacher/reports")}
+              >
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Generate Reports
               </Button>
             </CardContent>
           </Card>
 
-          {/* Recent Uploads */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Uploads</CardTitle>
-              <CardDescription>Your recently uploaded spreadsheets</CardDescription>
+              <CardTitle>Recent Reports</CardTitle>
+              <CardDescription>Your recently sent reports</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentUploads.map((upload) => (
-                  <div key={upload.id} className="flex items-start space-x-3 pb-3 border-b last:border-0 last:pb-0">
-                    <div className="p-2 bg-blue-100 rounded-md">
-                      <FileSpreadsheet className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{upload.filename}</p>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>{upload.date}</span>
-                        <span>{upload.records} records</span>
-                      </div>
-                    </div>
-                    <div>
-                      {upload.status === "Success" ? (
-                        <Badge variant="success" className="flex items-center">
-                          <CheckCircle className="mr-1 h-3 w-3" />
-                          Success
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive" className="flex items-center">
-                          <AlertTriangle className="mr-1 h-3 w-3" />
-                          Error
-                        </Badge>
-                      )}
-                    </div>
+                {reportsByTeacherQuery.isLoading && (
+                  <div className="text-sm text-muted-foreground">
+                    Loading...
                   </div>
-                ))}
+                )}
+                {reportsByTeacherQuery.isError && (
+                  <div className="text-sm text-red-500">
+                    Failed to load reports.
+                  </div>
+                )}
+                {reportsByTeacherQuery.data &&
+                  reportsByTeacherQuery.data.length === 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      No reports sent yet.
+                    </div>
+                  )}
+                {reportsByTeacherQuery.data &&
+                  reportsByTeacherQuery.data
+                    .slice() // copy array
+                    .sort(
+                      (a, b) => new Date(b.reportDate) - new Date(a.reportDate)
+                    )
+                    .slice(0, 3)
+                    .map((report) => (
+                      <div
+                        key={report.reportId || report.reportId}
+                        className="p-3 border rounded-md flex flex-col"
+                      >
+                        <div className="font-medium">
+                          {report.subject || `Report #${report.reportId || report.reportId}`}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Sent:{" "}
+                          {report.reportDate
+                            ? new Date(report.reportDate).toLocaleString()
+                            : "Unknown date"}
+                        </div>
+                        <div className="text-xs">
+                          {report.className && (
+                            <span>Class: {report.className}</span>
+                          )}
+                          {report.studentName && (
+                            <span> | Student: {report.studentName}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" onClick={() => navigate("/uploads")}>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate("/uploads")}
+              >
                 View All Uploads
               </Button>
             </CardFooter>
           </Card>
 
           {/* System Alerts */}
-          <Card>
+          {/* <Card>
             <CardHeader className="bg-amber-50 rounded-t-lg">
               <div className="flex items-center">
                 <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
@@ -344,18 +414,18 @@ const TeacherDashboard = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
 
       {/* New Class Modal */}
-      <NewClass 
+      <NewClass
         isOpen={isNewClassModalOpen}
         onClose={() => setIsNewClassModalOpen(false)}
         onClassCreated={handleClassCreated}
       />
     </Layout>
-  )
-}
+  );
+};
 
-export default TeacherDashboard
+export default TeacherDashboard;

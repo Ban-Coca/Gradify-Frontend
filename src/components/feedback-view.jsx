@@ -1,25 +1,42 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Search, Filter, X, MessageSquare } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { useEffect, useState } from "react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useAuth } from "@/contexts/authentication-context"
-import { getStudentClasses, getReportsByStudentId } from "@/services/student/studentService"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search, Filter, X, MessageSquare } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/authentication-context";
+import {
+  getStudentClasses,
+  getReportsByStudentId,
+} from "@/services/student/studentService";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 export function FeedbackView() {
-  const [selectedClass, setSelectedClass] = useState("all")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedFeedback, setSelectedFeedback] = useState(null)
-  const [showFilters, setShowFilters] = useState(false)
-  const { currentUser, getAuthHeader } = useAuth()
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  // const [selectedFeedback, setSelectedFeedback] = useState(null)
+  const [showFilters, setShowFilters] = useState(false);
+  const { currentUser, getAuthHeader } = useAuth();
   const studentId = currentUser?.userId;
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [classes, setClasses] = useState([])
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [classes, setClasses] = useState([]);
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { feedbackId } = useParams();
+
+  // When a feedback is selected, update the URL
+  const handleSelectFeedback = (id) => {
+    navigate(`/student/feedback/${id}`, { replace: false });
+  };
 
   // Handle page change
   useEffect(() => {
@@ -72,16 +89,18 @@ export function FeedbackView() {
   }, [studentId, getAuthHeader]);
 
   // Get initials from teacherName
-    const getTeacherInitials = (teacherName) => {
-      if (!teacherName) return "U";
-      const [first = "", last = ""] = teacherName.trim().split(" ");
-      return `${first.charAt(0)}${last.charAt(0) || ""}`.toUpperCase();
-    };
+  const getTeacherInitials = (teacherName) => {
+    if (!teacherName) return "U";
+    const [first = "", last = ""] = teacherName.trim().split(" ");
+    return `${first.charAt(0)}${last.charAt(0) || ""}`.toUpperCase();
+  };
 
   // Filter feedback based on class selection, status, and search query
   const filteredFeedback = feedbackItems.filter((feedback) => {
-    const matchesClass = selectedClass === "all" || feedback.classId === selectedClass;
-    const matchesStatus = statusFilter === "all" || feedback.status === statusFilter;
+    const matchesClass =
+      selectedClass === "all" || feedback.classId === selectedClass;
+    const matchesStatus =
+      statusFilter === "all" || feedback.status === statusFilter;
     const matchesSearch =
       feedback.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       feedback.className?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,13 +121,17 @@ export function FeedbackView() {
 
   // Set the first feedback as selected by default if none is selected
   useEffect(() => {
-    if (filteredFeedback.length > 0 && !selectedFeedback) {
-      setSelectedFeedback(filteredFeedback[0].reportId);
+    if (filteredFeedback.length > 0 && !feedbackId) {
+      navigate(`/student/feedback/${filteredFeedback[0].reportId}`, {
+        replace: true,
+      });
     }
-  }, [filteredFeedback, selectedFeedback]);
+  }, [filteredFeedback, feedbackId, navigate]);
 
-  // Get the selected feedback details
-  const selectedFeedbackDetails = feedbackItems.find((feedback) => feedback.reportId === selectedFeedback);
+  // Use feedbackId from URL to get selected feedback details
+  const selectedFeedbackDetails = feedbackItems.find(
+    (feedback) => String(feedback.reportId) === String(feedbackId)
+  );
 
   return (
     <div className="space-y-4 mb-8">
@@ -142,17 +165,20 @@ export function FeedbackView() {
                 <div>
                   <h3 className="text-sm font-medium mb-2">Classes</h3>
                   <div className="flex flex-wrap gap-2">
-                    {[{ id: "all", className: "All" }, ...classes].map((cls) => (
-
-                      <Badge
-                        key={cls.id}
-                        variant={selectedClass === cls.id ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedClass(cls.id)}
-                      >
-                        {cls.className}
-                      </Badge>
-                    ))}
+                    {[{ id: "all", className: "All" }, ...classes].map(
+                      (cls) => (
+                        <Badge
+                          key={cls.id}
+                          variant={
+                            selectedClass === cls.id ? "default" : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => setSelectedClass(cls.id)}
+                        >
+                          {cls.className}
+                        </Badge>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -165,7 +191,10 @@ export function FeedbackView() {
           {selectedClass !== "all" && (
             <Badge variant="secondary" className="flex items-center gap-1">
               {classes.find((c) => c.id === selectedClass)?.className}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedClass("all")} />
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => setSelectedClass("all")}
+              />
             </Badge>
           )}
         </div>
@@ -176,7 +205,8 @@ export function FeedbackView() {
           <CardHeader>
             <CardTitle>Feedback</CardTitle>
             <CardDescription>
-              {filteredFeedback.length} feedback item{filteredFeedback.length !== 1 ? "s" : ""}
+              {filteredFeedback.length} feedback item
+              {filteredFeedback.length !== 1 ? "s" : ""}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -190,11 +220,11 @@ export function FeedbackView() {
                   <div
                     key={feedback.reportId}
                     className={`group p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedFeedback === feedback.reportId
-                        ? "border-primary bg-primary/5"
+                      String(feedbackId) === String(feedback.reportId)
+                        ? "border-primary bg-primary/10 ring-2 ring-primary"
                         : "hover:bg-primary/10"
                     }`}
-                    onClick={() => setSelectedFeedback(feedback.reportId)}
+                    onClick={() => handleSelectFeedback(feedback.reportId)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -213,15 +243,22 @@ export function FeedbackView() {
                           <Badge variant="secondary">
                             {feedback.notificationType
                               .split("-")
-                              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() + word.slice(1)
+                              )
                               .join(" ")}
                           </Badge>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <div className="font-medium group-hover:text-[#198754] transition-colors">{feedback.subject}</div>
-                      <div className="text-sm text-muted-foreground group-hover:text-[#198754] transition-colors">{feedback.className}</div>
+                      <div className="font-medium group-hover:text-[#198754] transition-colors">
+                        {feedback.subject}
+                      </div>
+                      <div className="text-sm text-muted-foreground group-hover:text-[#198754] transition-colors">
+                        {feedback.className}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -235,7 +272,9 @@ export function FeedbackView() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">{selectedFeedbackDetails.subject}</h3>
+                  <h3 className="text-lg font-medium">
+                    {selectedFeedbackDetails.subject}
+                  </h3>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -248,23 +287,31 @@ export function FeedbackView() {
                     <div className="text-sm font-medium">
                       {selectedFeedbackDetails.teacherName}
                     </div>
-                    <div className="text-xs text-muted-foreground">{formatDate(selectedFeedbackDetails.reportDate)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(selectedFeedbackDetails.reportDate)}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{selectedFeedbackDetails.className}</Badge>
+                  <Badge variant="outline">
+                    {selectedFeedbackDetails.className}
+                  </Badge>
                   <Badge variant="secondary">
                     {selectedFeedbackDetails.notificationType
                       .split("-")
-                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
                       .join(" ")}
                   </Badge>
                 </div>
 
                 <div
                   className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: selectedFeedbackDetails.message }}
+                  dangerouslySetInnerHTML={{
+                    __html: selectedFeedbackDetails.message,
+                  }}
                 />
               </div>
             </CardContent>
@@ -272,13 +319,17 @@ export function FeedbackView() {
             <CardContent className="flex items-center justify-center h-full">
               <div className="text-center">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Feedback Selected</h3>
-                <p className="text-muted-foreground">Select a feedback item from the list to view details.</p>
+                <h3 className="text-lg font-medium mb-2">
+                  No Feedback Selected
+                </h3>
+                <p className="text-muted-foreground">
+                  Select a feedback item from the list to view details.
+                </p>
               </div>
             </CardContent>
           )}
         </Card>
       </div>
     </div>
-  )
+  );
 }
