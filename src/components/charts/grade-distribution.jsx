@@ -1,16 +1,26 @@
 import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js"
-
+import { useQuery } from "@tanstack/react-query"
+import { useAuth } from "@/contexts/authentication-context"
+import { useState } from "react"
+import { getTeacherGradeDistribution } from "@/services/teacher/teacherService"
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export function GradeDistributionChart() {
+  const { currentUser, getAuthHeader } = useAuth()
+  const { data: gradesData, isPending, error } = useQuery({
+    queryKey: ["teacherGradeDistribution", currentUser?.userId],
+    queryFn: () => getTeacherGradeDistribution(currentUser?.userId, getAuthHeader()),
+    enabled: !!currentUser?.userId,
+  })
+  const labels = ["A", "B", "C", "D", "F"]
   const data = {
-    labels: ["A", "B", "C", "D", "F"],
+    labels,
     datasets: [
       {
         label: "Number of Students",
-        data: [12, 19, 10, 5, 4],
+        data: labels.map((grade) => gradesData?.[grade] ?? 0),
         backgroundColor: [
           "rgba(75, 192, 192, 0.6)",
           "rgba(54, 162, 235, 0.6)",

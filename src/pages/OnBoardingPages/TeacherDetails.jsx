@@ -49,6 +49,7 @@ export default function TeacherOnboarding() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        provider: formData.provider,
         ...values,
       };
 

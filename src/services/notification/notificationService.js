@@ -3,7 +3,7 @@ const API_URL = "http://localhost:8080/api/notification";
 
 export const getUserNotifications = async (userId, header) => {
     try {
-        const response = await axios.get(`${API_URL}/${userId}`, { headers: header });
+        const response = await axios.get(`${API_URL}/get-notifications/${userId}`, { headers: header });
         return response.data;
     } catch (error) {
         throw error;

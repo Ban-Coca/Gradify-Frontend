@@ -45,6 +45,7 @@ export function StudentTable({ searchQuery, classId }) {
     }))
   })
   // Filter students based on search query
+  console.log("studentsData: ", studentsData)
   const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
