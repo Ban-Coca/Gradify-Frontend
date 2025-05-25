@@ -29,3 +29,44 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
         throw error;
     }
 }
+
+export const getGradingScheme = async (classId, headers) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/getscheme?classId=${classId}`, 
+            {
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching grading scheme:', error);
+        throw error;
+    }
+}
+
+export const updateGradingScheme = async (gradingScheme, classId, teacherId, headers) => {
+    try {
+        const dataToSend = {
+            schemes: Array.isArray(gradingScheme) ? gradingScheme : gradingScheme.schemes || []
+        };
+
+        const response = await axios.put(
+            `${API_BASE_URL}/updatescheme/${classId}/teacher/${teacherId}`,
+            dataToSend,
+            {
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating grading scheme:', error);
+        throw error;
+    }
+}
