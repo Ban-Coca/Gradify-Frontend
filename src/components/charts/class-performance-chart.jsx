@@ -17,33 +17,36 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 export function ClassPerformanceChart() {
   const { currentUser, getAuthHeader } = useAuth()
-  const { data: classData, isPending, error } = useQuery({
+  const { data: classDataRaw, isPending, error } = useQuery({
     queryKey: ["classPerformance", currentUser?.userId],
     queryFn: () => getClassPerformance(currentUser?.userId, getAuthHeader()),
     enabled: !!currentUser?.userId,
   })
 
-  const labels = classData?.map(item => item.assessmentType) ?? []
+  // Ensure classData is always an array
+  const classData = Array.isArray(classDataRaw) ? classDataRaw : []
+
+  const labels = classData.map(item => item.assessmentType)
   const data = {
     labels,
     datasets: [
       {
         label: "Class Average",
-        data: classData?.map(item => item.overallAverage) ?? [],
+        data: classData.map(item => item.overallAverage),
         borderColor: "rgb(53, 162, 235)",
         backgroundColor: "rgba(53, 162, 235, 0.5)",
         tension: 0.3,
       },
       {
         label: "Top 25%",
-        data: classData?.map(item => item.topQuartileAverage) ?? [],
+        data: classData.map(item => item.topQuartileAverage),
         borderColor: "rgb(75, 192, 192)",
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         tension: 0.3,
       },
       {
         label: "Bottom 25%",
-        data: classData?.map(item => item.bottomQuartileAverage) ?? [],
+        data: classData.map(item => item.bottomQuartileAverage),
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
         tension: 0.3,
