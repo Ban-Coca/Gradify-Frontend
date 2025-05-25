@@ -38,10 +38,13 @@ export function StudentTable({ searchQuery, classId }) {
       // Fix the percentage formatting - divide by 100 if over 100
       percentage: parseFloat((student.percentage > 100 ? student.percentage/100 : student.percentage).toFixed(1)),
       // Map the status to one of the expected values based on percentage
-      status: student.status === "Good Standing" ? 
-        (student.percentage >= 9000 ? "Excellent" : 
-         student.percentage >= 8000 ? "On Track" : "At Risk") : 
-        student.status,
+      status: student.status === "Good Standing"
+      ? (
+          student.percentage >= 9000 ? "Excellent" :
+          student.percentage >= 8000 ? "Good" :
+          student.percentage >= 7500 ? "Satisfactory" :
+          "At Risk"
+        ): student.status,
     }))
   })
   // Filter students based on search query
@@ -137,9 +140,11 @@ export function StudentTable({ searchQuery, classId }) {
                     className={
                       student.status === "Excellent"
                         ? "bg-green-50 text-green-700 hover:bg-green-50 hover:text-black"
-                        : student.status === "On Track"
-                          ? "bg-blue-50 text-blue-700 hover:bg-blue-50 hover:text-black"
-                          : "bg-red-50 text-red-700 hover:bg-red-50 hover:text-black"
+                        : student.status === "Good"
+                        ? "bg-yellow-50 text-yellow-700 hover:bg-yellow-50 hover:text-black"
+                        : student.status === "Satisfactory"
+                        ? "bg-blue-50 text-blue-700 hover:bg-blue-50 hover:text-black"
+                        : "bg-red-50 text-red-700 hover:bg-red-50 hover:text-black"
                     }
                   >
                     {student.status}

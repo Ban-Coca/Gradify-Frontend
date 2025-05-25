@@ -5,8 +5,6 @@ import { DashboardShell } from "@/components/student-dashboard/dashboard-shell"
 import { ClassesList } from "@/components/student-dashboard/classes-list"
 import { SubjectPerformance } from "@/components/student-dashboard/recent-feedaback"
 import { PerformanceChart } from "@/components/student-dashboard/performance-chart"
-import { Notifications } from "@/components/student-dashboard/notifications"
-
 export const metadata = {
   title: "Dashboard | Gradify",
   description: "Student dashboard for tracking academic performance",
@@ -17,10 +15,13 @@ const StudentDashboard = () => {
     <Layout>
       <DashboardHeader heading="Dashboard" text="Welcome back! Here's an overview of your academic performance." />
       <DashboardShell>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <ClassesList />
-        <PerformanceChart />
-        <Notifications />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 w-full">
+        <div className="w-full">
+          <ClassesList />
+        </div>
+        <div className="w-full">
+          <PerformanceChart />
+        </div>
       </div>
       <SubjectPerformance />
     </DashboardShell>

@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Download, Printer, Share2, Sparkles } from "lucide-react";
+import { Bell, Download, Printer, Share2, Sparkles, AlertCircle } from "lucide-react";
 import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
@@ -44,6 +44,7 @@ function ReportsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, getAuthHeader } = useAuth();
+  const [formError, setFormError] = useState("");
   const {
     studentId: initialStudentId,
     studentName: initialStudentName,
@@ -97,6 +98,17 @@ function ReportsPage() {
   );
 
   const handleSendReport = async () => {
+    if (
+      !selectedClassId ||
+      !selectedStudentId ||
+      !subject.trim() ||
+      !message ||
+      message === "<p>Enter your feedback or notification message</p>"
+    ) {
+      setFormError("Please fill in all required fields before sending the report.");
+      return;
+    }
+    setFormError("");
     const payload = {
       teacherId: activeTeacher,
       studentId: selectedStudentId,
@@ -393,6 +405,12 @@ function ReportsPage() {
                   <div className="text-red-500 text-sm ml-2">
                     Error generating AI report:{" "}
                     {aiGeneratedReportQuery.error.message || "Unknown error"}
+                  </div>
+                )}
+                {formError && (
+                  <div className="flex items-center text-red-500 text-sm mb-2 gap-1">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {formError}
                   </div>
                 )}
               </CardFooter>
