@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .env
+
+#credentials
+src/main/resources/credentials/google-sheets-credentials.json

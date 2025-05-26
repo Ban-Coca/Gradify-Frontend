@@ -23,6 +23,46 @@ export default function SpreadsheetsPage() {
     const [debugInfo, setDebugInfo] = useState(null);
     const navigate = useNavigate();
 
+    const isValidSpreadsheetUrl = (url) => {
+        if (!url) return false;
+        
+        // Google Sheets URLs
+        const googleSheetsPatterns = [
+            /docs\.google\.com\/spreadsheets/,
+            /sheets\.google\.com/
+        ];
+        
+        // Microsoft Excel URLs
+        const microsoftExcelPatterns = [
+            /onedrive\.live\.com/,
+            /1drv\.ms/,
+            /sharepoint\.com/,
+            /office\.com\/x\//,
+            /excel\.office\.com/
+        ];
+        
+        const allPatterns = [...googleSheetsPatterns, ...microsoftExcelPatterns];
+        return allPatterns.some(pattern => pattern.test(url));
+    };
+
+    const getUrlProvider = (url) => {
+        if (!url) return 'Unknown';
+        
+        if (url.includes('docs.google.com') || url.includes('sheets.google.com')) {
+            return 'Google Sheets';
+        }
+        
+        if (url.includes('onedrive.live.com') || 
+            url.includes('1drv.ms') || 
+            url.includes('sharepoint.com') || 
+            url.includes('office.com') ||
+            url.includes('excel.office.com')) {
+            return 'Microsoft Excel';
+        }
+        
+        return 'Unknown';
+    };
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -121,8 +161,16 @@ export default function SpreadsheetsPage() {
 
     const handleUrlSubmit = async () => {
         if (!sheetUrl) {
-            toast.error("Please enter a Google Sheets URL", {
+            toast.error("Please enter a spreadsheet URL", {
                 position: 'top-center'
+            });
+            return;
+        }
+
+        if (!isValidSpreadsheetUrl(sheetUrl)) {
+            toast.error("Please provide a valid Google Sheets or Microsoft Excel Online URL.", {
+                duration: 5000,
+                position: 'top-center',
             });
             return;
         }
@@ -147,7 +195,7 @@ export default function SpreadsheetsPage() {
             
             if (!checkResult.supported) {
                 toast.dismiss(loadingToast);
-                toast.error(`Unsupported spreadsheet URL. Please provide a valid Google Sheets URL.`, {
+                toast.error(`Unsupported spreadsheet URL. Please provide a valid Google Sheets or Microsoft Excel Online URL.`, {
                     duration: 5000,
                     position: 'top-center',
                 });
@@ -158,6 +206,8 @@ export default function SpreadsheetsPage() {
             // Store debug info
             setDebugInfo({
                 checkResponse: checkResult,
+                detectedProvider: getUrlProvider(sheetUrl),
+                urlValid: isValidSpreadsheetUrl(sheetUrl),
                 requestUrl: `${API_BASE_URL}/process-url`,
                 requestData: { url: sheetUrl, teacherId: currentUser.userId },
                 headers: { ...getAuthHeader(), "Content-Type": "application/x-www-form-urlencoded" }
@@ -189,7 +239,7 @@ export default function SpreadsheetsPage() {
             toast.dismiss(loadingToast);
             
             // Show success toast
-            toast.success(`Spreadsheet from ${response.provider || 'Google Sheets'} processed successfully!`, {
+            toast.success(`Spreadsheet from ${response.provider || getUrlProvider(sheetUrl)} processed successfully!`, {
                 duration: 3000,
                 position: 'top-center',
             });
@@ -235,23 +285,23 @@ export default function SpreadsheetsPage() {
             {/* Toast container */}
             <Toaster />
             
-            <div className='bg-inherited p-4 rounded-lg mt-4 mb-4'>
-                <h1 className="text-xl md:text-2xl font-bold">Import Spreadsheet Data</h1>
-                <p className="text-sm text-muted">Upload or link a spreadsheet to import student grades</p>
+            <div className='bg-gray-50 p-6 rounded-lg border mt-4 mb-4'>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Import Spreadsheet Data</h1>
+                <p className="text-gray-600 mt-2">Upload or link a spreadsheet to import student grades</p>
             </div>
             
             {/* Error display */}
             {error && (
-                <Alert variant="destructive" className="mb-4">
+                <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>{error.title}</AlertTitle>
-                    <AlertDescription>
+                    <AlertTitle className="text-red-800">{error.title}</AlertTitle>
+                    <AlertDescription className="text-red-700">
                         {error.message}
                         {error.details && (
                             <div className="mt-2 text-xs">
                                 <details>
-                                    <summary>Technical Details</summary>
-                                    <pre className="mt-2 whitespace-pre-wrap bg-gray-100 p-2 rounded text-xs">
+                                    <summary className="cursor-pointer hover:text-red-600">Technical Details</summary>
+                                    <pre className="mt-2 whitespace-pre-wrap bg-red-100 p-2 rounded text-xs border">
                                         {typeof error.details === 'object' 
                                             ? JSON.stringify(error.details, null, 2) 
                                             : error.details}
@@ -265,12 +315,17 @@ export default function SpreadsheetsPage() {
             
             {/* Debug info (only in development) */}
             {import.meta.env.DEV && debugInfo && (
-                <Alert className="mb-4 bg-gray-100">
-                    <AlertTitle>Debug Information</AlertTitle>
-                    <AlertDescription>
-                        <details>
-                            <summary>Request Details</summary>
-                            <pre className="mt-2 whitespace-pre-wrap bg-gray-100 p-2 rounded text-xs">
+                <Alert className="mb-4 bg-blue-50 border-blue-200">
+                    <AlertTitle className="text-blue-800">Debug Information</AlertTitle>
+                    <AlertDescription className="text-blue-700">
+                        <div className="space-y-2 text-sm">
+                            <p><strong>Detected Provider:</strong> {debugInfo.detectedProvider}</p>
+                            <p><strong>URL Valid:</strong> {debugInfo.urlValid ? 'Yes' : 'No'}</p>
+                            <p><strong>Server Response:</strong> {debugInfo.checkResponse?.supported ? 'Supported' : 'Not Supported'}</p>
+                        </div>
+                        <details className="mt-2">
+                            <summary className="cursor-pointer hover:text-blue-600">Full Debug Data</summary>
+                            <pre className="mt-2 whitespace-pre-wrap bg-blue-100 p-2 rounded text-xs border">
                                 {JSON.stringify(debugInfo, null, 2)}
                             </pre>
                         </details>
@@ -278,42 +333,41 @@ export default function SpreadsheetsPage() {
                 </Alert>
             )}
             
-            <div>
+            <div className="bg-white rounded-lg border shadow-sm">
                 <Tabs defaultValue="upload" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-2 bg-gray-100">
                         <TabsTrigger
                             value="upload"
-                            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-                            >
+                            className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm"
+                        >
                             Upload Spreadsheet
                         </TabsTrigger>
                         <TabsTrigger
                             value="link"
-                            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-                            >
+                            className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm"
+                        >
                             Link Spreadsheet
                         </TabsTrigger>
                     </TabsList>
 
-
-                    <TabsContent value="upload" className="mt-4">
-                        <div className="flex flex-col items-center justify-center bg-gray-300/40 rounded-sm p-4 h-full transition-all duration-300 ease-in-out hover:bg-gray-300/50">
-                            <FolderOpen className="w-8 h-8" />
-                            <h2 className="text-xl font-bold">Upload Spreadsheet</h2>
-                            <p className="text-base text-muted">Drag and drop your file here, or</p>
+                    <TabsContent value="upload" className="p-6">
+                        <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                            <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
+                            <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Spreadsheet</h2>
+                            <p className="text-gray-600 mb-4">Drag and drop your file here, or click to browse</p>
                             <Button 
                                 variant={selectedFile ? "default" : "outline"} 
-                                className="mt-2 cursor-pointer flex gap-2 items-center transition-all duration-300 hover:scale-105" 
+                                className="mb-4 transition-all duration-300 hover:scale-105" 
                                 onClick={handleButtonClick}
                                 disabled={isUploading}
                             >
                                 {selectedFile ? (
                                     <>
-                                        <Upload className="w-4 h-4" />
-                                        <span className="text-sm">{isUploading ? "Uploading..." : "Upload"}</span>
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        {isUploading ? "Uploading..." : "Upload File"}
                                     </>
                                 ) : (
-                                    <span className="text-sm">Browse</span>
+                                    "Browse Files"
                                 )}
                                 <input 
                                     ref={fileInputRef}
@@ -324,50 +378,68 @@ export default function SpreadsheetsPage() {
                                 />
                             </Button>
                             {selectedFile && (
-                                <div className="text-sm mt-2 p-2 bg-gray-100 rounded flex items-center transition-all duration-300 animate-in fade-in">
+                                <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
                                     <span className="mr-2">📄</span>
-                                    {selectedFile.name}
+                                    <span className="text-sm text-gray-700">{selectedFile.name}</span>
                                 </div>
                             )}
-                            <p className="text-sm text-muted mt-2">Supported formats: .xlsx, .csv</p>
+                            <p className="text-sm text-gray-500 mt-2">Supported formats: .xlsx, .csv</p>
                         </div>
                     </TabsContent>
-                    <TabsContent value="link" className="mt-4">
-                        <div className="flex flex-col items-center justify-center bg-gray-300/40 rounded-sm p-4 h-full transition-all duration-300 ease-in-out hover:bg-gray-300/50">
-                            <LinkIcon className="w-8 h-8" />
-                            <h2 className="text-xl font-bold">Link Spreadsheet</h2>
-                            <p className="text-base text-muted">Enter the URL of your Google Sheets document</p>
+                    
+                    <TabsContent value="link" className="p-6">
+                        <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300">
+                            <LinkIcon className="w-12 h-12 text-gray-400 mb-4" />
+                            <h2 className="text-xl font-semibold text-gray-900 mb-2">Link Spreadsheet</h2>
+                            <p className="text-gray-600 mb-6">Enter the URL of your spreadsheet document</p>
                             
-                            <div className="w-full max-w-md mt-4">
+                            <div className="w-full max-w-md space-y-4">
                                 <Input
                                     type="url"
-                                    placeholder="https://docs.google.com/spreadsheets/d/..."
-                                    className="w-full mb-2"
+                                    placeholder="https://docs.google.com/spreadsheets/... or https://onedrive.live.com/..."
+                                    className="w-full"
                                     value={sheetUrl}
                                     onChange={handleUrlChange}
                                 />
                                 <Button 
                                     variant="default" 
-                                    className="w-full flex gap-2 items-center justify-center transition-all duration-300 hover:scale-105" 
+                                    className="w-full transition-all duration-300 hover:scale-105" 
                                     onClick={handleUrlSubmit}
                                     disabled={isProcessingUrl || !sheetUrl}
                                 >
-                                    <LinkIcon className="w-4 h-4" />
-                                    <span className="text-sm">{isProcessingUrl ? "Processing..." : "Import Spreadsheet"}</span>
+                                    <LinkIcon className="w-4 h-4 mr-2" />
+                                    {isProcessingUrl ? "Processing..." : "Import Spreadsheet"}
                                 </Button>
                             </div>
                             
-                            <div className="text-sm text-muted mt-4">
-                                <p>Supported services:</p>
-                                <ul className="list-disc list-inside">
-                                    <li>Google Sheets</li>
-                                </ul>
-                                <p className="mt-2">Make sure your spreadsheet is <strong>shared</strong> with view access.</p>
+                            <div className="mt-6 text-sm text-gray-600 space-y-2">
+                                <p className="font-medium">Supported services:</p>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        <span>Google Sheets</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <span>Microsoft Excel Online</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                        <span>OneDrive</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                        <span>SharePoint</span>
+                                    </div>
+                                </div>
+                                <p className="mt-4 text-xs">
+                                    <strong>Note:</strong> Make sure your spreadsheet is shared with view access.
+                                </p>
                             </div>
                         </div>
                     </TabsContent>
                 </Tabs>
             </div>
         </Layout>
-    )
+    );
 }
