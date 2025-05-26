@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Activity, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +22,10 @@ export default function GradingSchemeModal({
   assessments = ["Quizzes", "Midterm Exam", "Final Exam"],
 }) {
   const { currentUser } = useAuth();
-  const { saveScheme } = useGrading({currentUser, classId});
+  const { saveScheme, getGradingScheme, updateGradingScheme } = useGrading({
+    currentUser,
+    classId,
+  });
 
   const [weights, setWeights] = useState(() => {
     if (initialData) {
@@ -40,6 +43,12 @@ export default function GradingSchemeModal({
       weight: 100 / assessments.length,
     }));
   });
+
+  useEffect(() => {
+    if (open && getGradingScheme.data && getGradingScheme.data.length > 0) {
+      setWeights(getGradingScheme.data);
+    }
+  }, [open, getGradingScheme.data]);
 
   // Weight management
   const addWeight = () => {
@@ -66,14 +75,14 @@ export default function GradingSchemeModal({
       ...w,
       weight: totalWeight === 100 ? w.weight : (w.weight / totalWeight) * 100,
     }));
-    console.log("user", currentUser.userId);
-    console.log("classId", classId);
-    console.log("Saving normalized weights:", normalizedWeights);
     const gradingScheme = {
       schemes: normalizedWeights,
+    };
+    if (getGradingScheme.data && getGradingScheme.data.length > 0) {
+      updateGradingScheme.mutate(gradingScheme);
+    } else {
+      saveScheme.mutate(gradingScheme);
     }
-    console.log("Grading scheme:", gradingScheme);
-    saveScheme.mutate(gradingScheme);
 
     if (onOpenChange) {
       onOpenChange(false);
@@ -166,7 +175,11 @@ export default function GradingSchemeModal({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSave}>Save Weights</Button>
+          <Button onClick={handleSave}>
+            {getGradingScheme.data && getGradingScheme.data.length > 0
+              ? "Update Weights"
+              : "Save Weights"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

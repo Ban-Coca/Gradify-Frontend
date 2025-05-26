@@ -51,32 +51,41 @@
           let currentSemester;
     
           if (currentMonth >= 1 && currentMonth <= 5) {
-            currentSemester = "2nd Semester";
+            currentSemester = "2nd";
           } else if (currentMonth >= 8 && currentMonth <= 12) {
-            currentSemester = "1st Semester";
+            currentSemester = "1st";
           } else {
             currentSemester = null; // Outside semester range
           }
     
           // Categorize classes into current and past
           const categorizedClasses = allClasses.map((classItem) => {
-            const { semester } = classItem;
-            let schoolYear = classItem.schoolYear;
+            const { semester, schoolYear } = classItem;
+            // Parse schoolYear (e.g., "2024-2025")
+            const [startYear, endYear] = (schoolYear || "").split("-").map(Number);
+            // Check if currentYear is within the school year range
+            const isCurrentSchoolYear =
+              currentYear >= startYear && currentYear <= endYear;
+
             // Ensure schedule and room are always present
             const safeClassItem = {
               ...classItem,
               schedule: classItem.schedule || "",
               room: classItem.room || "",
             };
-            if (semester === currentSemester && schoolYear === currentYear.toString()) {
+
+            if (semester === currentSemester && isCurrentSchoolYear) {
               return { ...safeClassItem, category: "current" };
-            } else if (parseInt(schoolYear) < currentYear || (schoolYear === currentYear.toString() && semester !== currentSemester)) {
+            } else if (
+              (endYear && endYear < currentYear) ||
+              (isCurrentSchoolYear && semester !== currentSemester)
+            ) {
               return { ...safeClassItem, category: "past" };
             } else {
               return { ...safeClassItem, category: "all" };
             }
           });
-    
+          console.log("Categorized Classes:", categorizedClasses);
           setClasses(categorizedClasses);
         } catch (err) {
           console.error("Error fetching classes:", err);
@@ -146,9 +155,9 @@
       let currentSemester;
 
       if (currentMonth >= 1 && currentMonth <= 5) {
-        currentSemester = "2nd Semester";
+        currentSemester = "2nd";
       } else if (currentMonth >= 8 && currentMonth <= 12) {
-        currentSemester = "1st Semester";
+        currentSemester = "1st";
       } else {
         currentSemester = null;
       }

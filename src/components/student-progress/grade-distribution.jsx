@@ -1,106 +1,183 @@
-"use client"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { useState, useEffect } from "react"
 
-import { useEffect, useState } from "react"
-import { Card, CardContent } from "../../components/ui/card"
-import { Badge } from "../../components/ui/badge"
+export function GradeDistribution({ allGrades, allGradesLoading }) {
+  const [animatedCounts, setAnimatedCounts] = useState([0, 0, 0, 0, 0])
+  const [showDetails, setShowDetails] = useState(false)
 
-export function GradeDistribution({ period, subject }) {
-  const [mounted, setMounted] = useState(false)
+  const gradeRanges = [
+    { range: "90-100%", label: "A", color: "bg-green-500", textColor: "text-green-600", bgColor: "bg-green-50" },
+    { range: "80-89%", label: "B", color: "bg-blue-500", textColor: "text-blue-600", bgColor: "bg-blue-50" },
+    { range: "70-79%", label: "C", color: "bg-yellow-500", textColor: "text-yellow-600", bgColor: "bg-yellow-50" },
+    { range: "60-69%", label: "D", color: "bg-orange-500", textColor: "text-orange-600", bgColor: "bg-orange-50" },
+    { range: "Below 60%", label: "F", color: "bg-red-500", textColor: "text-red-600", bgColor: "bg-red-50" },
+  ]
 
+  const gradeCounts = gradeRanges.map(
+    (_, index) => allGrades.filter((g) => getGradeRange(Number(g.grade)) === gradeRanges[index].range).length,
+  )
+  const totalGrades = allGrades.length
+
+  function getGradeRange(grade) {
+    if (grade >= 90) return "90-100%"
+    if (grade >= 80) return "80-89%"
+    if (grade >= 70) return "70-79%"
+    if (grade >= 60) return "60-69%"
+    return "Below 60%"
+  }
+
+  // Animate counts
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    if (!allGradesLoading && gradeCounts.length > 0) {
+      const timer = setTimeout(() => {
+        setAnimatedCounts(gradeCounts)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [allGradesLoading, gradeCounts])
 
-  // This would typically come from an API based on period and subject
-  const getDistributionData = () => {
-    // Updated to use 1-5 scale instead of letter grades
-    return {
-      "4.5-5.0": 5, // Excellent
-      "4.0-4.4": 8, // Very Good
-      "3.5-3.9": 6, // Good
-      "3.0-3.4": 3, // Satisfactory
-      "1.0-2.9": 1, // Needs Improvement
+  const getGradeInsight = () => {
+    const excellentCount = gradeCounts[0]
+    const goodCount = gradeCounts[1]
+    const needsImprovementCount = gradeCounts[3] + gradeCounts[4]
+
+    if (excellentCount >= totalGrades * 0.7) {
+      return { message: "Excellent performance across most classes!", icon: TrendingUp, color: "text-green-600" }
+    } else if (goodCount + excellentCount >= totalGrades * 0.8) {
+      return { message: "Strong academic performance overall", icon: TrendingUp, color: "text-blue-600" }
+    } else if (needsImprovementCount >= totalGrades * 0.3) {
+      return { message: "Focus needed on improving lower grades", icon: TrendingDown, color: "text-orange-600" }
+    } else {
+      return { message: "Balanced performance across classes", icon: Minus, color: "text-gray-600" }
     }
   }
 
-  const distributionData = getDistributionData()
-  const total = Object.values(distributionData).reduce((sum, count) => sum + count, 0)
-
-  const getGradeBadgeVariant = (gradeRange) => {
-    switch (gradeRange) {
-      case "4.5-5.0":
-        return "success"
-      case "4.0-4.4":
-        return "default"
-      case "3.5-3.9":
-        return "secondary"
-      case "3.0-3.4":
-        return "warning"
-      case "1.0-2.9":
-        return "destructive"
-      default:
-        return "default"
-    }
-  }
-
-  const getGradeColor = (gradeRange) => {
-    switch (gradeRange) {
-      case "4.5-5.0":
-        return "hsl(var(--success))"
-      case "4.0-4.4":
-        return "hsl(var(--primary))"
-      case "3.5-3.9":
-        return "hsl(var(--secondary))"
-      case "3.0-3.4":
-        return "hsl(var(--warning))"
-      case "1.0-2.9":
-        return "hsl(var(--destructive))"
-      default:
-        return "hsl(var(--primary))"
-    }
-  }
-
-  if (!mounted) {
+  if (allGradesLoading) {
     return (
-      <div className="h-64 flex items-center justify-center">
-        <div className="animate-pulse bg-muted h-48 w-full rounded-md"></div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-4">
+                <div className="h-16 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="h-8 bg-muted rounded animate-pulse" />
       </div>
     )
   }
 
+  if (totalGrades === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <div className="text-4xl mb-2">📊</div>
+        <p>No grade data available for distribution analysis</p>
+      </div>
+    )
+  }
+
+  const insight = getGradeInsight()
+  const InsightIcon = insight.icon
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-5 gap-4">
-        {Object.entries(distributionData).map(([gradeRange, count]) => (
-          <Card key={gradeRange} className="text-center">
-            <CardContent className="p-4">
-              <Badge variant={getGradeBadgeVariant(gradeRange)} className="mb-2">
-                {gradeRange}
-              </Badge>
-              <div className="text-2xl font-bold">{count}</div>
-              <div className="text-xs text-muted-foreground">{total > 0 ? Math.round((count / total) * 100) : 0}%</div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Insight Banner */}
+      <div className={`p-4 rounded-lg border-l-4 ${insight.color.replace("text-", "border-l-")} bg-muted/30`}>
+        <div className="flex items-center gap-2">
+          <InsightIcon className={`h-5 w-5 ${insight.color}`} />
+          <span className={`font-medium ${insight.color}`}>{insight.message}</span>
+        </div>
       </div>
 
-      <div className="h-8 w-full bg-muted rounded-full overflow-hidden flex">
-        {Object.entries(distributionData).map(([gradeRange, count]) => {
-          const percentage = total > 0 ? (count / total) * 100 : 0
-          return percentage > 0 ? (
-            <div
-              key={gradeRange}
-              className="h-full flex items-center justify-center text-xs font-medium text-white"
-              style={{
-                width: `${percentage}%`,
-                backgroundColor: getGradeColor(gradeRange),
-              }}
+      {/* Grade Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {gradeRanges.map((gradeInfo, index) => {
+          const count = animatedCounts[index]
+          const percentage = totalGrades ? Math.round((count / totalGrades) * 100) : 0
+          return (
+            <Card
+              key={gradeInfo.range}
+              className={`text-center transition-all duration-300 hover:scale-105 cursor-pointer ${gradeInfo.bgColor} border-l-4 ${gradeInfo.color.replace("bg-", "border-l-")}`}
+              onClick={() => setShowDetails(!showDetails)}
             >
-              {percentage > 10 ? `${gradeRange}: ${Math.round(percentage)}%` : ""}
-            </div>
-          ) : null
+              <CardContent className="p-4">
+                <div
+                  className={`w-12 h-12 rounded-full ${gradeInfo.color} mx-auto mb-3 flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+                >
+                  {gradeInfo.label}
+                </div>
+                <div className="space-y-2">
+                  <div className={`text-2xl font-bold ${gradeInfo.textColor}`}>{count}</div>
+                  <Badge variant="outline" className="text-xs">
+                    {gradeInfo.range}
+                  </Badge>
+                  <div className="text-xs text-muted-foreground">{percentage}% of total</div>
+                  <Progress value={percentage} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          )
         })}
       </div>
+
+      {/* Distribution Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Grade Distribution</h4>
+          <span className="text-xs text-muted-foreground">{totalGrades} total grades</span>
+        </div>
+        <div className="h-8 w-full bg-muted rounded-full overflow-hidden flex shadow-inner">
+          {gradeRanges.map((gradeInfo, index) => {
+            const count = gradeCounts[index]
+            const percentage = totalGrades ? (count / totalGrades) * 100 : 0
+            return percentage > 0 ? (
+              <div
+                key={gradeInfo.range}
+                className={`h-full flex items-center justify-center text-xs font-medium text-white ${gradeInfo.color} transition-all duration-500 hover:brightness-110`}
+                style={{ width: `${percentage}%` }}
+                title={`${gradeInfo.range}: ${count} classes (${Math.round(percentage)}%)`}
+              >
+                {percentage > 15 ? `${Math.round(percentage)}%` : percentage > 8 ? gradeInfo.label : ""}
+              </div>
+            ) : null
+          })}
+        </div>
+      </div>
+
+      {/* Detailed Breakdown */}
+      {showDetails && (
+        <Card className="border-dashed">
+          <CardContent className="p-4">
+            <h4 className="font-medium mb-3">Detailed Breakdown</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground mb-2">Performance Summary:</p>
+                <ul className="space-y-1">
+                  <li>• Excellent (A): {gradeCounts[0]} classes</li>
+                  <li>• Good (B): {gradeCounts[1]} classes</li>
+                  <li>• Satisfactory (C): {gradeCounts[2]} classes</li>
+                  <li>• Needs Improvement: {gradeCounts[3] + gradeCounts[4]} classes</li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-2">Recommendations:</p>
+                <ul className="space-y-1">
+                  {gradeCounts[0] > 0 && <li>• Maintain excellence in {gradeCounts[0]} classes</li>}
+                  {gradeCounts[3] + gradeCounts[4] > 0 && (
+                    <li>• Focus on improving {gradeCounts[3] + gradeCounts[4]} classes</li>
+                  )}
+                  {gradeCounts[1] > 0 && <li>• Push {gradeCounts[1]} B-grade classes to A level</li>}
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -27,7 +27,9 @@ import FeedbackPage from './pages/StudentPages/FeedbackPage'
 import ProgressTrendsPage from './pages/StudentPages/ProgressTrendsPage'
 import { Toaster } from 'react-hot-toast';
 import StudentDetailsPage from './pages/TeacherPages/StudentDetailsPage'
-
+import { setupMessageListener } from './services/notification/firebaseService'
+import { useEffect } from 'react'
+import NotificationsPage from './pages/NotificationPage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -86,6 +88,9 @@ const OnboardingRoute = () => {
 
 function App() {
   return (
+    useEffect(() => {
+      setupMessageListener()
+    }, []),
     <>
     <Routes>
       <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
@@ -116,8 +121,9 @@ function App() {
         <Route path="/student/*" element={<StudentDashboard />} />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/grades" element={<GradesPage />} />
-        <Route path="/student/feedback" element={<FeedbackPage />} />
+        <Route path="/student/feedback/:feedbackId?" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
       
       <Route element={<OnboardingRoute />}>
