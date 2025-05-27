@@ -17,7 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Download, Printer, Share2, Sparkles, AlertCircle } from "lucide-react";
+import {
+  Bell,
+  Download,
+  Printer,
+  Share2,
+  Sparkles,
+  AlertCircle,
+} from "lucide-react";
 import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
@@ -105,7 +112,9 @@ function ReportsPage() {
       !message ||
       message === "<p>Enter your feedback or notification message</p>"
     ) {
-      setFormError("Please fill in all required fields before sending the report.");
+      setFormError(
+        "Please fill in all required fields before sending the report."
+      );
       return;
     }
     setFormError("");
@@ -125,7 +134,7 @@ function ReportsPage() {
       setNotificationType("grade-alert");
       setSelectedClassId("");
       setSelectedStudentId("");
-      
+
       // Navigate to history tab
       setActiveTab("history");
       navigate("/teacher/reports/history");
@@ -398,8 +407,19 @@ function ReportsPage() {
                     </Button>
                   )}
                 </TooltipProvider>
-                <Button onClick={handleSendReport} className="cursor-pointer">
-                  Send Report
+                <Button
+                  onClick={handleSendReport}
+                  className="cursor-pointer"
+                  disabled={createReportMutation.isPending}
+                >
+                  {createReportMutation.isPending ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Report"
+                  )}
                 </Button>
                 {aiGeneratedReportQuery.error && (
                   <div className="text-red-500 text-sm ml-2">

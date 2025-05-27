@@ -137,3 +137,26 @@ export const getSpreadsheetById = async (id, header) => {
         }
     }
 };
+
+export const updateClassSpreadsheetData = async (classId, data, headers) => {
+    try {
+        const formData = new FormData();
+        formData.append("file", data.file);
+        formData.append("teacherId", data.teacherId);
+
+        const response = await axios.put(
+            `${API_BASE_URL}/update/${classId}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    ...headers,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error updating class spreadsheet data:", error);
+        throw error;
+    }
+}

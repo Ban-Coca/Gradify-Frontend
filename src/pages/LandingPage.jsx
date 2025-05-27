@@ -1,5 +1,3 @@
-"use client"
-
 import { useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
@@ -184,7 +182,7 @@ export default function LandingPage() {
         </div>
       </motion.header>
       <main className="flex-1 pt-16">
-        <section id="home" ref={heroRef} className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <section id="home" ref={heroRef} className="w-full py-12 md:py-16 lg:py-24 xl:pb-32 xl:pt:16">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2"
