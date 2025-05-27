@@ -15,10 +15,13 @@ import { EngagementMetrics } from "@/components/engagement-metrics";
 import { getClassById, updateClassById, getClassAverage, getStudentCount, getClassRoster } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
 import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
+import {UploadModal} from "@/components/upload-modal";
+import toast from "react-hot-toast";
+import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 
 const ClassDetailPage = () => {
   const navigate = useNavigate()
@@ -31,8 +34,9 @@ const ClassDetailPage = () => {
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState([])
 
-  
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
     queryKey: ["classAverage", id],
     queryFn: () => getClassAverage(id, getAuthHeader()),
@@ -61,6 +65,20 @@ const ClassDetailPage = () => {
   ).length;
 
   const average = parseFloat(classAverageData/100).toFixed(2)
+
+  const updateSpreadsheetMutation = useMutation({
+    mutationFn: ({ classId, data, headers }) =>
+      updateClassSpreadsheetData(classId, data, headers),
+    onSuccess: (data) => {
+      // Optionally refetch class/roster data here
+      setUploadedFiles((prev) => [...prev, data]);
+      setTimeout(() => setIsUploadModalOpen(false), 2000);
+    },
+    onError: (error) => {
+      // Handle error (show toast, etc.)
+      toast("Failed to update spreadsheet: " + error.message);
+    },
+  });
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -195,6 +213,19 @@ const ClassDetailPage = () => {
     );
   }
 
+  const handleUploadComplete = (file) => {
+    // file: { file: File }
+    const teacherId = currentUser?.userId || currentUser?.id;
+    if (!teacherId) {
+      return;
+    }
+    updateSpreadsheetMutation.mutate({
+      classId: id,
+      data: { file: file, teacherId },
+      headers: getAuthHeader(),
+    });
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -212,7 +243,7 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester || "No semester"} - {classData.schedule || "No Schedule"} - {classData.room || "No Room"}
+                {classData.semester || "No semester"} - {classData.section} -{classData.schedule || "No Schedule"} - {classData.room || "No Room"}
               </p>
             </div>
             <div className="flex flex-col md:flex-row gap-2">
@@ -224,11 +255,11 @@ const ClassDetailPage = () => {
                 />
               <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Class
+                Edit Class Details
               </Button>
-              <Button>
+              <Button onClick={() => setIsUploadModalOpen(true)}>
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Data
+                Update Data
               </Button>
               <DeleteClassConfirmation 
                 classId={classData.classId} 
@@ -420,7 +451,14 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
-      
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadComplete={handleUploadComplete}
+        title="Upload Student Data"
+        description="Upload an Excel file containing student information and grades"
+        isLoading={updateSpreadsheetMutation.isLoading}
+      />
     </Layout>
   )
 }
