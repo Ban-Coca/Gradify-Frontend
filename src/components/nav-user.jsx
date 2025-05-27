@@ -11,14 +11,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { useAuth } from "@/contexts/authentication-context" // Import your auth context
 
 export default function NavUser({ currentUser, onLogout, isCollapsed = false }) {
     const navigate = useNavigate()
+    const { userRole } = useAuth() // Get user role from context
   
     // Get user initials for avatar fallback
     const getUserInitials = () => {
       if (!currentUser?.firstName && !currentUser?.lastName) return "U"
       return `${currentUser?.firstName?.charAt(0) || ""}${currentUser?.lastName?.charAt(0) || ""}`
+    }
+
+    // Navigate to profile based on user role
+    const handleProfileClick = () => {
+      if (userRole === 'TEACHER') {
+        navigate("/teacher/profile")
+      } else if (userRole === 'STUDENT') {
+        navigate("/student/profile")
+      }
+    }
+
+    // Navigate to settings based on user role (if you have role-specific settings)
+    const handleSettingsClick = () => {
+      if (userRole === 'TEACHER') {
+        navigate("/teacher/settings") 
+      } else if (userRole === 'STUDENT') {
+        navigate("/student/settings") 
+      } else {
+        navigate("/settings") // Generic settings
+      }
     }
   
     // Collapsed state - only show avatar with tooltip
@@ -42,16 +64,19 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
                       {currentUser?.firstName} {currentUser?.lastName}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/profile")}>
-                      <User className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem onClick={handleProfileClick}>
+                      <User className="mr-2 h-4 w-4 group-hover:text-white" />
                       <span>Profile</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/settings")}>
-                      <Settings className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem onClick={handleSettingsClick}>
+                      <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
                       <span>Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
+                    <DropdownMenuItem
+                      onClick={onLogout}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 focus:text-red-700 focus:bg-red-50"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Logout</span>
                     </DropdownMenuItem>
@@ -90,21 +115,24 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              <User className="hover:text-white mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={handleProfileClick}>
+              <User className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/settings")}>
-              <Settings className="hover:text-white mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={handleSettingsClick}>
+              <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
-              <LogOut className="hover:text-destructive mr-2 h-4 w-4" />
+            <DropdownMenuItem 
+              onClick={onLogout} 
+              className="text-red-600 hover:text-red-700 hover:bg-red-100 focus:text-red-700 focus:bg-red-50"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
               <span>Logout</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     )
-  }
+}
