@@ -299,7 +299,7 @@ const TeacherDashboard = () => {
             <CardContent className="space-y-2">
               <Button
                 className="w-full justify-start"
-                onClick={() => navigate("/teacher/spreadsheets")}
+                onClick={() => navigate("/teacher/spreadsheets/")}
               >
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Spreadsheet or Link a Spreadsheet

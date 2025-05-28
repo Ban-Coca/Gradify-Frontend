@@ -12,13 +12,16 @@ import {
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { getClassById, updateClassById, getClassAverage, getStudentCount } from "@/services/teacher/classServices";
+import { getClassById, updateClassById, getClassAverage, getStudentCount, getClassRoster } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
 import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
+import {UploadModal} from "@/components/upload-modal";
+import toast from "react-hot-toast";
+import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 
 const ClassDetailPage = () => {
   const navigate = useNavigate()
@@ -31,8 +34,9 @@ const ClassDetailPage = () => {
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
   const [editForm, setEditForm] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState([])
 
-  
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
     queryKey: ["classAverage", id],
     queryFn: () => getClassAverage(id, getAuthHeader()),
@@ -45,7 +49,36 @@ const ClassDetailPage = () => {
     enabled: !!id,
   })
 
+  const { data: rosterData = [], isLoading: isRosterLoading } = useQuery({
+      queryKey: ["classRoster", id],
+      queryFn: () => getClassRoster(id, getAuthHeader()),
+      enabled: !!id,
+  })
+
+  const safeRosterData = Array.isArray(rosterData) ? rosterData : [];
+
+  const studentsAtRisk = safeRosterData.filter(
+    student => {
+      const percentage = student.percentage > 100 ? student.percentage / 100 : student.percentage;
+      return student.status === "At Risk" || percentage < 75;
+    }
+  ).length;
+
   const average = parseFloat(classAverageData/100).toFixed(2)
+
+  const updateSpreadsheetMutation = useMutation({
+    mutationFn: ({ classId, data, headers }) =>
+      updateClassSpreadsheetData(classId, data, headers),
+    onSuccess: (data) => {
+      // Optionally refetch class/roster data here
+      setUploadedFiles((prev) => [...prev, data]);
+      setTimeout(() => setIsUploadModalOpen(false), 2000);
+    },
+    onError: (error) => {
+      // Handle error (show toast, etc.)
+      toast("Failed to update spreadsheet: " + error.message);
+    },
+  });
 
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -74,65 +107,65 @@ const ClassDetailPage = () => {
     setIsModalOpen(true);
   };
 
-  const allTimes = [];
+  // const allTimes = [];
 
-  for (let hour = 7; hour <= 22; hour++) {
-    for (let min = 0; min < 60; min += 30) {
-      if (hour === 22 && min > 0) continue;
-      const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
-      let displayHour = hour % 12 === 0 ? 12 : hour % 12;
-      let ampm = hour < 12 ? "AM" : "PM";
-      const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
-      allTimes.push({ value, display, hour, min, ampm });
-    }
-  }
-  const getFilteredTimes = (zone) => {
-    if (zone === "AM") {
-      return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
-    } else {
-      return allTimes.filter(
-        t =>
-          t.ampm === "PM" &&
-          t.hour >= 12 &&
-          (t.hour < 22 || (t.hour === 22 && t.min === 0))
-      );
-    }
-  };
+  // for (let hour = 7; hour <= 22; hour++) {
+  //   for (let min = 0; min < 60; min += 30) {
+  //     if (hour === 22 && min > 0) continue;
+  //     const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+  //     let displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  //     let ampm = hour < 12 ? "AM" : "PM";
+  //     const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
+  //     allTimes.push({ value, display, hour, min, ampm });
+  //   }
+  // }
+  // const getFilteredTimes = (zone) => {
+  //   if (zone === "AM") {
+  //     return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
+  //   } else {
+  //     return allTimes.filter(
+  //       t =>
+  //         t.ampm === "PM" &&
+  //         t.hour >= 12 &&
+  //         (t.hour < 22 || (t.hour === 22 && t.min === 0))
+  //     );
+  //   }
+  // };
 
-  // Helper for days
-  const handleEditDaysChange = (e) => {
-    const { value, checked } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
-    }));
-  };
+  // // Helper for days
+  // const handleEditDaysChange = (e) => {
+  //   const { value, checked } = e.target;
+  //   setEditForm((prev) => ({
+  //     ...prev,
+  //     days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
+  //   }));
+  // };
 
-  const handleEditSelectChange = (name, value) => {
-    setEditForm((prev) => ({ ...prev, [name]: value }));
-  };
+  // const handleEditSelectChange = (name, value) => {
+  //   setEditForm((prev) => ({ ...prev, [name]: value }));
+  // };
 
-  // Helper for schedule string
-  const getEditScheduleString = () => {
-    if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
-    const days = editForm.days.map(d => d.slice(0, 3)).join("/");
-    const formatTime = (t) => {
-      const [h, m] = t.split(":");
-      const hour = ((+h + 11) % 12) + 1;
-      return `${hour}:${m}`;
-    };
-    if (editForm.startTimeZone === editForm.endTimeZone) {
-      return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
-    }
-    return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
-  };
+  // // Helper for schedule string
+  // const getEditScheduleString = () => {
+  //   if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
+  //   const days = editForm.days.map(d => d.slice(0, 3)).join("/");
+  //   const formatTime = (t) => {
+  //     const [h, m] = t.split(":");
+  //     const hour = ((+h + 11) % 12) + 1;
+  //     return `${hour}:${m}`;
+  //   };
+  //   if (editForm.startTimeZone === editForm.endTimeZone) {
+  //     return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
+  //   }
+  //   return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
+  // };
 
 
   const handleUpdateClass = async () => {
     try {
       const updatedData = {
         ...editForm,
-        schedule: getEditScheduleString(),
+        // schedule: getEditScheduleString(),
       };
       const header = getAuthHeader();
       console.log("Header in handleUpdateClass", header);
@@ -180,6 +213,19 @@ const ClassDetailPage = () => {
     );
   }
 
+  const handleUploadComplete = (file) => {
+    // file: { file: File }
+    const teacherId = currentUser?.userId || currentUser?.id;
+    if (!teacherId) {
+      return;
+    }
+    updateSpreadsheetMutation.mutate({
+      classId: id,
+      data: { file: file, teacherId },
+      headers: getAuthHeader(),
+    });
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -197,7 +243,7 @@ const ClassDetailPage = () => {
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester || "No semester"} - {classData.schedule || "No Schedule"} - {classData.room || "No Room"}
+                {classData.semester || "No semester"} - {classData.section} -{classData.schedule || "No Schedule"} - {classData.room || "No Room"}
               </p>
             </div>
             <div className="flex flex-col md:flex-row gap-2">
@@ -209,14 +255,14 @@ const ClassDetailPage = () => {
                 />
               <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit Class
+                Edit Class Details
               </Button>
-              <Button>
+              <Button onClick={() => setIsUploadModalOpen(true)}>
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Data
+                Update Data
               </Button>
               <DeleteClassConfirmation 
-                classId={id} 
+                classId={classData.classId} 
                 className={classData?.className}
                 onClassDeleted={handleClassDeleted}
               />
@@ -224,7 +270,7 @@ const ClassDetailPage = () => {
           </div>
 
           {/* Class Stats */}
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 w-full">
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Students</p>
               <p className="font-bold text-lg">{studentCountData}</p>
@@ -234,16 +280,10 @@ const ClassDetailPage = () => {
               <p className="font-bold text-lg">{average}</p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Assignments</p>
-              <p className="font-bold text-lg">12</p>
-            </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Attendance</p>
-              <p className="font-bold text-lg">92%</p>
-            </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Engagement</p>
-              <p className="font-bold text-lg">76%</p>
+              <p className="text-sm text-gray-500">Students at Risk</p>
+              <p className="font-bold text-lg">
+                {isRosterLoading ? "..." : studentsAtRisk}
+              </p>
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Last Updated</p>
@@ -411,7 +451,14 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
-      
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadComplete={handleUploadComplete}
+        title="Upload Student Data"
+        description="Upload an Excel file containing student information and grades"
+        isLoading={updateSpreadsheetMutation.isLoading}
+      />
     </Layout>
   )
 }

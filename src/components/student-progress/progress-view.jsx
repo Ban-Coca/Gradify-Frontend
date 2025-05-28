@@ -98,94 +98,101 @@ export function ProgressView() {
   });
   return (
     <div className="space-y-4 mt-8">
-      <Tabs defaultValue="average" className="w-full mb-6 gap-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger 
-            value="average"
-            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-          > Average Per Class</TabsTrigger>
-          <TabsTrigger 
-            value="distribution"
-            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-          > Grade Distribution</TabsTrigger>
-          <TabsTrigger 
-            value="comparison"
-            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-          > Class Comparison</TabsTrigger>
-          <TabsTrigger 
-            value="trend"
-            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-          > Pseudo-Trend</TabsTrigger>
-          <TabsTrigger 
-            value="improvement"
-            className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
-          > Improvement Suggestions</TabsTrigger>
-        </TabsList>
-        <TabsContent value="average">
-          <Card>
-            <CardHeader>
-              <CardTitle>Average Grade Per Class</CardTitle>
-              <CardDescription>See your average grade for each class.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AveragePerClass
-                allGrades={allGrades}
-                allGradesLoading={allGradesLoading}
-                classes={classes}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="distribution">
-          <Card>
-            <CardHeader>
-              <CardTitle>Grade Distribution</CardTitle>
-              <CardDescription>See how your grades are distributed.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <GradeDistribution
-                allGrades={allGrades}
-                allGradesLoading={allGradesLoading}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="comparison">
-          <Card>
-            <CardHeader>
-              <CardTitle>Comparison to Class Average</CardTitle>
-              <CardDescription>Compare your grades to the class average.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SubjectComparison comparisonData={comparisonData} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="trend">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pseudo-Trend by Class Order</CardTitle>
-              <CardDescription>See your grades in the order you enrolled in classes.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PseudoTrendChart allGrades={allGrades} classes={classes} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="improvement">
-          <Card>
-            <CardHeader>
-              <CardTitle>Improvement Suggestions</CardTitle>
-              <CardDescription>Actionable tips based on your grades.</CardDescription>
-            </CardHeader>
-            <CardContent>
+      {classes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-60 text-muted-foreground text-center">
+          <span className="text-5xl mb-3">📚</span>
+          No classes found.
+        </div>
+      ) : (
+        <Tabs defaultValue="average" className="w-full mb-6 gap-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger 
+              value="average"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            > Average Per Class</TabsTrigger>
+            <TabsTrigger 
+              value="distribution"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            > Grade Distribution</TabsTrigger>
+            <TabsTrigger 
+              value="comparison"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            > Class Comparison</TabsTrigger>
+            <TabsTrigger 
+              value="trend"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            > Pseudo-Trend</TabsTrigger>
+            <TabsTrigger 
+              value="improvement"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+            > Improvement Suggestions</TabsTrigger>
+          </TabsList>
+          <TabsContent value="average">
+            <Card>
+              <CardHeader>
+                <CardTitle>Average Grade Per Class</CardTitle>
+                <CardDescription>See your average grade for each class.</CardDescription>
+              </CardHeader>
               <CardContent>
-                <ImprovementAreas classes={classes} allGrades={allGrades} />
+                <AveragePerClass
+                  allGrades={allGrades}
+                  allGradesLoading={allGradesLoading}
+                  classes={classes}
+                />
               </CardContent>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </Card>
+          </TabsContent>
+          <TabsContent value="distribution">
+            <Card>
+              <CardHeader>
+                <CardTitle>Grade Distribution</CardTitle>
+                <CardDescription>See how your grades are distributed.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <GradeDistribution
+                  allGrades={allGrades}
+                  allGradesLoading={allGradesLoading}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="comparison">
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparison to Class Average</CardTitle>
+                <CardDescription>Compare your grades to the class average.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SubjectComparison comparisonData={comparisonData} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="trend">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pseudo-Trend by Class Order</CardTitle>
+                <CardDescription>See your grades in the order you enrolled in classes.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PseudoTrendChart allGrades={allGrades} classes={classes} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="improvement">
+            <Card>
+              <CardHeader>
+                <CardTitle>Improvement Suggestions</CardTitle>
+                <CardDescription>Actionable tips based on your grades.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CardContent>
+                  <ImprovementAreas classes={classes} allGrades={allGrades} />
+                </CardContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   )
 }

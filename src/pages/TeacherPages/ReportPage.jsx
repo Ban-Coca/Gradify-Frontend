@@ -17,7 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Bell, Download, Printer, Share2, Sparkles } from "lucide-react";
+import {
+  Bell,
+  Download,
+  Printer,
+  Share2,
+  Sparkles,
+  AlertCircle,
+} from "lucide-react";
 import Layout from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { LexicalEditor } from "@/components/lexical/lexical-editor";
@@ -44,6 +51,7 @@ function ReportsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, getAuthHeader } = useAuth();
+  const [formError, setFormError] = useState("");
   const {
     studentId: initialStudentId,
     studentName: initialStudentName,
@@ -97,6 +105,19 @@ function ReportsPage() {
   );
 
   const handleSendReport = async () => {
+    if (
+      !selectedClassId ||
+      !selectedStudentId ||
+      !subject.trim() ||
+      !message ||
+      message === "<p>Enter your feedback or notification message</p>"
+    ) {
+      setFormError(
+        "Please fill in all required fields before sending the report."
+      );
+      return;
+    }
+    setFormError("");
     const payload = {
       teacherId: activeTeacher,
       studentId: selectedStudentId,
@@ -113,7 +134,7 @@ function ReportsPage() {
       setNotificationType("grade-alert");
       setSelectedClassId("");
       setSelectedStudentId("");
-      
+
       // Navigate to history tab
       setActiveTab("history");
       navigate("/teacher/reports/history");
@@ -386,13 +407,30 @@ function ReportsPage() {
                     </Button>
                   )}
                 </TooltipProvider>
-                <Button onClick={handleSendReport} className="cursor-pointer">
-                  Send Report
+                <Button
+                  onClick={handleSendReport}
+                  className="cursor-pointer"
+                  disabled={createReportMutation.isPending}
+                >
+                  {createReportMutation.isPending ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Report"
+                  )}
                 </Button>
                 {aiGeneratedReportQuery.error && (
                   <div className="text-red-500 text-sm ml-2">
                     Error generating AI report:{" "}
                     {aiGeneratedReportQuery.error.message || "Unknown error"}
+                  </div>
+                )}
+                {formError && (
+                  <div className="flex items-center text-red-500 text-sm mb-2 gap-1">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {formError}
                   </div>
                 )}
               </CardFooter>

@@ -30,6 +30,7 @@ import StudentDetailsPage from './pages/TeacherPages/StudentDetailsPage'
 import { setupMessageListener } from './services/notification/firebaseService'
 import { useEffect } from 'react'
 import NotificationsPage from './pages/NotificationPage'
+import ProfilePage from './pages/ProfilePage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -115,6 +116,7 @@ function App() {
         <Route path="/teacher/classes/classdetail/:id?" element={<ClassDetailPage />} />    
         <Route path="/teacher/reports/:tab?" element={<ReportsPage/>} />
         <Route path="/teacher/student-detais/:studentId" element={<StudentDetailsPage />} />   
+        <Route path="/teacher/profile" element={<ProfilePage />} />
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
@@ -124,6 +126,7 @@ function App() {
         <Route path="/student/feedback/:feedbackId?" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/student/profile" element={<ProfilePage />} />
       </Route>
       
       <Route element={<OnboardingRoute />}>
