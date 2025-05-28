@@ -2,69 +2,100 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { 
-  ArrowLeft, Download, Upload, Edit, Users, FileText, 
-  BarChart, Search, UserPlus, Filter
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  Edit,
+  Users,
+  FileText,
+  BarChart,
+  Search,
+  UserPlus,
+  Filter,
 } from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
 import { EngagementMetrics } from "@/components/engagement-metrics";
-import { getClassById, updateClassById, getClassAverage, getStudentCount, getClassRoster } from "@/services/teacher/classServices";
+import {
+  getClassById,
+  updateClassById,
+  getClassAverage,
+  getStudentCount,
+  getClassRoster,
+} from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import DeleteClassConfirmation from "@/pages/TeacherPages/DeleteClassConfirmation";
-import {UploadModal} from "@/components/upload-modal";
+import { UploadModal } from "@/components/upload-modal";
 import toast from "react-hot-toast";
 import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
+import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
 
 const ClassDetailPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { id } = useParams();
-  const { currentUser, getAuthHeader } = useAuth()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [classData, setClassData] = useState(null); 
+  const { currentUser, getAuthHeader } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [classData, setClassData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
   const [error, setError] = useState(null);
   const [editForm, setEditForm] = useState(null);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
-  const [uploadedFiles, setUploadedFiles] = useState([])
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery({
-    queryKey: ["classAverage", id],
-    queryFn: () => getClassAverage(id, getAuthHeader()),
-    enabled: !!id,
-  })
+  const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery(
+    {
+      queryKey: ["classAverage", id],
+      queryFn: () => getClassAverage(id, getAuthHeader()),
+      enabled: !!id,
+    }
+  );
 
-  const { data: studentCountData, isLoading: isStudentCountLoading } = useQuery({
-    queryKey: ["studentCount", id],
-    queryFn: () => getStudentCount(id, getAuthHeader()),
-    enabled: !!id,
-  })
+  const { data: studentCountData, isLoading: isStudentCountLoading } = useQuery(
+    {
+      queryKey: ["studentCount", id],
+      queryFn: () => getStudentCount(id, getAuthHeader()),
+      enabled: !!id,
+    }
+  );
 
   const { data: rosterData = [], isLoading: isRosterLoading } = useQuery({
-      queryKey: ["classRoster", id],
-      queryFn: () => getClassRoster(id, getAuthHeader()),
-      enabled: !!id,
-  })
+    queryKey: ["classRoster", id],
+    queryFn: () => getClassRoster(id, getAuthHeader()),
+    enabled: !!id,
+  });
 
   const safeRosterData = Array.isArray(rosterData) ? rosterData : [];
 
-  const studentsAtRisk = safeRosterData.filter(
-    student => {
-      const percentage = student.percentage > 100 ? student.percentage / 100 : student.percentage;
-      return student.status === "At Risk" || percentage < 75;
-    }
-  ).length;
+  const studentsAtRisk = safeRosterData.filter((student) => {
+    const percentage =
+      student.percentage > 100 ? student.percentage / 100 : student.percentage;
+    return student.status === "At Risk" || percentage < 75;
+  }).length;
 
-  const average = parseFloat(classAverageData/100).toFixed(2)
+  const average = parseFloat(classAverageData / 100).toFixed(2);
 
   const updateSpreadsheetMutation = useMutation({
     mutationFn: ({ classId, data, headers }) =>
@@ -160,7 +191,6 @@ const ClassDetailPage = () => {
   //   return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
   // };
 
-
   const handleUpdateClass = async () => {
     try {
       const updatedData = {
@@ -180,13 +210,13 @@ const ClassDetailPage = () => {
 
   const handleClassDeleted = (className) => {
     // Navigate back to classes list after successful deletion
-    navigate("/teacher/classes", { 
-      state: { 
+    navigate("/teacher/classes", {
+      state: {
         notification: {
           type: "success",
-          message: `${className} has been successfully deleted.`
-        }
-      }
+          message: `${className} has been successfully deleted.`,
+        },
+      },
     });
   };
 
@@ -231,7 +261,11 @@ const ClassDetailPage = () => {
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/teacher/classes")}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/teacher/classes")}
+          >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Classes
           </Button>
@@ -241,9 +275,13 @@ const ClassDetailPage = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="font-bold text-2xl md:text-3xl">{classData?.className}</h1>
+              <h1 className="font-bold text-2xl md:text-3xl">
+                {classData?.className}
+              </h1>
               <p className="text-gray-600 mt-1">
-                {classData.semester || "No semester"} - {classData.section} -{classData.schedule || "No Schedule"} - {classData.room || "No Room"}
+                {classData.semester || "No semester"} - {classData.section} -
+                {classData.schedule || "No Schedule"} -{" "}
+                {classData.room || "No Room"}
               </p>
             </div>
             <div className="flex flex-col md:flex-row gap-2">
@@ -252,7 +290,10 @@ const ClassDetailPage = () => {
                 onOpenChange={setGradingSchemeModal}
                 classId={id}
                 //initialData = {classData.gradingScheme}
-                />
+              />
+              <AiAnalyticsSheet
+                classId={id}
+              />
               <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class Details
@@ -261,8 +302,8 @@ const ClassDetailPage = () => {
                 <Upload className="h-4 w-4 mr-2" />
                 Update Data
               </Button>
-              <DeleteClassConfirmation 
-                classId={classData.classId} 
+              <DeleteClassConfirmation
+                classId={classData.classId}
                 className={classData?.className}
                 onClassDeleted={handleClassDeleted}
               />
@@ -287,7 +328,9 @@ const ClassDetailPage = () => {
             </div>
             <div className="bg-gray-50 p-3 rounded-md text-center">
               <p className="text-sm text-gray-500">Last Updated</p>
-              <p className="font-bold text-lg">{formatDate(classData.updatedAt)}</p>
+              <p className="font-bold text-lg">
+                {formatDate(classData.updatedAt)}
+              </p>
             </div>
           </div>
         </div>
@@ -297,48 +340,66 @@ const ClassDetailPage = () => {
           <SheetContent className="w-full sm:max-w-md overflow-y-auto">
             <SheetHeader className="mb-4">
               <SheetTitle>Edit Class</SheetTitle>
-              <SheetDescription>Make changes to your class information.</SheetDescription>
+              <SheetDescription>
+                Make changes to your class information.
+              </SheetDescription>
             </SheetHeader>
             <form
               onSubmit={(e) => {
-                e.preventDefault()
-                handleUpdateClass()
+                e.preventDefault();
+                handleUpdateClass();
               }}
               className="space-y-4 p-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">Class Name</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Class Name
+                </label>
                 <input
                   type="text"
                   value={classData.className}
-                  onChange={(e) => setClassData({ ...classData, className: e.target.value })}
+                  onChange={(e) =>
+                    setClassData({ ...classData, className: e.target.value })
+                  }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Semester</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Semester
+                </label>
                 <input
                   type="text"
                   value={classData.semester}
-                  onChange={(e) => setClassData({ ...classData, semester: e.target.value })}
+                  onChange={(e) =>
+                    setClassData({ ...classData, semester: e.target.value })
+                  }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Schedule</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Schedule
+                </label>
                 <input
                   type="text"
                   value={classData.schedule}
-                  onChange={(e) => setClassData({ ...classData, schedule: e.target.value })}
+                  onChange={(e) =>
+                    setClassData({ ...classData, schedule: e.target.value })
+                  }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Room</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Room
+                </label>
                 <input
                   type="text"
                   value={classData.room}
-                  onChange={(e) => setClassData({ ...classData, room: e.target.value })}
+                  onChange={(e) =>
+                    setClassData({ ...classData, room: e.target.value })
+                  }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
               </div>
@@ -358,15 +419,32 @@ const ClassDetailPage = () => {
         <Card className="mb-5">
           <CardHeader>
             <CardTitle>Class Management</CardTitle>
-            <CardDescription>Manage roster, grades, and student engagement</CardDescription>
+            <CardDescription>
+              Manage roster, grades, and student engagement
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="roster">
               <TabsList className="mb-4">
-                <TabsTrigger value="roster" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Class Roster</TabsTrigger>
-                <TabsTrigger value="grades"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Edit Grades</TabsTrigger>
+                <TabsTrigger
+                  value="roster"
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                >
+                  Class Roster
+                </TabsTrigger>
+                <TabsTrigger
+                  value="grades"
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                >
+                  Edit Grades
+                </TabsTrigger>
                 {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
-                <TabsTrigger value="reports"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Reports</TabsTrigger>
+                <TabsTrigger
+                  value="reports"
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                >
+                  Reports
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="roster">
@@ -398,7 +476,11 @@ const ClassDetailPage = () => {
                     </Button>
                   </div>
                 </div>
-                <StudentTable searchQuery={searchQuery} classId={id} className="w-full" />
+                <StudentTable
+                  searchQuery={searchQuery}
+                  classId={id}
+                  className="w-full"
+                />
               </TabsContent>
 
               <TabsContent value="grades">
@@ -420,9 +502,7 @@ const ClassDetailPage = () => {
                     Export Grades
                   </Button>
                 </div>
-                <GradeEditTable 
-                  classId={id}
-                  className="w-full" />
+                <GradeEditTable classId={id} className="w-full" />
               </TabsContent>
 
               {/* <TabsContent value="engagement">
@@ -444,7 +524,7 @@ const ClassDetailPage = () => {
 
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ReportsTab classId={id}/>
+                  <ReportsTab classId={id} />
                 </div>
               </TabsContent>
             </Tabs>
@@ -460,7 +540,7 @@ const ClassDetailPage = () => {
         isLoading={updateSpreadsheetMutation.isLoading}
       />
     </Layout>
-  )
-}
+  );
+};
 
-export default ClassDetailPage
+export default ClassDetailPage;
