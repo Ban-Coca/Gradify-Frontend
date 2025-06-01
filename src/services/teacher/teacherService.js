@@ -65,3 +65,16 @@ export const getClassPerformance = async (teacherId, header) => {
         throw error;
     }
 };
+
+export const getClassAnalytics = async (classId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/class-ai-analytics/${classId}`,
+            { headers: header }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching class AI analytics:", error);
+        throw error;
+    }
+};

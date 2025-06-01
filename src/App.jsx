@@ -125,7 +125,6 @@ function App() {
         <Route path="/student/grades" element={<GradesPage />} />
         <Route path="/student/feedback/:feedbackId?" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/student/profile" element={<ProfilePage />} />
       </Route>
       
@@ -134,6 +133,7 @@ function App() {
         <Route path='/onboarding/student' element={<StudentOnboarding/>}/>
         <Route path='/onboarding/teacher' element={<TeacherOnboarding/>}/>
       </Route>
+      <Route path="/notifications" element={<NotificationsPage />} />
       {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
     <Toaster 

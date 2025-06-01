@@ -272,7 +272,7 @@ export function SubjectPerformance() {
                 {filteredReports.map((report, index) => (
                   <Card
                     key={report.reportId}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] border-l-4 border-l-primary/20 hover:border-l-primary"
+                    className="cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1] border-l-4 border-l-primary/20 hover:border-l-primary"
                     onClick={() => handleReportClick(report)}
                   >
                     <CardContent className="p-4">

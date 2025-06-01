@@ -130,5 +130,50 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Custom Scrollbar */
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--border);
+    border-radius: var(--radius);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border-radius: var(--radius);
+    border: 2px solid var(--background);
+    opacity: 0.4;
+    transition: all 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--accent);
+    opacity: 0.9;
+    border: 1px solid var(--background);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--background);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(108, 117, 125, 0.4) var(--border);
+  }
+
+  .dark * {
+    scrollbar-color: rgba(180, 180, 180, 0.4) var(--border);
+  }
 }
 
