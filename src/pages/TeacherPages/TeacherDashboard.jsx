@@ -302,7 +302,7 @@ const TeacherDashboard = () => {
                 onClick={() => navigate("/teacher/spreadsheets/")}
               >
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Spreadsheet or Link a Spreadsheet
+                Upload or Link a Spreadsheet
               </Button>
               <Button
                 className="w-full justify-start"
