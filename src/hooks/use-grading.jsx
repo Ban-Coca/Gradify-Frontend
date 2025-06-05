@@ -34,15 +34,18 @@ export function useGrading({ currentUser, classId }) {
       return fetchGradingScheme(classId, getAuthHeader());
     },
     enabled: !!classId,
-    select: (data) => {
+    select: (data) => { // This function processes the data from the API
+      if (!data) { // If API returns null (because no scheme was found)
+        return []; // Return an empty array
+      }
       if (typeof data.gradingScheme === "string") {
         try {
           return JSON.parse(data.gradingScheme);
         } catch {
-          return [];
+          return []; // Return empty array on parse error
         }
       }
-      return data.gradingScheme || [];
+      return data.gradingScheme || []; // Fallback
     },
   });
   const updateGradingScheme = useMutation({

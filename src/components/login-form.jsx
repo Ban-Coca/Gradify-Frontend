@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useAuth} from "@/contexts/authentication-context"
 import { loginUser, googleLogin, microsoftLogin} from "@/services/user/authenticationService"
 import { Link } from "react-router-dom"
+
 export function LoginForm({
   className,
   ...props
@@ -56,7 +57,6 @@ export function LoginForm({
       const response = await loginUser(credential);
       const {user, token} = response;
       login(user, token);
-      // navigate("/home");
       console.log(response);
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
@@ -66,8 +66,7 @@ export function LoginForm({
     }
   }
   return (
-    
-    (<form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -98,9 +97,13 @@ export function LoginForm({
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
-            <a href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
+            {/* FIXED: Changed from <a> to <Link> */}
+            <Link 
+              to="/forgot-password" 
+              className="ml-auto text-sm underline-offset-4 hover:underline"
+            >
               Forgot your password?
-            </a>
+            </Link>
           </div>
           <Input 
             id="password"
@@ -118,8 +121,8 @@ export function LoginForm({
           />
           {fieldErrors.password && <p className="text-xs text-red-500">Password is required</p>}
         </div>
-        <Button type="submit" className="w-full">
-          Login
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </Button>
         <div
           className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -145,7 +148,6 @@ export function LoginForm({
             </svg>
           </Button> 
         </div>
-        
       </div>
       <div className="text-center text-sm">
         Don&apos;t have an account?{" "}
@@ -153,6 +155,6 @@ export function LoginForm({
           Sign up
         </Link>
       </div>
-    </form>)
+    </form>
   );
 }

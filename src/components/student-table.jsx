@@ -22,6 +22,7 @@ export function StudentTable({ searchQuery, classId }) {
   const [sortDirection, setSortDirection] = useState("asc")
   const { currentUser, getAuthHeader } = useAuth()
   const navigate = useNavigate()
+  
   const { 
     data: studentsData, 
     isLoading, 
@@ -30,31 +31,27 @@ export function StudentTable({ searchQuery, classId }) {
     queryKey: ['classRoster', classId],
     queryFn: () => getClassRoster(classId, getAuthHeader()),
     enabled: !!classId,
-    select: (data) => data.map(student => ({
-      id: student.userId,
-      name: student.studentName,
-      studentId: student.studentNumber,
-      grade: student.grade,
-      // Fix the percentage formatting - divide by 100 if over 100
-      percentage: parseFloat((student.percentage > 100 ? student.percentage/100 : student.percentage).toFixed(1)),
-      // Map the status to one of the expected values based on percentage
-      status: student.status === "Good Standing"
-      ? (
-          student.percentage >= 9000 ? "Excellent" :
-          student.percentage >= 8000 ? "Good" :
-          student.percentage >= 7500 ? "Satisfactory" :
-          "At Risk"
-        ): student.status,
-    }))
-  })
+    // Correctly process the data coming from the backend
+    select: (data) => {
+      if (!Array.isArray(data)) return []; // Handle cases where data might not be an array
+      return data.map(student => ({
+        id: student.userId,
+        name: student.studentName,
+        studentId: student.studentNumber,
+        grade: student.grade, // This is the letter grade (A, B, C, D, F, or N/A)
+        percentage: parseFloat(student.percentage.toFixed(1)), // Backend provides this as 0-100
+        status: student.status, // Directly use the status from backend ("Failing", "At Risk", "Passing", "Good Standing", "Scheme Missing")
+      }));
+    }
+  });
+
   // Filter students based on search query
-  console.log("studentsData: ", studentsData)
   const filteredStudents = studentsData ? studentsData.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase()),
-  ) : []
-  console.log(studentsData)
+  ) : [];
+  
   // Sort students based on column and direction
   const sortedStudents = [...filteredStudents].sort((a, b) => {
     if (!sortColumn) return 0
@@ -71,7 +68,7 @@ export function StudentTable({ searchQuery, classId }) {
     }
 
     return 0
-  })
+  });
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -80,7 +77,24 @@ export function StudentTable({ searchQuery, classId }) {
       setSortColumn(column)
       setSortDirection("asc")
     }
-  }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "Failing":
+        return "bg-red-100 text-red-700 border-red-300 hover:bg-red-200";
+      case "At Risk":
+        return "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200";
+      case "Passing":
+        return "bg-sky-100 text-sky-700 border-sky-300 hover:bg-sky-200";
+      case "Good Standing":
+        return "bg-green-100 text-green-700 border-green-300 hover:bg-green-200";
+      case "Scheme Missing":
+        return "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200"; // Neutral gray
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"; // Fallback
+    }
+  };
 
   return (
     <div className="rounded-md border">
@@ -121,9 +135,21 @@ export function StudentTable({ searchQuery, classId }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedStudents.length === 0 ? (
+          {isLoading ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center">
+              <TableCell colSpan={6} className="text-center h-24">
+                Loading student roster...
+              </TableCell>
+            </TableRow>
+          ) : error ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-red-500 h-24">
+                Error loading roster: {error.message || "Unknown error"}
+              </TableCell>
+            </TableRow>
+          ) : sortedStudents.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center h-24">
                 No students found.
               </TableCell>
             </TableRow>
@@ -132,20 +158,12 @@ export function StudentTable({ searchQuery, classId }) {
               <TableRow key={student.id} className="hover:bg-[#198754]/10">
                 <TableCell className="font-medium">{student.name}</TableCell>
                 <TableCell >{student.studentId}</TableCell>
-                <TableCell>{student.grade}</TableCell>
-                <TableCell>{student.percentage}%</TableCell>
+                <TableCell>{student.grade}</TableCell> {/* Letter Grade (A, B, C, N/A) */}
+                <TableCell>{student.percentage}%</TableCell> {/* Percentage (0-100) */}
                 <TableCell>
                   <Badge
-                    variant="outline"
-                    className={
-                      student.status === "Excellent"
-                        ? "bg-green-50 text-green-700 hover:bg-green-50 hover:text-black"
-                        : student.status === "Good"
-                        ? "bg-yellow-50 text-yellow-700 hover:bg-yellow-50 hover:text-black"
-                        : student.status === "Satisfactory"
-                        ? "bg-blue-50 text-blue-700 hover:bg-blue-50 hover:text-black"
-                        : "bg-red-50 text-red-700 hover:bg-red-50 hover:text-black"
-                    }
+                    variant="outline" // Keep outline for border and padding, then override colors
+                    className={getStatusBadgeClass(student.status)}
                   >
                     {student.status}
                   </Badge>
@@ -201,9 +219,9 @@ export function StudentTable({ searchQuery, classId }) {
 
 StudentTable.propTypes = {
   searchQuery: PropTypes.string,
-  classId: PropTypes.string
-}
+  classId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired // Updated to accept string or number
+};
 
 StudentTable.defaultProps = {
   searchQuery: "",
-}
+};
