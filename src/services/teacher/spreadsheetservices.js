@@ -84,9 +84,11 @@ export const processSpreadsheetUrl = async (data, headers) => {
                 
             throw new Error(`Server error (${error.response.status}): ${errorMsg}`);
         } else if (error.request) {
+            // The request was made but no response was received
             console.error("No response received:", error.request);
             throw new Error("No response from server. Please check your network connection and try again.");
         } else {
+            // Something happened in setting up the request that triggered an Error
             console.error("Error setting up request:", error.message);
             throw error;
         }
@@ -160,3 +162,22 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
         throw error;
     }
 }
+
+// New function to check if a spreadsheet exists
+export const checkIfSpreadsheetExists = async (fileName, teacherId, headers) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/check-exists`, {
+            params: { fileName, teacherId },
+            headers: {
+                ...headers,
+            },
+        });
+        return response.data; // Should return true or false
+    } catch (error) {
+        console.error("Error checking if spreadsheet exists:", error);
+        // It's safer to assume it might exist or let user proceed with caution
+        // depending on how critical this check is for the workflow.
+        // For now, re-throw to allow the caller to handle.
+        throw error;
+    }
+};
