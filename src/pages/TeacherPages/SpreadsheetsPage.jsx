@@ -2,16 +2,17 @@ import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FolderOpen, Upload, Link as LinkIcon, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react"; // Imported useCallback
 import { useAuth } from "@/contexts/authentication-context";
-// Import the new service method
 import { uploadSpreadsheet, processSpreadsheetUrl, checkIfSpreadsheetExists } from "@/services/teacher/spreadsheetservices";
 import { useNavigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner"; // Assuming sonner is used for toasts elsewhere
+import { Toaster } from "@/components/ui/sonner";
 import toast from 'react-hot-toast';
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from "@/lib/utils"; // Import the cn utility
+
 
 export default function SpreadsheetsPage() {
     const { currentUser, getAuthHeader } = useAuth();
@@ -23,6 +24,29 @@ export default function SpreadsheetsPage() {
     const [error, setError] = useState(null);
     const [debugInfo, setDebugInfo] = useState(null);
     const navigate = useNavigate();
+
+    // --- START: Added for Drag-and-Drop ---
+    const [isDragOver, setIsDragOver] = useState(false);
+
+    const handleDragOver = useCallback((event) => {
+        event.preventDefault(); // This is necessary to allow for a drop
+        setIsDragOver(true);
+    }, []);
+
+    const handleDragLeave = useCallback((event) => {
+        event.preventDefault();
+        setIsDragOver(false);
+    }, []);
+
+    const handleDrop = useCallback((event) => {
+        event.preventDefault();
+        setIsDragOver(false);
+        const files = event.dataTransfer.files;
+        if (files && files.length > 0) {
+            handleFileChange({ target: { files } });
+        }
+    }, []);
+    // --- END: Added for Drag-and-Drop ---
 
     const isValidSpreadsheetUrl = (url) => {
         if (!url) return false;
@@ -396,9 +420,19 @@ export default function SpreadsheetsPage() {
                     </TabsList>
 
                     <TabsContent value="upload" className="p-6">
-                        <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                        <div 
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            className={cn(
+                                "flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors",
+                                isDragOver && "border-primary bg-primary/10"
+                            )}
+                        >
                             <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
-                            <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Spreadsheet</h2>
+                            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                                {isDragOver ? "Drop File to Upload" : "Upload Spreadsheet"}
+                            </h2>
                             <p className="text-gray-600 mb-4">Drag and drop your file here, or click to browse</p>
                             <Button 
                                 variant={selectedFile ? "default" : "outline"} 
