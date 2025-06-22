@@ -7,24 +7,47 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Save } from "lucide-react";
+import { Save, Send, Loader2 } from "lucide-react"; // Import Send and Loader2 icons
 import { useAuth } from "@/contexts/authentication-context";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import {
-  getSpreadsheetByClassId,
-} from "@/services/teacher/classServices";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getSpreadsheetByClassId, sendColumnGrades } from "@/services/teacher/classServices"; // Import sendColumnGrades
+import { updateGrades } from '@/services/teacher/spreadsheetservices'; // Import the new service
+import toast from "react-hot-toast";
 
 export function GradeEditTable({ classId }) {
   const { currentUser, getAuthHeader } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [spreadsheet, setSpreadsheet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editedData, setEditedData] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSendingGrades, setIsSendingGrades] = useState(false);
+  const [sendingColumn, setSendingColumn] = useState(null);
   const excludedFields = ["Student Number", "First Name", "Last Name"];
+
+  // Add useMutation hook for updating grades
+  const updateGradesMutation = useMutation({
+    mutationFn: (gradesToUpdate) => {
+      // This ensures getAuthHeader() is called and passed to the service function
+      return updateGrades(gradesToUpdate, getAuthHeader());
+    },
+    onSuccess: (data) => {
+      toast.success(data || "Grades saved successfully!");
+      setSaveSuccess(true);
+      setEditedData({}); // Clear changes after saving
+      setTimeout(() => setSaveSuccess(false), 3000);
+      queryClient.invalidateQueries({ queryKey: ['spreadsheet', classId] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to save grades.");
+      setError("Failed to save changes");
+    }
+  });
 
   useEffect(() => {
     const fetchSpreadsheet = async () => {
@@ -65,11 +88,8 @@ export function GradeEditTable({ classId }) {
     fetchSpreadsheet();
   }, [classId, getAuthHeader]);
 
-  // Get all unique column headers for the grades
   const getGradeColumns = () => {
     if (!spreadsheet?.gradeRecords?.length) return [];
-
-    // Collect all unique keys from all grade records
     const allKeys = new Set();
     spreadsheet.gradeRecords.forEach((record) => {
       if (record && record.grades) {
@@ -80,8 +100,6 @@ export function GradeEditTable({ classId }) {
         });
       }
     });
-
-    // Convert to array and sort
     return Array.from(allKeys).sort();
   };
 
@@ -95,44 +113,66 @@ export function GradeEditTable({ classId }) {
     }));
   };
 
+  const handleSendGrades = async (column) => {
+    setIsSendingGrades(true);
+    setSendingColumn(column);
+    const toastId = toast.loading(`Sending "${column}" grades to students...`);
+
+    try {
+      await sendColumnGrades(classId, column, getAuthHeader());
+      toast.success(`"${column}" grades have been sent and students notified.`, { id: toastId });
+    } catch (error) {
+      toast.error(`Failed to send grades for "${column}": ${error.message}`, { id: toastId });
+    } finally {
+      setIsSendingGrades(false);
+      setSendingColumn(null);
+    }
+  };
+
   const handleSave = async () => {
-    // if (!spreadsheet || !spreadsheet.gradeRecords) return;
+    if (!spreadsheet || !spreadsheet.gradeRecords) return;
 
-    // try {
-    //   setSaving(true);
+    // This logic correctly finds that changes were made.
+    const hasChanges = Object.keys(editedData).some(studentId => {
+      const originalRecord = spreadsheet.gradeRecords.find(
+        record => record.grades && record.grades["Student Number"] === studentId
+      );
+      if (!originalRecord) return false;
+      
+      return Object.keys(editedData[studentId] || {}).some(column => {
+        return editedData[studentId][column] !== originalRecord.grades[column];
+      });
+    });
 
-    //   // Transform editedData back to the format expected by the API
-    //   const updatedGradeRecords = spreadsheet.gradeRecords.map((record) => {
-    //     if (!record || !record.grades || !record.grades["Student Number"]) {
-    //       return record;
-    //     }
+    if (!hasChanges) {
+      toast.info("No changes to save.");
+      return;
+    }
 
-    //     const studentId = record.grades["Student Number"];
-    //     return {
-    //       ...record,
-    //       grades: editedData[studentId] || record.grades,
-    //     };
-    //   });
+    const gradesToUpdate = [];
+    Object.keys(editedData).forEach(studentId => {
+      const originalRecord = spreadsheet.gradeRecords.find(
+        record => record.grades && record.grades["Student Number"] === studentId
+      );
+      
+      // --- THE FIX ---
+      // We check for 'originalRecord.id' instead of 'originalRecord.gradeRecordId'.
+      if (originalRecord && originalRecord.id) {
+        gradesToUpdate.push({
+          // The backend expects the field to be named 'gradeRecordId' in the request,
+          // so we map the value from 'originalRecord.id' to it.
+          gradeRecordId: originalRecord.id, 
+          grades: editedData[studentId]
+        });
+      }
+    });
 
-    //   const updatedSpreadsheet = {
-    //     ...spreadsheet,
-    //     gradeRecords: updatedGradeRecords,
-    //   };
-
-    //   // Send to API
-    //   await updateSpreadsheet(classId, updatedSpreadsheet, getAuthHeader());
-
-    //   setSaveSuccess(true);
-    //   setSpreadsheet(updatedSpreadsheet);
-
-    //   // Reset success message after 3 seconds
-    //   setTimeout(() => setSaveSuccess(false), 3000);
-    // } catch (err) {
-    //   console.error("Error saving spreadsheet:", err);
-    //   setError("Failed to save changes");
-    // } finally {
-    //   setSaving(false);
-    // }
+    if (gradesToUpdate.length > 0) {
+      // With the fix above, this will now run correctly.
+      updateGradesMutation.mutate(gradesToUpdate);
+    } else {
+        // This block should no longer be reached.
+    }
   };
 
   // Only calculate grade columns if spreadsheet exists
@@ -170,11 +210,11 @@ export function GradeEditTable({ classId }) {
           )}
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={updateGradesMutation.isPending}
             className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save Changes"}
+            {updateGradesMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>
@@ -188,7 +228,22 @@ export function GradeEditTable({ classId }) {
               <TableHead className="font-bold">Last Name</TableHead>
               {gradeColumns.map((column) => (
                 <TableHead key={column} className="font-bold">
-                  {column}
+                  <div className="flex items-center justify-between">
+                    <span>{column}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSendGrades(column)}
+                      disabled={isSendingGrades}
+                      title={`Send ${column} grades`}
+                    >
+                      {isSendingGrades && sendingColumn === column ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </TableHead>
               ))}
             </TableRow>

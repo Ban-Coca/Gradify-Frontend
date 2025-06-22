@@ -50,6 +50,8 @@ import { UploadModal } from "@/components/upload-modal";
 import toast from "react-hot-toast";
 import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
+import { AddStudentModal } from "@/components/AddStudentModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ClassDetailPage = () => {
   const navigate = useNavigate();
@@ -64,6 +66,8 @@ const ClassDetailPage = () => {
   const [editForm, setEditForm] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const queryClient = useQueryClient();
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
 
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery(
     {
@@ -470,7 +474,7 @@ const ClassDetailPage = () => {
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => setIsAddStudentModalOpen(true)}>
                       <UserPlus className="h-4 w-4 mr-1" />
                       Add Student
                     </Button>
@@ -538,6 +542,12 @@ const ClassDetailPage = () => {
         title="Upload Student Data"
         description="Upload an Excel file containing student information and grades"
         isLoading={updateSpreadsheetMutation.isLoading}
+      />
+      <AddStudentModal
+        isOpen={isAddStudentModalOpen}
+        onClose={() => setIsAddStudentModalOpen(false)}
+       classId={id}
+        onStudentAdded={() => queryClient.invalidateQueries(['classRoster', id])}
       />
     </Layout>
   );

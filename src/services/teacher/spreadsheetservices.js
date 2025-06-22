@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_TEACHER_SERVICE;
+const SPREADSHEET_API_URL = "http://localhost:8080/api/spreadsheet";
 
 export const uploadSpreadsheet = async (data, headers) => {
     const formData = new FormData();
@@ -30,7 +31,7 @@ export const uploadSpreadsheet = async (data, headers) => {
 export const processSpreadsheetUrl = async (data, headers) => {
     try {
         // Build the URL with query parameters
-        const url = `${API_BASE_URL}/process-url`;
+        const url = `${SPREADSHEET_API_URL}/process-url`;
         
         console.log("Sending request to:", url);
         console.log("With data:", data);
@@ -103,7 +104,7 @@ export const getSpreadsheetById = async (id, header) => {
     }
     
     try {
-        const response = await axios.get(`${API_BASE_URL}/get/${id}`, {
+        const response = await axios.get(`${SPREADSHEET_API_URL}/get/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 ...header,
@@ -147,7 +148,7 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
         formData.append("teacherId", data.teacherId);
 
         const response = await axios.put(
-            `${API_BASE_URL}/update/${classId}`,
+            `${SPREADSHEET_API_URL}/update/${classId}`,
             formData,
             {
                 headers: {
@@ -166,7 +167,7 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
 // New function to check if a spreadsheet exists
 export const checkIfSpreadsheetExists = async (fileName, teacherId, headers) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/check-exists`, {
+        const response = await axios.get(`${SPREADSHEET_API_URL}/check-exists`, {
             params: { fileName, teacherId },
             headers: {
                 ...headers,
@@ -180,4 +181,31 @@ export const checkIfSpreadsheetExists = async (fileName, teacherId, headers) => 
         // For now, re-throw to allow the caller to handle.
         throw error;
     }
+};
+
+
+/**
+ * MODIFIED FUNCTION
+ * Updates grades for one or more records.
+ * The fetch URL is now corrected to point to the spreadsheet controller.
+ * @param {Array} updatedRecords - The records to update.
+ * @param {Object} headers - The authorization headers.
+ * @returns {Promise<string>} - A success message.
+ */
+export const updateGrades = async (updatedRecords, headers) => {
+    // This URL is now corrected to point to the correct backend controller
+    const response = await fetch(`${SPREADSHEET_API_URL}/update-grades`, {
+        method: 'PUT',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedRecords),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to update grades');
+    }
+    return response.text();
 };

@@ -2,7 +2,7 @@ import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FolderOpen, Upload, Link as LinkIcon, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
-import React, { useState, useCallback } from "react"; // Imported useCallback
+import React, { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/authentication-context";
 import { uploadSpreadsheet, processSpreadsheetUrl, checkIfSpreadsheetExists } from "@/services/teacher/spreadsheetservices";
 import { useNavigate } from "react-router-dom";
@@ -11,8 +11,7 @@ import toast from 'react-hot-toast';
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { cn } from "@/lib/utils"; // Import the cn utility
-
+import { cn } from "@/lib/utils";
 
 export default function SpreadsheetsPage() {
     const { currentUser, getAuthHeader } = useAuth();
@@ -25,11 +24,10 @@ export default function SpreadsheetsPage() {
     const [debugInfo, setDebugInfo] = useState(null);
     const navigate = useNavigate();
 
-    // --- START: Added for Drag-and-Drop ---
     const [isDragOver, setIsDragOver] = useState(false);
 
     const handleDragOver = useCallback((event) => {
-        event.preventDefault(); // This is necessary to allow for a drop
+        event.preventDefault();
         setIsDragOver(true);
     }, []);
 
@@ -46,7 +44,6 @@ export default function SpreadsheetsPage() {
             handleFileChange({ target: { files } });
         }
     }, []);
-    // --- END: Added for Drag-and-Drop ---
 
     const isValidSpreadsheetUrl = (url) => {
         if (!url) return false;
@@ -123,88 +120,115 @@ export default function SpreadsheetsPage() {
         });
     };
 
+    const showInfoToast = (message, options = {}) => {
+        toast(() => (
+            <div className="flex items-center gap-3 p-1">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Info className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 mb-1">
+                        Feature Information
+                    </p>
+                    <p className="text-sm text-gray-600">
+                        {message}
+                    </p>
+                </div>
+            </div>
+        ), {
+            duration: options.duration || 8000,
+            position: options.position || 'bottom-center',
+            style: {
+                background: 'white',
+                border: '1px solid #f3f4f6',
+                borderLeft: '3px solid #3b82f6',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                borderRadius: '16px',
+                padding: '8px',
+                minWidth: '400px',
+                maxWidth: '600px'
+            }
+        });
+    };
 
-    const handleFileChange = async (event) => { // Make async
+    const handleFileChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
             setError(null);
-            setDebugInfo(null); // Clear previous debug info
+            setDebugInfo(null);
 
-            // --- DUPLICATE CHECK ---
             try {
-                setIsUploading(true); // Show a generic loading state
+                setIsUploading(true);
                 const toastId = toast.loading("Checking file...", { position: 'bottom-center' });
                 const exists = await checkIfSpreadsheetExists(file.name, currentUser.userId, getAuthHeader());
                 toast.dismiss(toastId);
 
                if (exists) {
-    toast((t) => (
-        <div className="flex flex-col gap-3 p-1">
-            <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 mb-1">
-                        File already exists
-                    </p>
-                    <p className="text-sm text-gray-600">
-                        A file named <span className="font-medium text-gray-800">"{file.name}"</span> already exists. 
-                        Would you like to replace it?
-                    </p>
-                </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                    onClick={() => {
-                        toast.dismiss(t.id);
-                        setSelectedFile(null);
-                        if (fileInputRef.current) {
-                            fileInputRef.current.value = "";
+                    toast((t) => (
+                        <div className="flex flex-col gap-3 p-1">
+                            <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
+                                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 mb-1">
+                                        File already exists
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        A file named <span className="font-medium text-gray-800">"{file.name}"</span> already exists. 
+                                        Would you like to replace it?
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                                    onClick={() => {
+                                        toast.dismiss(t.id);
+                                        setSelectedFile(null);
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = "";
+                                        }
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    className="bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                                    onClick={() => {
+                                        toast.dismiss(t.id);
+                                        setSelectedFile(file);
+                                        showSuccessToast(`Ready to replace "${file.name}". Click "Upload File" to proceed.`);
+                                    }}
+                                >
+                                    Replace File
+                                </Button>
+                            </div>
+                        </div>
+                    ), { 
+                        duration: Infinity, 
+                        position: 'bottom-center',
+                        style: {
+                            background: 'white',
+                            border: '1px solid #f3f4f6',
+                            borderLeft: '3px solid #f59e0b',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                            borderRadius: '16px',
+                            padding: '8px',
+                            minWidth: '400px',
+                            maxWidth: '600px'
                         }
-                    }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    size="sm"
-                    className="bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
-                    onClick={() => {
-                        toast.dismiss(t.id);
-                        setSelectedFile(file);
-                        showSuccessToast(`Ready to replace "${file.name}". Click "Upload File" to proceed.`);
-                    }}
-                >
-                    Replace File
-                </Button>
-            </div>
-        </div>
-    ), { 
-        duration: Infinity, 
-        position: 'bottom-center',
-        style: {
-            background: 'white',
-            border: '1px solid #f3f4f6',
-            borderLeft: '3px solid #f59e0b',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            borderRadius: '16px',
-            padding: '8px',
-            minWidth: '400px',
-            maxWidth: '600px'
-        }
-    });
-    setIsUploading(false);
-    return;
-}
-                // If file does not exist, proceed to select it
+                    });
+                    setIsUploading(false);
+                    return;
+                }
                 setSelectedFile(file);
                 showSuccessToast(`File "${file.name}" selected. Ready to upload.`, { duration: 3000 });
-
             } catch (checkError) {
-                toast.dismiss(); // Dismiss any loading toast
+                toast.dismiss();
                 console.error("Error checking if file exists:", checkError);
                 setError({
                     title: "File Check Failed",
@@ -212,12 +236,9 @@ export default function SpreadsheetsPage() {
                     details: checkError.message
                 });
                 showErrorToast("Could not verify if file exists. Proceed with caution.");
-                // Optionally allow upload anyway or block it
-                // setSelectedFile(file); // Or keep it null to block
             } finally {
                 setIsUploading(false);
             }
-            // --- END DUPLICATE CHECK ---
         }
     };
     
@@ -236,9 +257,9 @@ export default function SpreadsheetsPage() {
                 );
                 
                 let spreadsheetId;
-                if (response.id) { // Direct ID in response
+                if (response.id) {
                     spreadsheetId = response.id;
-                } else if (response.spreadsheet && response.spreadsheet.id) { // ID nested under 'spreadsheet'
+                } else if (response.spreadsheet && response.spreadsheet.id) {
                     spreadsheetId = response.spreadsheet.id;
                 } else {
                     console.error("Could not find spreadsheet ID in response:", response);
@@ -254,7 +275,7 @@ export default function SpreadsheetsPage() {
                 
                 navigate(`/teacher/spreadsheets/display/${spreadsheetId}`, { state: { fromUpload: true } });
                 
-                setSelectedFile(null); // Clear selected file after successful upload
+                setSelectedFile(null);
             } catch (error) {
                 console.error("Error uploading file:", error);
                 toast.dismiss(loadingToast);
@@ -285,6 +306,12 @@ export default function SpreadsheetsPage() {
             return;
         }
 
+        const provider = getUrlProvider(sheetUrl);
+        if (provider === 'Microsoft Excel') {
+            showInfoToast("Uploading from Microsoft Excel Online, OneDrive, or SharePoint is not currently supported due to privacy restrictions. Please download the file and upload it directly.", { duration: 10000 });
+            return;
+        }
+
         setIsProcessingUrl(true);
         setError(null);
         setDebugInfo(null);
@@ -292,7 +319,7 @@ export default function SpreadsheetsPage() {
         const loadingToast = toast.loading('Processing spreadsheet URL...', { position: 'bottom-center' });
 
         try {
-            const API_BASE_URL_CHECK = import.meta.env.VITE_API_BASE_URL_TEACHER_SERVICE; // Assuming same base URL for check
+            const API_BASE_URL_CHECK = import.meta.env.VITE_API_BASE_URL_TEACHER_SERVICE;
             const checkResponse = await axios.get(`${API_BASE_URL_CHECK}/check-url-support`, {
                 params: { url: sheetUrl },
                 headers: getAuthHeader()
@@ -300,15 +327,15 @@ export default function SpreadsheetsPage() {
             
             const checkResult = checkResponse.data;
             
-            setDebugInfo({ // Store debug info earlier
+            setDebugInfo({
                 urlCheck: checkResult,
-                detectedProvider: getUrlProvider(sheetUrl),
-                isUrlValid: isValidSpreadsheetUrl(sheetUrl),
+                detectedProvider: provider,
+                isUrlValid: true,
             });
 
             if (!checkResult.supported) {
                 toast.dismiss(loadingToast);
-                showErrorToast(`Unsupported spreadsheet URL. Provider: ${checkResult.provider || 'Unknown'}. Please use a valid Google Sheets or Microsoft Excel Online URL.`, {
+                showErrorToast(`Unsupported spreadsheet URL. Provider: ${checkResult.provider || 'Unknown'}.`, {
                     duration: 7000
                 });
                 setIsProcessingUrl(false);
@@ -332,7 +359,7 @@ export default function SpreadsheetsPage() {
             }
             
             toast.dismiss(loadingToast);
-            showSuccessToast(`Spreadsheet from ${response.provider || getUrlProvider(sheetUrl)} processed successfully!`, { 
+            showSuccessToast(`Spreadsheet from ${response.provider || provider} processed successfully!`, { 
                 duration: 3000, 
                 position: 'bottom-center' 
             });
@@ -453,7 +480,7 @@ export default function SpreadsheetsPage() {
                                 <input 
                                     ref={fileInputRef}
                                     type="file" 
-                                    accept=".xlsx, .xls, .csv" // Updated accept attribute
+                                    accept=".xlsx, .xls, .csv"
                                     className="hidden"
                                     onChange={handleFileChange} 
                                 />

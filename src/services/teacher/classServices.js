@@ -183,3 +183,37 @@ export const getStudentByClass = async (classId, header) => {
         throw error;
     }
 }
+
+export const sendColumnGrades = async (classId, columnName, header) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/${classId}/send-grades`, { columnName }, { headers: header });
+        return response.data;
+    } catch (error) {
+        console.error("Error sending column grades:", error);
+        throw error;
+    }
+};
+
+export const getAllStudents = async (header) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/getallstudents`, {
+            headers: header
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching all students:", error);
+        throw error;
+    }
+}
+
+export const addStudentToClass = async (classId, studentId, header) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/${classId}/addstudent/${studentId}`, {}, {
+            headers: header
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error adding student to class:", error);
+        throw error;
+    }
+};
