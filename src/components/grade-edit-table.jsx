@@ -36,12 +36,15 @@ export function GradeEditTable({ classId }) {
       // This ensures getAuthHeader() is called and passed to the service function
       return updateGrades(gradesToUpdate, getAuthHeader());
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(data || "Grades saved successfully!");
       setSaveSuccess(true);
-      setEditedData({}); // Clear changes after saving
+      
+      // Refetch the data and wait for it to complete
+      await queryClient.refetchQueries({ queryKey: ['spreadsheet', classId] });
+      
+      // Reset success message after 3 seconds
       setTimeout(() => setSaveSuccess(false), 3000);
-      queryClient.invalidateQueries({ queryKey: ['spreadsheet', classId] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to save grades.");
@@ -87,6 +90,20 @@ export function GradeEditTable({ classId }) {
 
     fetchSpreadsheet();
   }, [classId, getAuthHeader]);
+
+  // Clear edited data when spreadsheet data changes (after successful save)
+  useEffect(() => {
+    if (spreadsheet && spreadsheet.gradeRecords) {
+      const freshEditState = {};
+      spreadsheet.gradeRecords.forEach((record) => {
+        if (record && record.grades && record.grades["Student Number"]) {
+          const studentId = record.grades["Student Number"];
+          freshEditState[studentId] = { ...record.grades };
+        }
+      });
+      setEditedData(freshEditState);
+    }
+  }, [spreadsheet]);
 
   const getGradeColumns = () => {
     if (!spreadsheet?.gradeRecords?.length) return [];

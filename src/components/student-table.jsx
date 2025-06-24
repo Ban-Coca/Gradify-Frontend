@@ -80,19 +80,20 @@ export function StudentTable({ searchQuery, classId }) {
   };
 
   const getStatusBadgeClass = (status) => {
+    const baseClasses = "pointer-events-none"; // Disable all pointer interactions
     switch (status) {
       case "Failing":
-        return "bg-red-100 text-red-700 border-red-300 hover:bg-red-200";
+        return `${baseClasses} bg-red-100 text-red-700 border-red-300`;
       case "At Risk":
-        return "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-200";
+        return `${baseClasses} bg-orange-100 text-orange-700 border-orange-300`;
       case "Passing":
-        return "bg-sky-100 text-sky-700 border-sky-300 hover:bg-sky-200";
+        return `${baseClasses} bg-sky-100 text-sky-700 border-sky-300`;
       case "Good Standing":
-        return "bg-green-100 text-green-700 border-green-300 hover:bg-green-200";
+        return `${baseClasses} bg-green-100 text-green-700 border-green-300`;
       case "Scheme Missing":
-        return "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200"; // Neutral gray
+        return `${baseClasses} bg-slate-100 text-slate-600 border-slate-300`; // Neutral gray
       default:
-        return "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"; // Fallback
+        return `${baseClasses} bg-gray-100 text-gray-700 border-gray-300`; // Fallback
     }
   };
 
