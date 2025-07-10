@@ -470,10 +470,10 @@ const ClassDetailPage = () => {
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    <Button size="sm">
+                    {/* <Button size="sm">
                       <UserPlus className="h-4 w-4 mr-1" />
                       Add Student
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
                 <StudentTable
@@ -523,7 +523,7 @@ const ClassDetailPage = () => {
               </TabsContent> */}
 
               <TabsContent value="reports">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <ReportsTab classId={id} />
                 </div>
               </TabsContent>

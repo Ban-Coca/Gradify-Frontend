@@ -42,7 +42,7 @@ export function StudentTable({ searchQuery, classId }) {
       ? (
           student.percentage >= 9000 ? "Excellent" :
           student.percentage >= 8000 ? "Good" :
-          student.percentage >= 7500 ? "Satisfactory" :
+          student.percentage >= 6000 ? "Satisfactory" :
           "At Risk"
         ): student.status,
     }))
