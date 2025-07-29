@@ -55,12 +55,10 @@ export function LoginForm({
       setLoading(true);
       setError(null);
       const response = await loginUser(credential);
-      const {user, token} = response;
-      login(user, token);
-      console.log(response);
+      const {userResponse, token} = response;
+      login(userResponse, token);
     } catch (error) {
       setError("Login failed. Please check your credentials and try again.");
-      console.error("Login failed:", error);
     } finally {
       setLoading(false);
     }
@@ -97,11 +95,7 @@ export function LoginForm({
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
-            {/* FIXED: Changed from <a> to <Link> */}
-            <Link 
-              to="/forgot-password" 
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
+            <Link to="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
               Forgot your password?
             </Link>
           </div>

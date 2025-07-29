@@ -103,7 +103,7 @@ export const getSpreadsheetById = async (id, header) => {
     }
     
     try {
-        const response = await axios.get(`${API_BASE_URL}/get/${id}`, {
+        const response = await axios.get(`${API_BASE_URL}/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 ...header,

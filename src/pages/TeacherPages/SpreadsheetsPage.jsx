@@ -466,7 +466,7 @@ export default function SpreadsheetsPage() {
                                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                         <span>Google Sheets</span>
                                     </div>
-                                    <div className="flex items-center space-x-2">
+                                    {/* <div className="flex items-center space-x-2">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                         <span>Microsoft Excel Online</span>
                                     </div>
@@ -477,7 +477,7 @@ export default function SpreadsheetsPage() {
                                     <div className="flex items-center space-x-2">
                                         <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                                         <span>SharePoint</span>
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <p className="mt-4 text-xs">
                                     <strong>Note:</strong> Make sure your spreadsheet is shared with view access.

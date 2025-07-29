@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:8080/api/class'
+const API_BASE_URL = 'http://localhost:8080/api/classes'
 
 // Modified to handle the teacher ID association
 export const createClass = async (classData) => {
@@ -44,7 +44,7 @@ export const createClass = async (classData) => {
 
 export const getAllClasses = async (header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getallclasses`, 
+        const response = await axios.get(`${API_BASE_URL}/`, 
             {
                 headers: header
             }
@@ -60,7 +60,7 @@ export const deleteClass = async (id, header) => {
     console.log("Header in deleteClass", header)
     console.log("ID in deleteClass", id)
     try {
-        const response = await axios.delete(`${API_BASE_URL}/deleteclass/${id}`, {
+        const response = await axios.delete(`${API_BASE_URL}/${id}`, {
             headers: header
         });
         return response.data;
@@ -72,7 +72,7 @@ export const deleteClass = async (id, header) => {
 
 export const getClassById = async (id, header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getclassbyid/${id}`, {
+        const response = await axios.get(`${API_BASE_URL}/${id}`, {
             headers: header
         });
         return response.data;
@@ -95,7 +95,7 @@ export const updateClassById = async (id, data, header) => {
         };
         console.log("Header in updateClassById", header)
         const response = await axios.put(
-            `${API_BASE_URL}/putclasses/${id}`,
+            `${API_BASE_URL}/${id}`,
             payload,
             {
                 headers: {
@@ -113,7 +113,7 @@ export const updateClassById = async (id, data, header) => {
 
 export const getSpreadsheetByClassId = async (classId, header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getspreadsheetbyclassid/${classId}`,
+        const response = await axios.get(`${API_BASE_URL}/${classId}/spreadsheets`,
             { headers: header }
         );
         return response.data;
@@ -137,7 +137,7 @@ export const getClassByTeacherId = async (teacherId, header) => {
 
 export const getClassRoster = async (classId, header) => {
     try{
-        const response = await axios.get(`${API_BASE_URL}/${classId}/roster`, {
+        const response = await axios.get(`${API_BASE_URL}/${classId}/students`, {
             headers: header
         });
         return response.data;
@@ -149,7 +149,7 @@ export const getClassRoster = async (classId, header) => {
 
 export const getClassAverage = async (classId, header) => {
     try{
-        const response = await axios.get(`${API_BASE_URL}/${classId}/avgclassgrade`, {
+        const response = await axios.get(`${API_BASE_URL}/${classId}/grade/average`, {
             headers: header
         });
         console.log("Class average response:", response.data);
@@ -162,7 +162,7 @@ export const getClassAverage = async (classId, header) => {
 
 export const getStudentCount = async (classId, header) => {
     try{
-        const response = await axios.get(`${API_BASE_URL}/${classId}/studentcount`, {
+        const response = await axios.get(`${API_BASE_URL}/${classId}/students/count`, {
             headers: header
         });
         return response.data;
@@ -174,7 +174,7 @@ export const getStudentCount = async (classId, header) => {
 
 export const getStudentByClass = async (classId, header) => {
     try{
-        const response = await axios.get(`${API_BASE_URL}/${classId}/students`, {
+        const response = await axios.get(`${API_BASE_URL}/${classId}/students/details`, {
             headers: header
         });
         return response.data;
