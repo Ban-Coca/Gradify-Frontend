@@ -157,12 +157,12 @@ export function StudentTable({ searchQuery, classId }) {
             sortedStudents.map((student) => (
               <TableRow key={student.id} className="hover:bg-[#198754]/10">
                 <TableCell className="font-medium">{student.name}</TableCell>
-                <TableCell >{student.studentId}</TableCell>
-                <TableCell>{student.grade}</TableCell> {/* Letter Grade (A, B, C, N/A) */}
-                <TableCell>{student.percentage}%</TableCell> {/* Percentage (0-100) */}
+                <TableCell>{student.studentId}</TableCell>
+                <TableCell>{student.grade}</TableCell>
+                <TableCell>{student.percentage}%</TableCell>
                 <TableCell>
                   <Badge
-                    variant="outline" // Keep outline for border and padding, then override colors
+                    variant="outline"
                     className={getStatusBadgeClass(student.status)}
                   >
                     {student.status}
@@ -186,7 +186,7 @@ export function StudentTable({ searchQuery, classId }) {
                       <DropdownMenuItem
                         onClick={() => 
                           navigate("/teacher/reports", { 
-                            state: { 
+                            state: {
                               studentId: student.id, 
                               studentName: student.name, 
                               classId: Number(classId), 

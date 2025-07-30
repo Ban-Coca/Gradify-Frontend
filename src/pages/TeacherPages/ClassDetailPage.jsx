@@ -50,7 +50,7 @@ import { UploadModal } from "@/components/upload-modal";
 import toast from "react-hot-toast";
 import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
-
+import { GradeDisplayTable } from "@/components/grade-visibility";
 const ClassDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -432,11 +432,16 @@ const ClassDetailPage = () => {
                 >
                   Class Roster
                 </TabsTrigger>
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="grades"
                   className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
                 >
                   Edit Grades
+                </TabsTrigger> */}
+                <TabsTrigger 
+                  value="visibility" 
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                  Grade Visibility
                 </TabsTrigger>
                 {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
                 <TabsTrigger
@@ -445,6 +450,7 @@ const ClassDetailPage = () => {
                 >
                   Reports
                 </TabsTrigger>
+                
               </TabsList>
 
               <TabsContent value="roster">
@@ -525,6 +531,12 @@ const ClassDetailPage = () => {
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <ReportsTab classId={id} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="visibility">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  <GradeDisplayTable classId={id} />
                 </div>
               </TabsContent>
             </Tabs>

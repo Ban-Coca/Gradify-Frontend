@@ -14,7 +14,7 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
         };
         
         const response = await axios.post(
-            `${API_BASE_URL}/savescheme?classId=${classId}&teacherId=${teacherId}`, 
+            `${API_BASE_URL}/save?classId=${classId}&teacherId=${teacherId}`, 
             dataToSend,
             {
                 headers: {
@@ -33,7 +33,7 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
 export const getGradingScheme = async (classId, headers) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/getscheme?classId=${classId}`, 
+            `${API_BASE_URL}/schemes?classId=${classId}`, 
             {
                 headers: {
                     ...headers,
@@ -55,7 +55,7 @@ export const updateGradingScheme = async (gradingScheme, classId, teacherId, hea
         };
 
         const response = await axios.put(
-            `${API_BASE_URL}/updatescheme/${classId}/teacher/${teacherId}`,
+            `${API_BASE_URL}/class/${classId}/teacher/${teacherId}`,
             dataToSend,
             {
                 headers: {

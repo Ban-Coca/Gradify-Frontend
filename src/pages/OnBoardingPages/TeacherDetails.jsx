@@ -59,6 +59,7 @@ export default function TeacherOnboarding() {
         const response = await signUpUser(onboardingData);
         console.log("Onboarding Response:", onboardingData);
         localStorage.removeItem("onboardingFormData")
+        console.log(response)
         login(response.user, response.token);
       } catch (err) {
         setError(
@@ -91,7 +92,7 @@ export default function TeacherOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900 hover:text-white"
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>

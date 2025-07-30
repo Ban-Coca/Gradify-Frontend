@@ -131,3 +131,17 @@ export const getClassAveragesByStudent = async (studentId, header = {}) => {
     throw error;
   }
 }
+
+export const getVisibleStudentGrades = async (studentNumber, classId, header = {}) => {
+  console.log("Fetching visible student grades for:", studentNumber, "in class:", classId);
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/${studentNumber}/class/${classId}`,
+      { headers: header }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching visible student grades:", error);
+    throw error;
+  }
+}
