@@ -78,3 +78,66 @@ export const getClassAnalytics = async (classId, header) => {
         throw error;
     }
 };
+
+export const getAvailableAssesments = async (classId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/class-spreadsheet/${classId}/assessments/available`,
+            {headers: header}
+        )
+        return response.data
+    } catch(error){
+        throw error;
+    }
+}
+
+export const getVisibleAssessments = async (classId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/class-spreadsheet/${classId}/assessments/visible`,
+            {headers: header}
+        )
+        return response.data
+    } catch(error){
+        throw error;
+    }
+}
+
+export const toggleAssessmentVisibility = async (classSpreadSheetId, assessmentName, header) => {
+    try {
+        console.log("classspreadsheetID and assessmentName", classSpreadSheetId, assessmentName)
+        const response = await axios.post(
+            `${API_BASE_URL}/${classSpreadSheetId}/assessments/${assessmentName}/toggle`,
+            {}, // Empty body for POST request
+            {headers: header} // Headers should be in config object
+        )
+        return response.data
+    } catch(error) {
+        throw error;
+    }
+}
+
+export const updateAssessmentVisibility = async (classSpreadsheetId, visibleAssessments, header) => {
+    try {
+        const response = await axios.put(
+            `${API_BASE_URL}/class-spreadsheet/${classSpreadsheetId}/assessments/visible`,
+            visibleAssessments,
+            {headers: header}
+        )
+        return response.data
+    } catch(error){
+        throw error;
+    }
+}
+
+export const getAssessmentStatus = async (classSpreadSheetId, header) => {
+    try {
+        const response = await axios.get(
+            `${API_BASE_URL}/${classSpreadSheetId}/assessments/status`,
+            {headers: header}
+        )
+        return response.data
+    } catch(error){
+        throw error;
+    }
+}

@@ -135,7 +135,10 @@ export function GradesView() {
   const grades = visibleStudentGrades?.grades || {}
   const gradesError = studentGradesError || null
   const gradesLoading = isLoading
-
+  console.log('useStudent hook response:', { visibleStudentGrades, isLoading, studentGradesError })
+  console.log('selectedClass:', selectedClass)
+  console.log('currentUser:', currentUser)
+  console.log('grades:', grades)
   // Fetch teacher info
   useEffect(() => {
     async function fetchTeacher() {
