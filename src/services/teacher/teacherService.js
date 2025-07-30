@@ -5,7 +5,7 @@ const API_BASE_URL = "http://localhost:8080/api/teacher";
 export const getStudentCount = async (teacherId, header) => {
     try {
         const response = await axios.get(
-        `${API_BASE_URL}/getstudentcount/${teacherId}`,
+        `${API_BASE_URL}/${teacherId}/students/count`,
         { headers: header }
         );
         return response.data;
@@ -18,7 +18,7 @@ export const getStudentCount = async (teacherId, header) => {
 export const getAtRiskStudents = async (teacherId, header) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/getatriskstudents/${teacherId}`,
+            `${API_BASE_URL}/${teacherId}/risk/students/count`,
             { headers: header }
         );
         return response.data;
@@ -31,7 +31,7 @@ export const getAtRiskStudents = async (teacherId, header) => {
 export const getTopStudents = async (teacherId, header) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/gettopstudents/${teacherId}`,
+            `${API_BASE_URL}/${teacherId}/top/students/count`,
             { headers: header }
         );
         return response.data;
@@ -44,7 +44,7 @@ export const getTopStudents = async (teacherId, header) => {
 export const getTeacherGradeDistribution = async (teacherId, header) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/teacher-grade-distribution/${teacherId}`,
+            `${API_BASE_URL}/${teacherId}/grade/distribution`,
             { headers: header }
         );
         return response.data;
@@ -56,7 +56,7 @@ export const getTeacherGradeDistribution = async (teacherId, header) => {
 export const getClassPerformance = async (teacherId, header) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/class-performance/${teacherId}`,
+            `${API_BASE_URL}/${teacherId}/class/performance`,
             { headers: header }
         );
         return response.data;
@@ -69,7 +69,7 @@ export const getClassPerformance = async (teacherId, header) => {
 export const getClassAnalytics = async (classId, header) => {
     try {
         const response = await axios.get(
-            `${API_BASE_URL}/class-ai-analytics/${classId}`,
+            `${API_BASE_URL}/${classId}/ai/analytics`,
             { headers: header }
         );
         return response.data;

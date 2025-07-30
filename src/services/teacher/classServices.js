@@ -125,7 +125,7 @@ export const getSpreadsheetByClassId = async (classId, header) => {
 
 export const getClassByTeacherId = async (teacherId, header) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/getclassbyteacherid/${teacherId}`, {
+        const response = await axios.get(`${API_BASE_URL}/teacher/${teacherId}`, {
             headers: header
         });
         return response.data;

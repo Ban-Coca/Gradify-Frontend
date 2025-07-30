@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER_SERVICE
 export const signUpUser = async (formData) => {
     
     try{    
-        const response = await axios.post(`${API_BASE_URL}/`, formData);
+        const response = await axios.post(`${API_BASE_URL}/register`, formData);
         return response.data;
     } catch (error){
         console.error('Error signing up:', error);
