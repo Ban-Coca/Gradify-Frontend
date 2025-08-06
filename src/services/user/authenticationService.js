@@ -109,18 +109,3 @@ export const azureLogin = async () => {
         throw error;
     }
 };
-
-export const handleAzureCallback = async (code, state, error) => {
-    try {
-        const params = new URLSearchParams();
-        params.append('code', code);
-        if (state) params.append('state', state);
-        if (error) params.append('error', error);
-
-        const response = await axios.get(`http://localhost:8080/api/auth/azure/callback?${params.toString()}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error handling Azure callback:', error);
-        throw error;
-    }
-};
