@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { useAuth} from "@/contexts/authentication-context"
-import { loginUser, googleLogin, microsoftLogin} from "@/services/user/authenticationService"
+import { loginUser, googleLogin, azureLogin} from "@/services/user/authenticationService"
 import { Link } from "react-router-dom"
 
 export function LoginForm({
@@ -63,6 +63,15 @@ export function LoginForm({
       setLoading(false);
     }
   }
+
+  const handleAzureLogin = async () => {
+    try {
+      await azureLogin();
+    } catch(error){
+      setError("Microsoft Login Failed")
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
@@ -133,7 +142,7 @@ export function LoginForm({
               <path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335"></path>
             </svg>
           </Button>
-          <Button variant="outline" className="w-full cursor-pointer" onClick={microsoftLogin}>
+          <Button variant="outline" className="w-full cursor-pointer" onClick={handleAzureLogin}>
             <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
               <path fill="#F35325" d="M1 1h6.5v6.5H1V1z"></path>
               <path fill="#81BC06" d="M8.5 1H15v6.5H8.5V1z"></path>

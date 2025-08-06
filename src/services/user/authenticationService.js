@@ -97,6 +97,15 @@ export const googleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
 };
 
-export const microsoftLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/microsoft";
+export const azureLogin = async () => {
+    try {
+        const response = await axios.get(`http://localhost:8080/api/auth/azure/login`);
+        if (response.data.authUrl) {
+            window.location.href = response.data.authUrl;
+        }
+        return response.data;
+    } catch (error) {
+        console.error('Error initiating Azure login:', error);
+        throw error;
+    }
 };
