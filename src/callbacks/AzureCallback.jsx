@@ -11,13 +11,14 @@ const AzureCallback = () => {
     useEffect(() => {
         const processCallback = async () => {
             if (isProcessed) return; // Prevent multiple executions
-            
             const token = searchParams.get('token');
             const userId = searchParams.get('userId');
             const email = searchParams.get('email');
-            const name = searchParams.get('name');
+            const firstName = searchParams.get('firstName');
+            const lastName = searchParams.get('lastName');
             const role = searchParams.get('role');
             const error = searchParams.get('error');
+            console.log("PARAMS: ", token, userId, email, firstName, lastName, role, error);
             try{
                 if (error) {
                     console.error('Azure login error:', error);
@@ -26,8 +27,8 @@ const AzureCallback = () => {
                     return;
                 }
 
-                if (token && userId && email && name) {
-                    const user = { userId: userId, email, name, role };
+                if (token && userId && email && firstName && lastName) {
+                    const user = { userId: userId, email, firstName, lastName, role };
                     await login(user, token); // Make sure login completes
                     setIsProcessed(true);
                     

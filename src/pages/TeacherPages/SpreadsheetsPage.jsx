@@ -1,7 +1,7 @@
 import Layout from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FolderOpen, Upload, Link as LinkIcon, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-react';
+import { FolderOpen, Upload, Link as LinkIcon, AlertTriangle, CheckCircle, XCircle, FileSpreadsheet } from 'lucide-react';
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/authentication-context";
 // Import the new service method
@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import GraphFileBrowser from "@/components/graph-file-browser";
 export default function SpreadsheetsPage() {
     const { currentUser, getAuthHeader } = useAuth();
     const fileInputRef = React.useRef(null);
@@ -22,20 +22,19 @@ export default function SpreadsheetsPage() {
     const [isProcessingUrl, setIsProcessingUrl] = useState(false);
     const [error, setError] = useState(null);
     const [debugInfo, setDebugInfo] = useState(null);
+    const [isModalOpen, setModalOpen] = useState(false);
     const navigate = useNavigate();
 
     const isValidSpreadsheetUrl = (url) => {
         if (!url) return false;
         const googleSheetsPatterns = [/docs\.google\.com\/spreadsheets/, /sheets\.google\.com/];
-        const microsoftExcelPatterns = [/onedrive\.live\.com/, /1drv\.ms/, /sharepoint\.com/, /office\.com\/x\//, /excel\.office\.com/];
-        const allPatterns = [...googleSheetsPatterns, ...microsoftExcelPatterns];
+        const allPatterns = [...googleSheetsPatterns];
         return allPatterns.some(pattern => pattern.test(url));
     };
 
     const getUrlProvider = (url) => {
         if (!url) return 'Unknown';
         if (url.includes('docs.google.com') || url.includes('sheets.google.com')) return 'Google Sheets';
-        if (url.includes('onedrive.live.com') || url.includes('1drv.ms') || url.includes('sharepoint.com') || url.includes('office.com') || url.includes('excel.office.com')) return 'Microsoft Excel';
         return 'Unknown';
     };
 
@@ -380,7 +379,7 @@ export default function SpreadsheetsPage() {
             
             <div className="bg-white rounded-lg border shadow-sm">
                 <Tabs defaultValue="upload" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+                    <TabsList className="grid w-full grid-cols-3 bg-gray-100">
                         <TabsTrigger 
                             value="upload" 
                             className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
@@ -388,10 +387,16 @@ export default function SpreadsheetsPage() {
                             Upload Spreadsheet
                         </TabsTrigger>
                         <TabsTrigger 
-                            value="link" 
+                            value="google-link" 
                             className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
                         >
-                            Link Spreadsheet
+                            Link Google Spreadsheet
+                        </TabsTrigger>
+                         <TabsTrigger 
+                            value="microsoft-excel" 
+                            className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
+                        >
+                            Microsoft Excel
                         </TabsTrigger>
                     </TabsList>
 
@@ -434,7 +439,7 @@ export default function SpreadsheetsPage() {
                         </div>
                     </TabsContent>
                     
-                    <TabsContent value="link" className="p-6">
+                    <TabsContent value="google-link" className="p-6">
                         <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300">
                             <LinkIcon className="w-12 h-12 text-gray-400 mb-4" />
                             <h2 className="text-xl font-semibold text-gray-900 mb-2">Link Spreadsheet</h2>
@@ -443,7 +448,7 @@ export default function SpreadsheetsPage() {
                             <div className="w-full max-w-md space-y-4">
                                 <Input
                                     type="url"
-                                    placeholder="https://docs.google.com/spreadsheets/... or https://onedrive.live.com/..."
+                                    placeholder="https://docs.google.com/spreadsheets/..."
                                     className="w-full"
                                     value={sheetUrl}
                                     onChange={handleUrlChange}
@@ -466,18 +471,6 @@ export default function SpreadsheetsPage() {
                                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                         <span>Google Sheets</span>
                                     </div>
-                                    {/* <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <span>Microsoft Excel Online</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                        <span>OneDrive</span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                        <span>SharePoint</span>
-                                    </div> */}
                                 </div>
                                 <p className="mt-4 text-xs">
                                     <strong>Note:</strong> Make sure your spreadsheet is shared with view access.
@@ -485,8 +478,33 @@ export default function SpreadsheetsPage() {
                             </div>
                         </div>
                     </TabsContent>
+                    <TabsContent value="microsoft-excel" className="p-6">
+                        <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+                            <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
+                            <h2 className="text-xl font-semibold text-gray-900 mb-2">Microsoft Excel</h2>
+                            <p className="text-gray-600 mb-4">Browse your OneDrive file from here</p>
+                            <Button
+                                className="w-fit transition-all duration-300 hover:scale-105"
+                                onClick={()=>setModalOpen(true)}
+                            >
+                                Browse Drive Files
+                            </Button>
+                            {/* {selectedFile && (
+                                <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
+                                    <span className="mr-2">📄</span>
+                                    <span className="text-sm text-gray-700">{selectedFile.name}</span>
+                                </div>
+                            )}
+                            <p className="text-sm text-gray-500 mt-2">Supported formats: .xlsx, .xls, .csv</p> */}
+                        </div>
+                    </TabsContent>
                 </Tabs>
             </div>
+            <GraphFileBrowser
+                open={isModalOpen}
+                openChange={setModalOpen}
+                userId={currentUser?.userId}
+            />
         </Layout>
     );
 }
