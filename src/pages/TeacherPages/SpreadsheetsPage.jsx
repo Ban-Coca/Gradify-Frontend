@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import GraphFileBrowser from "@/components/graph-file-browser";
 export default function SpreadsheetsPage() {
     const { currentUser, getAuthHeader } = useAuth();
     const fileInputRef = React.useRef(null);
@@ -28,15 +28,13 @@ export default function SpreadsheetsPage() {
     const isValidSpreadsheetUrl = (url) => {
         if (!url) return false;
         const googleSheetsPatterns = [/docs\.google\.com\/spreadsheets/, /sheets\.google\.com/];
-        const microsoftExcelPatterns = [/onedrive\.live\.com/, /1drv\.ms/, /sharepoint\.com/, /office\.com\/x\//, /excel\.office\.com/];
-        const allPatterns = [...googleSheetsPatterns, ...microsoftExcelPatterns];
+        const allPatterns = [...googleSheetsPatterns];
         return allPatterns.some(pattern => pattern.test(url));
     };
 
     const getUrlProvider = (url) => {
         if (!url) return 'Unknown';
         if (url.includes('docs.google.com') || url.includes('sheets.google.com')) return 'Google Sheets';
-        if (url.includes('onedrive.live.com') || url.includes('1drv.ms') || url.includes('sharepoint.com') || url.includes('office.com') || url.includes('excel.office.com')) return 'Microsoft Excel';
         return 'Unknown';
     };
 
@@ -485,41 +483,28 @@ export default function SpreadsheetsPage() {
                             <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
                             <h2 className="text-xl font-semibold text-gray-900 mb-2">Microsoft Excel</h2>
                             <p className="text-gray-600 mb-4">Browse your OneDrive file from here</p>
-                            <Button 
-                                variant={selectedFile ? "default" : "outline"} 
-                                className="mb-4 transition-all duration-300 hover:scale-105" 
-                                onClick={handleButtonClick}
-                                disabled={isUploading}
+                            <Button
+                                className="w-fit transition-all duration-300 hover:scale-105"
+                                onClick={()=>setModalOpen(true)}
                             >
-                                {selectedFile && !isUploading ? (
-                                    <>
-                                        <File className="w-4 h-4 mr-2" />
-                                        Upload File
-                                    </>
-                                ) : isUploading ? (
-                                    "Uploading..."
-                                ) : (
-                                    "Browse Files"
-                                )}
-                                <input 
-                                    ref={fileInputRef}
-                                    type="file" 
-                                    accept=".xlsx, .xls, .csv" // Updated accept attribute
-                                    className="hidden"
-                                    onChange={handleFileChange} 
-                                />
+                                Browse Drive Files
                             </Button>
-                            {selectedFile && (
+                            {/* {selectedFile && (
                                 <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
                                     <span className="mr-2">📄</span>
                                     <span className="text-sm text-gray-700">{selectedFile.name}</span>
                                 </div>
                             )}
-                            <p className="text-sm text-gray-500 mt-2">Supported formats: .xlsx, .xls, .csv</p>
+                            <p className="text-sm text-gray-500 mt-2">Supported formats: .xlsx, .xls, .csv</p> */}
                         </div>
                     </TabsContent>
                 </Tabs>
             </div>
+            <GraphFileBrowser
+                open={isModalOpen}
+                openChange={setModalOpen}
+                userId={currentUser?.userId}
+            />
         </Layout>
     );
 }
