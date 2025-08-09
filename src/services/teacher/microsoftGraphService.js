@@ -15,3 +15,16 @@ export const getDriveRoot = async (userId, header) => {
     throw error;
   }
 };
+
+export const getFolderFiles = async (userId, folderId, header) => {
+  try{
+    const response = await axios.get(`${API_BASE_URL}/drive/folder/${folderId}/files?userId=${userId}`,
+      {
+        headers: header
+      }
+    );
+    return response.data;
+  } catch(error){
+    throw error
+  }
+}
