@@ -18,7 +18,6 @@ const AzureCallback = () => {
             const lastName = searchParams.get('lastName');
             const role = searchParams.get('role');
             const error = searchParams.get('error');
-            console.log("PARAMS: ", token, userId, email, firstName, lastName, role, error);
             try{
                 if (error) {
                     console.error('Azure login error:', error);

@@ -92,10 +92,10 @@ const ClassDetailPage = () => {
   const studentsAtRisk = safeRosterData.filter((student) => {
     const percentage =
       student.percentage > 100 ? student.percentage / 100 : student.percentage;
-    return student.status === "At Risk" || percentage < 75;
+    return student.status === "At Risk" || percentage < 60;
   }).length;
 
-  const average = parseFloat(classAverageData / 100).toFixed(2);
+  const average = classAverageData?.toFixed(2);
 
   const updateSpreadsheetMutation = useMutation({
     mutationFn: ({ classId, data, headers }) =>
@@ -221,8 +221,13 @@ const ClassDetailPage = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "Not available";
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
+
     const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    return date.toLocaleDateString(undefined, options);
   };
 
   const toggleModal = () => {
@@ -291,9 +296,7 @@ const ClassDetailPage = () => {
                 classId={id}
                 //initialData = {classData.gradingScheme}
               />
-              <AiAnalyticsSheet
-                classId={id}
-              />
+              <AiAnalyticsSheet classId={id} />
               <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class Details
@@ -438,9 +441,10 @@ const ClassDetailPage = () => {
                 >
                   Edit Grades
                 </TabsTrigger> */}
-                <TabsTrigger 
-                  value="visibility" 
-                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
+                <TabsTrigger
+                  value="visibility"
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                >
                   Grade Visibility
                 </TabsTrigger>
                 {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
@@ -450,7 +454,6 @@ const ClassDetailPage = () => {
                 >
                   Reports
                 </TabsTrigger>
-                
               </TabsList>
 
               <TabsContent value="roster">
