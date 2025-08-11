@@ -27,10 +27,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   getDriveRoot,
   getFolderFiles,
+  saveExcelData,
 } from "@/services/teacher/microsoftGraphService";
 import { useAuth } from "@/contexts/authentication-context";
 import {
@@ -45,7 +46,8 @@ import {
   Calendar,
   HardDrive,
   AlertCircle,
-  X
+  X,
+  Save
 } from "lucide-react";
 
 export default function GraphFileBrowser({
@@ -71,6 +73,7 @@ export default function GraphFileBrowser({
     },
     enabled: !!userId && open,
   });
+
   const {
     data: folderFiles,
     isLoading: folderIsLoading,
@@ -81,6 +84,16 @@ export default function GraphFileBrowser({
       return getFolderFiles(userId, currentFolderId, getAuthHeader);
     },
   });
+
+  const saveExcelMutation = useMutation({
+    mutationFn: ({folderName, fileName}) => saveExcelData(userId, folderName, fileName, getAuthHeader()),
+    onSuccess: (data) => {
+      console.log("Excel data saved successfully");
+    },
+    onError: (error) => {
+      console.log("Failed to save excel data", error)
+    }
+  })
 
   const files = currentPath.length === 0 ? rootFiles : folderFiles;
   const isLoading = currentPath.length === 0 ? rootIsLoading : folderIsLoading;
@@ -175,6 +188,17 @@ export default function GraphFileBrowser({
       onFileSelect(null);
     }
   };
+
+  const handleSaveExcelData = () => {
+    if(selectedFile && !selectedFile.isFolder){
+      const folderName = currentPath.length > 0 ? currentPath[currentPath.length - 1].name : "root";
+
+      saveExcelMutation.mutate({
+        folderName,
+        fileName: selectedFile.name
+      })
+    }
+  }
   return (
     <Dialog open={open} onOpenChange={openChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
@@ -269,6 +293,17 @@ export default function GraphFileBrowser({
                   <Download className="h-4 w-4" />
                   Open
                 </Button>
+                {/* Save Excel Data Button */}
+                <Button
+                  size="sm"
+                  onClick={handleSaveExcelData}
+                  disabled={saveExcelMutation.isPending}
+                  className="flex items-center gap-1"
+                  variant="secondary"
+                >
+                  <Save className="h-4 w-4" />
+                  {saveExcelMutation.isPending ? "Saving..." : "Save Data"}
+                </Button>
                 <Button
                   size="sm"
                   onClick={handleRemoveFile}
@@ -279,6 +314,25 @@ export default function GraphFileBrowser({
                 </Button>
               </div>
             </div>
+          )}
+
+          {/* Save Excel Status */}
+          {saveExcelMutation.isError && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                Failed to save Excel data. Please try again.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {saveExcelMutation.isSuccess && (
+            <Alert className="border-green-200 bg-green-50">
+              <AlertCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Excel data saved successfully!
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Content */}

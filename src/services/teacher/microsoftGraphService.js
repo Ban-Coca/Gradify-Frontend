@@ -28,3 +28,14 @@ export const getFolderFiles = async (userId, folderId, header) => {
     throw error
   }
 }
+
+export const saveExcelData = async (userId, folderName, fileName, header) => {
+  try{
+    const response = await axios.post(`${API_BASE_URL}/save/${folderName}/${fileName}?userId=${userId}`, {
+      headers: header
+    })
+    return response.data;
+  } catch(error){
+    console.log("ERROR SAVING EXCEL: ", error);
+  }
+}

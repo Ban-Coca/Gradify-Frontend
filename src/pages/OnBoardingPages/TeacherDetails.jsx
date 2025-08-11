@@ -55,7 +55,7 @@ export default function TeacherOnboarding() {
     try {
       if (isOAuthUser) {
         // OAuth user - just update profile details
-  
+
         const onboardingData = {
           role: formData.role || "TEACHER",
           ...values,
@@ -72,14 +72,19 @@ export default function TeacherOnboarding() {
         console.log("OAuth Onboarding Response:", response);
 
         if (response.user && response.token) {
-          login(response.user, response.token);
+          // Update token in localStorage and context
+          localStorage.setItem("token", response.token);
+          setToken(response.token); // You'll need to get this from useAuth
+
+          // Update user profile with new data
+          updateUserProfile(response.user);
         }
         localStorage.removeItem("onboardingFormData");
-        navigate("/student/dashboard");
+        navigate("/teacher/dashboard");
       } else {
         // Regular signup flow - existing code
         const onboardingData = {
-          role: formData.role || "STUDENT",
+          role: formData.role || "TEACHER",
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
