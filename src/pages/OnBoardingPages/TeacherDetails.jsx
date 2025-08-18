@@ -52,6 +52,8 @@ export default function TeacherOnboarding() {
   async function onSubmit(values) {
     setIsLoading(true);
     console.log("Form Values:", formData);
+    console.log("Current User", currentUser)
+    console.log("IS OAUTH USER", isOAuthUser)
     try {
       if (isOAuthUser) {
         // OAuth user - just update profile details

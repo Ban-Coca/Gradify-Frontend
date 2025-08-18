@@ -92,7 +92,7 @@ export const AuthenticationProvider = ({ children }) => {
     localStorage.setItem("token", authToken);
     localStorage.setItem("isAuthenticated", "true");
     localStorage.setItem("role", role);
-    await requestNotificationPermission(userData.userId);
+    await requestNotificationPermission(userData?.userId);
     if (role === "TEACHER") {
       navigate("/teacher/dashboard");
     } else if (role === "STUDENT") {
