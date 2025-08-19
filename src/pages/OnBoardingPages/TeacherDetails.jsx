@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser } from "@/services/user/authenticationService";
+import { signUpUser, finalizeTeacherOnboarding } from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { updateRole } from "@/services/user/userService";
 
@@ -52,10 +52,35 @@ export default function TeacherOnboarding() {
   async function onSubmit(values) {
     setIsLoading(true);
     console.log("Form Values:", formData);
-    console.log("Current User", currentUser)
-    console.log("IS OAUTH USER", isOAuthUser)
+    console.log("Current User", currentUser);
+    console.log("IS OAUTH USER", isOAuthUser);
     try {
-      if (isOAuthUser) {
+      const isAzureUser = formData.azureId;
+
+      if (isAzureUser) {
+        // Azure user - create new account with Azure credentials
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Microsoft",
+          ...values,
+        };
+
+        console.log("Azure Onboarding Data:", onboardingData);
+
+        const response = await finalizeTeacherOnboarding(onboardingData);
+        console.log("Azure Onboarding Response:", response);
+        
+        // Clear session storage after successful signup
+        sessionStorage.removeItem("azureUserData");
+        localStorage.removeItem("onboardingFormData");
+
+        login(response.userResponse, response.token);
+        navigate("/teacher/dashboard");
+      } else if (isOAuthUser) {
         // OAuth user - just update profile details
 
         const onboardingData = {
@@ -100,7 +125,7 @@ export default function TeacherOnboarding() {
         const response = await signUpUser(onboardingData);
         console.log("Regular Onboarding Response:", response);
         localStorage.removeItem("onboardingFormData");
-        login(response.user, response.token);
+        login(response.userResponse, response.token);
       }
     } catch (error) {
       console.error("Profile update failed:", error);

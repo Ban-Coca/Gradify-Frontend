@@ -109,3 +109,23 @@ export const azureLogin = async () => {
         throw error;
     }
 };
+
+export const finalizeTeacherOnboarding = async (data) => {
+    try{
+        const response = await axios.post(`http://localhost:8080/api/auth/azure/finalize-teacher`, data)
+        return response.data;
+    } catch (error){
+        console.log('Error making teacher account');
+        throw error
+    }
+}
+
+export const finalizeStudentOnboarding = async (data) => {
+    try{
+        const response = await axios.post(`http://localhost:8080/api/auth/azure/finalize-student`, data)
+        return response.data;
+    } catch (error){
+        console.log('Error making teacher account');
+        throw error
+    }
+}

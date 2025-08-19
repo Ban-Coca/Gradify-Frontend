@@ -18,11 +18,28 @@ const AzureCallback = () => {
             const lastName = searchParams.get('lastName');
             const role = searchParams.get('role');
             const error = searchParams.get('error');
+            const onboardingRequired = searchParams.get('onboardingRequired');
+            const azureId = searchParams.get('azureId');
+
             try{
                 if (error) {
                     console.error('Azure login error:', error);
                     setIsProcessed(true);
                     navigate('/login?error=auth_failed', { replace: true });
+                    return;
+                }
+                
+                if (onboardingRequired === 'true') {
+                    setIsProcessed(true);
+                    // Store Azure user data in sessionStorage for the registration process
+                    const azureUserData = {
+                        azureId,
+                        email,
+                        firstName: firstName || '',
+                        lastName: lastName || ''
+                    };
+                    sessionStorage.setItem('azureUserData', JSON.stringify(azureUserData));
+                    navigate('/onboarding/role', { replace: true });
                     return;
                 }
 

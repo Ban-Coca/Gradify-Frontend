@@ -55,6 +55,7 @@ export function LoginForm({
       setLoading(true);
       setError(null);
       const response = await loginUser(credential);
+      console.log("Response", response)
       const {userResponse, token} = response;
       login(userResponse, token);
     } catch (error) {
