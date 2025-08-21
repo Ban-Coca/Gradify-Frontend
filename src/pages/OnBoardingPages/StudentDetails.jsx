@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser, finalizeStudentOnboarding } from "@/services/user/authenticationService";
+import { signUpUser, finalizeStudentOnboarding, finalizeGoogleRegistration } from "@/services/user/authenticationService";
 import {
   Select,
   SelectContent,
@@ -62,8 +62,25 @@ export default function StudentOnboarding() {
     console.log("Form Values:", formData);
     try {
       const isAzureUser = formData.azureId;
+      const isGoogleUser = sessionStorage.getItem('googleUserData');
+      if(isGoogleUser){
+        console.log("Google User", isGoogleUser)
+        const onboardingData = {
+          role: formData.role || "STUDENT",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Google",
+          ...values,
+        };
+        const response = await finalizeGoogleRegistration(onboardingData.role, onboardingData);
+        sessionStorage.removeItem("googleUserData");
+        localStorage.removeItem("onboardingFormData");
+        login(response.userResponse, response.token);
+        navigate("/student/dashboard");
 
-      if (isAzureUser) {
+      }else if (isAzureUser) {
         // Azure user - create new account with Azure credentials
         const onboardingData = {
           role: formData.role || "STUDENT",

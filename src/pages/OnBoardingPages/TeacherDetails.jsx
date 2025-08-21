@@ -17,7 +17,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser, finalizeTeacherOnboarding } from "@/services/user/authenticationService";
+import {
+  signUpUser,
+  finalizeTeacherOnboarding,
+  finalizeGoogleRegistration
+} from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { updateRole } from "@/services/user/userService";
 
@@ -56,8 +60,24 @@ export default function TeacherOnboarding() {
     console.log("IS OAUTH USER", isOAuthUser);
     try {
       const isAzureUser = formData.azureId;
+      const isGoogleUser = sessionStorage.getItem("googleUserData");
 
-      if (isAzureUser) {
+      if (isGoogleUser) {
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Google",
+          ...values,
+        };
+        const response = await finalizeGoogleRegistration(onboardingData.role, onboardingData);
+        sessionStorage.removeItem("googleUserData");
+        localStorage.removeItem("onboardingFormData");
+        login(response.userResponse, response.token);
+        navigate("/student/dashboard");
+      }else if (isAzureUser) {
         // Azure user - create new account with Azure credentials
         const onboardingData = {
           role: formData.role || "TEACHER",
@@ -73,7 +93,7 @@ export default function TeacherOnboarding() {
 
         const response = await finalizeTeacherOnboarding(onboardingData);
         console.log("Azure Onboarding Response:", response);
-        
+
         // Clear session storage after successful signup
         sessionStorage.removeItem("azureUserData");
         localStorage.removeItem("onboardingFormData");
