@@ -15,6 +15,7 @@ export default function RoleSelection() {
 
   useEffect(() => {
     const azureUserData = sessionStorage.getItem('azureUserData');
+    const googleUserData = sessionStorage.getItem('googleUserData');
     if (azureUserData) {
       const parsedData = JSON.parse(azureUserData);
       setFormData(prev => ({
@@ -25,6 +26,15 @@ export default function RoleSelection() {
         lastName: parsedData.lastName,
         provider: 'Microsoft'
       }));
+    } else if(googleUserData){
+      const parsedData = JSON.parse(googleUserData)
+      setFormData(prev => ({
+        ...prev,
+        email: parsedData.email,
+        firstName: parsedData.firstName,
+        lastName: parsedData.lastName,
+        provider: 'Google'
+      }))
     }
   }, [setFormData]);
   

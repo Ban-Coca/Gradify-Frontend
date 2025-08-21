@@ -125,7 +125,17 @@ export const finalizeStudentOnboarding = async (data) => {
         const response = await axios.post(`http://localhost:8080/api/auth/azure/finalize-student`, data)
         return response.data;
     } catch (error){
-        console.log('Error making teacher account');
+        console.log('Error making student account');
+        throw error
+    }
+}
+
+export const finalizeGoogleRegistration = async (role, data) => {
+    try{
+        const response = await axios.post(`http://localhost:8080/api/auth/google/finalize/${role}`, data)
+        return response.data
+    }catch(error){
+        console.log("Error: ", error)
         throw error
     }
 }
