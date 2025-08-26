@@ -118,7 +118,7 @@ export const finalizeTeacherOnboarding = async (data) => {
 
 export const finalizeStudentOnboarding = async (data) => {
     try{
-        const response = await axios.post(`${API_ENDPOINTS.AUTH.FINALIZE_STUDENT}`, data)
+        const response = await api.post(`${API_ENDPOINTS.AUTH.FINALIZE_STUDENT}`, data)
         return response.data;
     } catch (error){
         console.log('Error making student account');
@@ -128,7 +128,7 @@ export const finalizeStudentOnboarding = async (data) => {
 
 export const finalizeGoogleRegistration = async (role, data) => {
     try{
-        const response = await axios.post(`${API_ENDPOINTS.AUTH.GOOGLE_FINALIZE}/${role}`, data)
+        const response = await api.post(`${API_ENDPOINTS.AUTH.GOOGLE_FINALIZE}/${role}`, data)
         return response.data
     }catch(error){
         console.log("Error: ", error)
