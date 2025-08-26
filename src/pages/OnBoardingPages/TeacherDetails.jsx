@@ -113,7 +113,6 @@ export default function TeacherOnboarding() {
         const response = await updateRole(
           currentUser.userId,
           onboardingData,
-          getAuthHeader()
         );
 
         console.log("OAuth Onboarding Response:", response);

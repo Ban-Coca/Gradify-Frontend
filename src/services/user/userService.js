@@ -1,14 +1,10 @@
 import axios from 'axios';
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
-export const updateRole = async (userId, payload, header) => {
+export const updateRole = async (userId, payload) => {
     try{
-        const response = await axios.put(`${API_BASE_URL}/api/user/update-user/${userId}`, payload,
-        {
-            headers: header
-        }
+        const response = await api.put(`${API_ENDPOINTS.USER.UPDATE_ROLE}/${userId}`, payload
         )
         return response.data;
     } catch(error){
