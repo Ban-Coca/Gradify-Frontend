@@ -2,7 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { toast } from 'sonner';
 const VAPID_KEY = import.meta.env.VITE_VAPID_KEY;
-const API_URL = "http://localhost:8080/api/fcm";
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 const firebaseConfig = {
   apiKey: "AIzaSyDwTSDcMelDyFMrjUTkqcRjQPaS31dS_J4",
   authDomain: "gradify-f423e.firebaseapp.com",
@@ -53,17 +54,17 @@ export const requestNotificationPermission = async (userId) => {
 };
 
 const registerTokenWithServer = async (token, userId) => {
-  
   try {
       const authToken = localStorage.getItem('token');
-      await fetch(`${API_URL}/register-device`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({ token, userId })
-      });
+      await api.post(`${API_ENDPOINTS.FCM.REGISTER_DEVICE}`, 
+          { token, userId },
+          {
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+              }
+          }
+      );
       console.log("Device registered with token for user:", token, userId);
   } catch (error) {
       console.error('Failed to register token with server:', error);
