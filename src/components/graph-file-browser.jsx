@@ -47,7 +47,7 @@ import {
   HardDrive,
   AlertCircle,
   X,
-  Save
+  Save,
 } from "lucide-react";
 
 export default function GraphFileBrowser({
@@ -81,19 +81,23 @@ export default function GraphFileBrowser({
   } = useQuery({
     queryKey: ["folder-files", userId, currentPath],
     queryFn: () => {
-      return getFolderFiles(userId, currentFolderId, getAuthHeader);
+      
+      return getFolderFiles(userId, currentFolderId, getAuthHeader());
     },
+    
+    enabled: !!userId && !!currentFolderId && open,
   });
 
   const saveExcelMutation = useMutation({
-    mutationFn: ({folderName, fileName}) => saveExcelData(userId, folderName, fileName, getAuthHeader()),
+    mutationFn: ({ folderName, fileName }) =>
+      saveExcelData(userId, folderName, fileName, getAuthHeader()),
     onSuccess: (data) => {
       console.log("Excel data saved successfully");
     },
     onError: (error) => {
-      console.log("Failed to save excel data", error)
-    }
-  })
+      console.log("Failed to save excel data", error);
+    },
+  });
 
   const files = currentPath.length === 0 ? rootFiles : folderFiles;
   const isLoading = currentPath.length === 0 ? rootIsLoading : folderIsLoading;
@@ -190,15 +194,18 @@ export default function GraphFileBrowser({
   };
 
   const handleSaveExcelData = () => {
-    if(selectedFile && !selectedFile.isFolder){
-      const folderName = currentPath.length > 0 ? currentPath[currentPath.length - 1].name : "root";
+    if (selectedFile && !selectedFile.isFolder) {
+      const folderName =
+        currentPath.length > 0
+          ? currentPath[currentPath.length - 1].name
+          : "root";
 
       saveExcelMutation.mutate({
         folderName,
-        fileName: selectedFile.name
-      })
+        fileName: selectedFile.name,
+      });
     }
-  }
+  };
   return (
     <Dialog open={open} onOpenChange={openChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">

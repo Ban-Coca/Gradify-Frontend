@@ -1,36 +1,31 @@
 import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_USER_SERVICE
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
 export const signUpUser = async (formData) => {
-    
-    try{    
-        const response = await axios.post(`${API_BASE_URL}/register`, formData);
+    try {    
+        const response = await api.post(API_ENDPOINTS.USER.REGISTER, formData);
         return response.data;
-    } catch (error){
+    } catch (error) {
         console.error('Error signing up:', error);
         throw error;
     }
 }
 
-export const updateUserRole = async (userId, role, header) => {
-  try {
-    const response = await axios.put(`${API_BASE_URL}/update-role/${userId}`, { role }, {
-        headers: {
-            ...header,
-            'Content-Type': 'application/json',
-        },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating role:', error);
-    throw error;
-  }
+export const updateUserRole = async (userId, role) => {
+    try {
+        // No manual headers needed - auth token and content-type are automatic
+        const response = await api.put(`${API_ENDPOINTS.USER.UPDATE_ROLE}/${userId}`, { role });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating role:', error);
+        throw error;
+    }
 };
 
 export const loginUser = async (credential) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/login`, {
+        const response = await api.post(`${API_ENDPOINTS.USER.LOGIN}`, {
             email: credential.email,
             password: credential.password,
         });
@@ -43,7 +38,7 @@ export const loginUser = async (credential) => {
 
 export const requestPasswordReset = async (email) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/request-password-reset`, { email });
+        const response = await api.post(`${API_ENDPOINTS.USER.REQUEST_PASSWORD_RESET}`, { email });
         return response.data;
     } catch (error) {
         console.error('Error requesting password reset:', error);
@@ -53,7 +48,7 @@ export const requestPasswordReset = async (email) => {
 
 export const verifyResetCode = async (email, code) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/verify-reset-code`, { 
+        const response = await api.post(`${API_ENDPOINTS.USER.VERIFY_RESET_CODE}`, { 
             email, 
             code 
         });
@@ -66,7 +61,7 @@ export const verifyResetCode = async (email, code) => {
 
 export const resetPassword = async (credential) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/reset-password`, {
+        const response = await api.post(`${API_ENDPOINTS.USER.RESET_PASSWORD}`, {
             email: credential.email,
             resetToken: credential.resetToken,
             newPassword: credential.password,
@@ -93,13 +88,14 @@ export const completeOnboarding = async (onboardingData, header) => {
     }
 }
 
+
 export const googleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
 };
 
 export const azureLogin = async () => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/auth/azure/login`);
+        const response = await api.get(`${API_ENDPOINTS.AUTH.AZURE_LOGIN}`);
         if (response.data.authUrl) {
             window.location.href = response.data.authUrl;
         }
@@ -112,7 +108,7 @@ export const azureLogin = async () => {
 
 export const finalizeTeacherOnboarding = async (data) => {
     try{
-        const response = await axios.post(`http://localhost:8080/api/auth/azure/finalize-teacher`, data)
+        const response = await api.post(`${API_ENDPOINTS.AUTH.FINALIZE_TEACHER}`, data)
         return response.data;
     } catch (error){
         console.log('Error making teacher account');
@@ -122,7 +118,7 @@ export const finalizeTeacherOnboarding = async (data) => {
 
 export const finalizeStudentOnboarding = async (data) => {
     try{
-        const response = await axios.post(`http://localhost:8080/api/auth/azure/finalize-student`, data)
+        const response = await api.post(`${API_ENDPOINTS.AUTH.FINALIZE_STUDENT}`, data)
         return response.data;
     } catch (error){
         console.log('Error making student account');
@@ -132,7 +128,7 @@ export const finalizeStudentOnboarding = async (data) => {
 
 export const finalizeGoogleRegistration = async (role, data) => {
     try{
-        const response = await axios.post(`http://localhost:8080/api/auth/google/finalize/${role}`, data)
+        const response = await api.post(`${API_ENDPOINTS.AUTH.GOOGLE_FINALIZE}/${role}`, data)
         return response.data
     }catch(error){
         console.log("Error: ", error)

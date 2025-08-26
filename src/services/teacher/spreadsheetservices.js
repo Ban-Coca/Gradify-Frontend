@@ -1,6 +1,5 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_TEACHER_SERVICE;
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
 export const uploadSpreadsheet = async (data, headers) => {
     const formData = new FormData();
@@ -8,7 +7,7 @@ export const uploadSpreadsheet = async (data, headers) => {
     formData.append("teacherId", data.teacherId);
     console.log(headers);
     try {
-        const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
+        const response = await api.post(`${API_ENDPOINTS.SPREADSHEET.UPLOAD}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 ...headers,
@@ -30,7 +29,7 @@ export const uploadSpreadsheet = async (data, headers) => {
 export const processSpreadsheetUrl = async (data, headers) => {
     try {
         // Build the URL with query parameters
-        const url = `${API_BASE_URL}/process-url`;
+        const url = `${API_ENDPOINTS.SPREADSHEET.PROCESS_URL}`;
         
         console.log("Sending request to:", url);
         console.log("With data:", data);
@@ -41,7 +40,7 @@ export const processSpreadsheetUrl = async (data, headers) => {
         params.append('teacherId', data.teacherId);
         
         // Try with URLSearchParams which matches how @RequestParam works
-        const response = await axios.post(url, params, {
+        const response = await api.post(url, params, {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 ...headers,
@@ -103,7 +102,7 @@ export const getSpreadsheetById = async (id, header) => {
     }
     
     try {
-        const response = await axios.get(`${API_BASE_URL}/${id}`, {
+        const response = await api.get(`${API_ENDPOINTS.SPREADSHEET.GET_BY_ID}/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 ...header,
@@ -146,8 +145,8 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
         formData.append("file", data.file);
         formData.append("teacherId", data.teacherId);
 
-        const response = await axios.put(
-            `${API_BASE_URL}/update/${classId}`,
+        const response = await api.put(
+            `${API_ENDPOINTS.SPREADSHEET.UPDATE}/${classId}`,
             formData,
             {
                 headers: {
@@ -166,7 +165,7 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
 // New function to check if a spreadsheet exists
 export const checkIfSpreadsheetExists = async (fileName, teacherId, headers) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/check-exists`, {
+        const response = await api.get(`${API_ENDPOINTS.SPREADSHEET.CHECK_EXISTS}`, {
             params: { fileName, teacherId },
             headers: {
                 ...headers,

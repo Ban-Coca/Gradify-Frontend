@@ -64,7 +64,7 @@ export default function StudentOnboarding() {
       const isAzureUser = formData.azureId;
       const isGoogleUser = sessionStorage.getItem('googleUserData');
       if(isGoogleUser){
-        console.log("Google User", isGoogleUser)
+        console.log("Google User", isGoogleUserm)
         const onboardingData = {
           role: formData.role || "STUDENT",
           firstName: formData.firstName,
@@ -115,7 +115,6 @@ export default function StudentOnboarding() {
         const response = await updateRole(
           currentUser.id,
           onboardingData,
-          getAuthHeader()
         );
 
         console.log("OAuth Onboarding Response:", response);
