@@ -60,7 +60,7 @@ export function ReportsTab({ classId }) {
 
   return (
     <>
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="text-lg">Performance Reports</CardTitle>
           <CardDescription>
@@ -109,7 +109,7 @@ export function ReportsTab({ classId }) {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardHeader>

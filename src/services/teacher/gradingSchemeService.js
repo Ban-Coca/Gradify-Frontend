@@ -1,6 +1,5 @@
-import axios from "axios";
-
-const API_BASE_URL = 'http://localhost:8080/api/grading';
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
 export const savingGradingScheme = async (gradingScheme, classId, teacherId, headers) => {
     try {
@@ -13,8 +12,8 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
             schemes: Array.isArray(gradingScheme) ? gradingScheme : gradingScheme.schemes || []
         };
         
-        const response = await axios.post(
-            `${API_BASE_URL}/savescheme?classId=${classId}&teacherId=${teacherId}`, 
+        const response = await api.post(
+            `${API_ENDPOINTS.GRADING.SAVE_SCHEME}/save?classId=${classId}&teacherId=${teacherId}`, 
             dataToSend,
             {
                 headers: {
@@ -32,8 +31,8 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
 
 export const getGradingScheme = async (classId, headers) => {
     try {
-        const response = await axios.get(
-            `${API_BASE_URL}/getscheme?classId=${classId}`, 
+        const response = await api.get(
+            `${API_ENDPOINTS.GRADING.GET_SCHEMES}/schemes?classId=${classId}`, 
             {
                 headers: {
                     ...headers,
@@ -54,8 +53,8 @@ export const updateGradingScheme = async (gradingScheme, classId, teacherId, hea
             schemes: Array.isArray(gradingScheme) ? gradingScheme : gradingScheme.schemes || []
         };
 
-        const response = await axios.put(
-            `${API_BASE_URL}/updatescheme/${classId}/teacher/${teacherId}`,
+        const response = await api.put(
+            `${API_ENDPOINTS.GRADING.UPDATE_SCHEME}/class/${classId}/teacher/${teacherId}`,
             dataToSend,
             {
                 headers: {

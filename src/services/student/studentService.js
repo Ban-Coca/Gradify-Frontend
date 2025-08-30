@@ -1,12 +1,11 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8080/api/student";
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from "@/config/constants";
 
 export const getStudentClasses = async (studentId, header = {}) => {
   try {
     console.log(`Getting classes for studentId: ${studentId}`);
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/classes`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.CLASSES}/${studentId}/classes`,
       { headers: header }
     );
     return response.data;
@@ -17,10 +16,14 @@ export const getStudentClasses = async (studentId, header = {}) => {
 };
 
 // Get course table data for a student in a class
-export const getStudentCourseTableData = async (studentId, classId, header = {}) => {
+export const getStudentCourseTableData = async (
+  studentId,
+  classId,
+  header = {}
+) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/classes/${classId}/grades`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.CLASS_GRADES}/${studentId}/classes/${classId}/grades`,
       { headers: header }
     );
     console.log(response.data);
@@ -34,8 +37,8 @@ export const getStudentCourseTableData = async (studentId, classId, header = {})
 // Get grading scheme for a class
 export const getSchemesByClass = async (classId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/classes/${classId}/gradingscheme`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.GRADING_SCHEME}/${classId}/grading-scheme`,
       { headers: header }
     );
     return response.data;
@@ -48,8 +51,8 @@ export const getSchemesByClass = async (classId, header = {}) => {
 // Get teacher by classId
 export const getTeacherByClass = async (classId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/classes/${classId}/teacher`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.CLASS_TEACHER}/${classId}/teacher`,
       { headers: header }
     );
     return response.data;
@@ -62,11 +65,11 @@ export const getTeacherByClass = async (classId, header = {}) => {
 //Get student reports by studentId
 export const getReportsByStudentId = async (studentId, header = {}) => {
   try {
-    const response = await axios.get(
-     `${API_BASE_URL}/${studentId}/reports`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.REPORTS}/${studentId}/reports`,
       { headers: header }
     );
-    console.log(response.data)
+    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching student reports:", error);
@@ -77,8 +80,8 @@ export const getReportsByStudentId = async (studentId, header = {}) => {
 // Get calculated grade for a student in a class
 export const getCalculatedGrade = async (studentId, classId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/classes/${classId}/calculated-grade`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.CALCULATED_GRADE}/${studentId}/classes/${classId}/calculated-grade`,
       { headers: header }
     );
     return response.data;
@@ -91,8 +94,8 @@ export const getCalculatedGrade = async (studentId, classId, header = {}) => {
 // Get calculated grade for a student in a class
 export const getCalculatedGPA = async (studentId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/average-percentage`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.AVERAGE_PERCENTAGE}/${studentId}/average-percentage`,
       { headers: header }
     );
     console.log("GPA response:", response.data);
@@ -106,8 +109,8 @@ export const getCalculatedGPA = async (studentId, header = {}) => {
 // Get calculated grade for a student in a class
 export const getClassGradesByStudent = async (studentId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/all-grades`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.ALL_GRADES}/${studentId}/all-grades`,
       { headers: header }
     );
     console.log("Class grades response:", response.data);
@@ -120,8 +123,8 @@ export const getClassGradesByStudent = async (studentId, header = {}) => {
 
 export const getClassAveragesByStudent = async (studentId, header = {}) => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/${studentId}/class-averages`,
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.CLASS_AVERAGES}/${studentId}/class-averages`,
       { headers: header }
     );
     console.log("Class averages response:", response.data);
@@ -130,4 +133,27 @@ export const getClassAveragesByStudent = async (studentId, header = {}) => {
     console.error("Error fetching class averages:", error);
     throw error;
   }
-}
+};
+
+export const getVisibleStudentGrades = async (
+  studentNumber,
+  classId,
+  header = {}
+) => {
+  console.log(
+    "Fetching visible student grades for:",
+    studentNumber,
+    "in class:",
+    classId
+  );
+  try {
+    const response = await api.get(
+      `${API_ENDPOINTS.STUDENT.BY_STUDENT_NUMBER_CLASS}/${studentNumber}/class/${classId}`,
+      { headers: header }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching visible student grades:", error);
+    throw error;
+  }
+};

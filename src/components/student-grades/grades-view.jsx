@@ -39,6 +39,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useStudent } from "@/hooks/use-student"
+import { useGrading } from "@/hooks/use-grading"
 
 export function GradesView() {
   const [selectedClass, setSelectedClass] = useState(null)
@@ -52,10 +54,6 @@ export function GradesView() {
   const studentId = currentUser?.userId
   const [error, setError] = useState(null)
   const [tableData, setTableData] = useState({})
-  const [grades, setGrades] = useState({})
-  const [assessmentMaxValues, setAssessmentMaxValues] = useState({})
-  const [gradesLoading, setGradesLoading] = useState(false)
-  const [gradesError, setGradesError] = useState(null)
   const [scheme, setScheme] = useState([])
   const [teacher, setTeacher] = useState(null)
   const [calculatedGrade, setCalculatedGrade] = useState(null)
@@ -67,7 +65,6 @@ export function GradesView() {
   const [viewMode, setViewMode] = useState("grid")
   const location = useLocation()
   const selectedClassIdFromState = location.state?.selectedClassId
-
   const COURSES_PER_PAGE = 6
 
   // Enhanced filtering and sorting
@@ -132,27 +129,16 @@ export function GradesView() {
     if (studentId) loadClasses()
   }, [studentId, getAuthHeader])
 
-  // Fetch table data (grades) when a class is selected
-  useEffect(() => {
-    async function loadTableData() {
-      if (!selectedClass) return
-      setGradesLoading(true)
-      setGradesError(null)
-      try {
-        const header = getAuthHeader ? getAuthHeader() : {}
-        const data = await getStudentCourseTableData(studentId, selectedClass, header)
-        setGrades(data.grades)
-        setAssessmentMaxValues(data.assessmentMaxValues)
-      } catch (err) {
-        setTableData({})
-        setGradesError(err.message)
-      } finally {
-        setGradesLoading(false)
-      }
-    }
-    if (selectedClass) loadTableData()
-  }, [selectedClass, studentId, getAuthHeader])
-
+  const { getGradingScheme } = useGrading(currentUser, selectedClass)
+  const { visibleStudentGrades, isLoading, error: studentGradesError } = useStudent(currentUser, selectedClass)
+  const assessmentMaxValues = visibleStudentGrades?.assessmentMaxValues || {}
+  const grades = visibleStudentGrades?.grades || {}
+  const gradesError = studentGradesError || null
+  const gradesLoading = isLoading
+  console.log('useStudent hook response:', { visibleStudentGrades, isLoading, studentGradesError })
+  console.log('selectedClass:', selectedClass)
+  console.log('currentUser:', currentUser)
+  console.log('grades:', grades)
   // Fetch teacher info
   useEffect(() => {
     async function fetchTeacher() {
@@ -401,98 +387,60 @@ export function GradesView() {
                 </TabsList>
 
                 <TabsContent value="classes" className="mt-6">
-                  {viewMode === "grid" ? (
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                      {paginatedClasses.map((cls) => {
-                        const classGrade = allGrades.find((g) => g.classId === cls.id)
-                        return (
-                          <Card
-                            key={cls.id}
-                            className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-l-4 border-l-primary/20 hover:border-l-primary"
-                            onClick={() => setSelectedClass(cls.id)}
-                          >
-                            <CardContent className="p-6">
-                              <div className="space-y-4">
-                                <div className="flex items-start justify-between">
-                                  <div className="space-y-1 flex-1">
-                                    <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
-                                      {cls.className}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Badge variant="outline">{cls.section}</Badge>
-                                      {cls.room && <span>Room {cls.room}</span>}
-                                    </div>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {paginatedClasses.map((cls) => {
+                      const classGrade = allGrades.find((g) => String(g.classId) === String(cls.id));
+                      return (
+                        <Card
+                          key={cls.id}
+                          className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-l-4 border-l-primary/20 hover:border-l-primary"
+                          onClick={() => setSelectedClass(cls.id)}
+                        >
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-1 flex-1">
+                                  <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                                    {cls.className}
+                                  </h3>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Badge variant="outline">{cls.section}</Badge>
+                                    {cls.room ? (
+                                      <span>Room {cls.room}</span>
+                                    ) : (
+                                      <span>No room</span>
+                                    )}
                                   </div>
-                                  {classGrade && (
-                                    <Badge variant={getGradeBadgeVariant(classGrade.grade)} className="ml-2">
-                                      {classGrade.grade}%
-                                    </Badge>
-                                  )}
                                 </div>
-
-                                <div className="space-y-2">
-                                  {cls.schedule && (
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Clock className="h-4 w-4" />
-                                      {cls.schedule}
-                                    </div>
-                                  )}
-                                  {cls.lastUpdated && (
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <Calendar className="h-4 w-4" />
-                                      Updated {cls.lastUpdated}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                                >
-                                  View Grades & Details
-                                </Button>
+                                {classGrade && (
+                                  <Badge variant={getGradeBadgeVariant(classGrade.grade)} className="ml-2">
+                                    {classGrade.grade}%
+                                  </Badge>
+                                )}
                               </div>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {paginatedClasses.map((cls) => {
-                        const classGrade = allGrades.find((g) => g.classId === cls.id)
-                        return (
-                          <Card
-                            key={cls.id}
-                            className="group cursor-pointer transition-all duration-200 hover:shadow-md"
-                            onClick={() => setSelectedClass(cls.id)}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4 flex-1">
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold group-hover:text-primary transition-colors">
-                                      {cls.className} - {cls.section}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground">
-                                      {cls.schedule} {cls.room && `• Room ${cls.room}`}
-                                    </p>
-                                  </div>
-                                  {classGrade && (
-                                    <Badge variant={getGradeBadgeVariant(classGrade.grade)}>{classGrade.grade}%</Badge>
-                                  )}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Clock className="h-4 w-4" />
+                                  {cls.schedule ? cls.schedule : "No schedule"}
                                 </div>
-                                <Button variant="ghost" size="sm">
-                                  View Details
-                                </Button>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Calendar className="h-4 w-4" />
+                                  {cls.schoolYear ? cls.schoolYear : "No School Year"}
+                                </div>
                               </div>
-                            </CardContent>
-                          </Card>
-                        )
-                      })}
-                    </div>
-                  )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                              >
+                                View Grades & Details
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
 
                   {totalPages > 1 && (
                     <div className="mt-6">

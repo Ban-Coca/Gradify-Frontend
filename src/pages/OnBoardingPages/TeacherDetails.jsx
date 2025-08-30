@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
-import logo from "@/assets/gradifyLogo.svg"; 
+import logo from "@/assets/gradifyLogo.svg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,8 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser } from "@/services/user/authenticationService";
+import {
+  signUpUser,
+  finalizeTeacherOnboarding,
+  finalizeGoogleRegistration
+} from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
+import { updateRole } from "@/services/user/userService";
 
 const formSchema = z.object({
   institution: z.string().min(1, { message: "Institution is required." }),
@@ -28,8 +33,10 @@ const formSchema = z.object({
 export default function TeacherOnboarding() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, currentUser, getAuthHeader } = useAuth();
   const [error, setError] = useState(null);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,34 +46,105 @@ export default function TeacherOnboarding() {
   });
   const { formData } = useOnboarding();
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && currentUser) {
+      setIsOAuthUser(true);
+    }
+  }, [currentUser]);
+
   async function onSubmit(values) {
     setIsLoading(true);
     console.log("Form Values:", formData);
+    console.log("Current User", currentUser);
+    console.log("IS OAUTH USER", isOAuthUser);
     try {
-      const onboardingData = {
-        role: formData.role || "TEACHER",
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        provider: formData.provider,
-        ...values,
-      };
+      const isAzureUser = formData.azureId;
+      const isGoogleUser = sessionStorage.getItem("googleUserData");
 
-      console.log("Onboarding Data:", onboardingData);
-      try {
-        setIsLoading(true);
-        const response = await signUpUser(onboardingData);
-        console.log("Onboarding Response:", onboardingData);
-        localStorage.removeItem("onboardingFormData")
-        login(response.user, response.token);
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "An error occurred during signup."
+      if (isGoogleUser) {
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Google",
+          ...values,
+        };
+        const response = await finalizeGoogleRegistration(onboardingData.role, onboardingData);
+        sessionStorage.removeItem("googleUserData");
+        localStorage.removeItem("onboardingFormData");
+        login(response.userResponse, response.token);
+        navigate("/student/dashboard");
+      }else if (isAzureUser) {
+        // Azure user - create new account with Azure credentials
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Microsoft",
+          ...values,
+        };
+
+        console.log("Azure Onboarding Data:", onboardingData);
+
+        const response = await finalizeTeacherOnboarding(onboardingData);
+        console.log("Azure Onboarding Response:", response);
+
+        // Clear session storage after successful signup
+        sessionStorage.removeItem("azureUserData");
+        localStorage.removeItem("onboardingFormData");
+
+        login(response.userResponse, response.token);
+        navigate("/teacher/dashboard");
+      } else if (isOAuthUser) {
+        // OAuth user - just update profile details
+
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          ...values,
+        };
+
+        console.log("OAuth Onboarding Data:", onboardingData);
+
+        const response = await updateRole(
+          currentUser.userId,
+          onboardingData,
         );
-        console.error(err);
-      } finally {
-        setIsLoading(false);
+
+        console.log("OAuth Onboarding Response:", response);
+
+        if (response.user && response.token) {
+          // Update token in localStorage and context
+          localStorage.setItem("token", response.token);
+          setToken(response.token); // You'll need to get this from useAuth
+
+          // Update user profile with new data
+          updateUserProfile(response.user);
+        }
+        localStorage.removeItem("onboardingFormData");
+        navigate("/teacher/dashboard");
+      } else {
+        // Regular signup flow - existing code
+        const onboardingData = {
+          role: formData.role || "TEACHER",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          provider: formData.provider,
+          ...values,
+        };
+
+        console.log("Regular Onboarding Data:", onboardingData);
+
+        const response = await signUpUser(onboardingData);
+        console.log("Regular Onboarding Response:", response);
+        localStorage.removeItem("onboardingFormData");
+        login(response.userResponse, response.token);
       }
     } catch (error) {
       console.error("Profile update failed:", error);
@@ -91,7 +169,7 @@ export default function TeacherOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900 hover:text-white"
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>

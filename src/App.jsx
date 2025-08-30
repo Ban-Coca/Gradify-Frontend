@@ -31,6 +31,7 @@ import { setupMessageListener } from './services/notification/firebaseService'
 import { useEffect } from 'react'
 import NotificationsPage from './pages/NotificationPage'
 import ProfilePage from './pages/ProfilePage'
+import AzureCallback from './callbacks/AzureCallback'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -101,6 +102,7 @@ function App() {
         </RedirectIfAuthenticated>
       }/>
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/auth/azure/callback" element={<AzureCallback />} />
       <Route path="/forgot-password" element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>} />
       <Route path="/verify-code" element={<RedirectIfAuthenticated><VerifyCode /></RedirectIfAuthenticated>} />
       <Route path="/reset-password" element={<RedirectIfAuthenticated><PasswordReset /></RedirectIfAuthenticated>} />
@@ -125,7 +127,6 @@ function App() {
         <Route path="/student/grades" element={<GradesPage />} />
         <Route path="/student/feedback/:feedbackId?" element={<FeedbackPage />} />
         <Route path="/student/progress-trends" element={<ProgressTrendsPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/student/profile" element={<ProfilePage />} />
       </Route>
       
@@ -134,6 +135,7 @@ function App() {
         <Route path='/onboarding/student' element={<StudentOnboarding/>}/>
         <Route path='/onboarding/teacher' element={<TeacherOnboarding/>}/>
       </Route>
+      <Route path="/notifications" element={<NotificationsPage />} />
       {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
     <Toaster 

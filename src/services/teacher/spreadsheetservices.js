@@ -1,6 +1,5 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL_TEACHER_SERVICE;
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
 export const uploadSpreadsheet = async (data, headers) => {
     const formData = new FormData();
@@ -8,7 +7,7 @@ export const uploadSpreadsheet = async (data, headers) => {
     formData.append("teacherId", data.teacherId);
     console.log(headers);
     try {
-        const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
+        const response = await api.post(`${API_ENDPOINTS.SPREADSHEET.UPLOAD}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 ...headers,
@@ -30,7 +29,7 @@ export const uploadSpreadsheet = async (data, headers) => {
 export const processSpreadsheetUrl = async (data, headers) => {
     try {
         // Build the URL with query parameters
-        const url = `${API_BASE_URL}/process-url`;
+        const url = `${API_ENDPOINTS.SPREADSHEET.PROCESS_URL}`;
         
         console.log("Sending request to:", url);
         console.log("With data:", data);
@@ -41,7 +40,7 @@ export const processSpreadsheetUrl = async (data, headers) => {
         params.append('teacherId', data.teacherId);
         
         // Try with URLSearchParams which matches how @RequestParam works
-        const response = await axios.post(url, params, {
+        const response = await api.post(url, params, {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 ...headers,
@@ -84,9 +83,11 @@ export const processSpreadsheetUrl = async (data, headers) => {
                 
             throw new Error(`Server error (${error.response.status}): ${errorMsg}`);
         } else if (error.request) {
+            // The request was made but no response was received
             console.error("No response received:", error.request);
             throw new Error("No response from server. Please check your network connection and try again.");
         } else {
+            // Something happened in setting up the request that triggered an Error
             console.error("Error setting up request:", error.message);
             throw error;
         }
@@ -101,7 +102,7 @@ export const getSpreadsheetById = async (id, header) => {
     }
     
     try {
-        const response = await axios.get(`${API_BASE_URL}/get/${id}`, {
+        const response = await api.get(`${API_ENDPOINTS.SPREADSHEET.GET_BY_ID}/${id}`, {
             headers: {
                 "Content-Type": "application/json",
                 ...header,
@@ -144,8 +145,8 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
         formData.append("file", data.file);
         formData.append("teacherId", data.teacherId);
 
-        const response = await axios.put(
-            `${API_BASE_URL}/update/${classId}`,
+        const response = await api.put(
+            `${API_ENDPOINTS.SPREADSHEET.UPDATE}/${classId}`,
             formData,
             {
                 headers: {
@@ -160,3 +161,22 @@ export const updateClassSpreadsheetData = async (classId, data, headers) => {
         throw error;
     }
 }
+
+// New function to check if a spreadsheet exists
+export const checkIfSpreadsheetExists = async (fileName, teacherId, headers) => {
+    try {
+        const response = await api.get(`${API_ENDPOINTS.SPREADSHEET.CHECK_EXISTS}`, {
+            params: { fileName, teacherId },
+            headers: {
+                ...headers,
+            },
+        });
+        return response.data; // Should return true or false
+    } catch (error) {
+        console.error("Error checking if spreadsheet exists:", error);
+        // It's safer to assume it might exist or let user proceed with caution
+        // depending on how critical this check is for the workflow.
+        // For now, re-throw to allow the caller to handle.
+        throw error;
+    }
+};

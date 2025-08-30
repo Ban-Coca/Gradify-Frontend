@@ -1,33 +1,46 @@
-import { useState } from "react"
-import {Link, useNavigate} from "react-router-dom"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { ArrowLeft } from "lucide-react";
-import logo from '@/assets/gradifyLogo.svg'; // adjust the path as needed
-
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import logo from "@/assets/gradifyLogo.svg"; // adjust the path as needed
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser } from "@/services/user/authenticationService";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { signUpUser, finalizeStudentOnboarding, finalizeGoogleRegistration } from "@/services/user/authenticationService";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useOnboarding } from "@/contexts/onboarding-context";
-
+import { updateRole } from "@/services/user/userService";
 const formSchema = z.object({
   studentNumber: z.string().min(1, { message: "Student number is required." }),
   major: z.string().min(1, { message: "Major is required." }),
   yearLevel: z.string().min(1, { message: "Year level is required." }),
-})
+});
 
 export default function StudentOnboarding() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const { formData, setFormData } = useOnboarding();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
-  const { login } = useAuth();
+  const { login, currentUser, getAuthHeader } = useAuth();
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,35 +48,101 @@ export default function StudentOnboarding() {
       major: formData.major || "",
       yearLevel: formData.yearLevel || "",
     },
-  })
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && currentUser) {
+      setIsOAuthUser(true);
+    }
+  }, [currentUser]);
 
   async function onSubmit(values) {
     setIsLoading(true);
     console.log("Form Values:", formData);
     try {
-      const onboardingData = {
-        role: formData.role || "STUDENT",
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        provider: formData.provider,
-        ...values,
-      };
-      console.log("Onboarding Data:", onboardingData);
-      try {
-        setIsLoading(true);
-        const response = await signUpUser(onboardingData);
-        console.log("Onboarding Response:", onboardingData);
-        localStorage.removeItem("onboardingFormData")
-        login(response.user, response.token);
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "An error occurred during signup."
+      const isAzureUser = formData.azureId;
+      const isGoogleUser = sessionStorage.getItem('googleUserData');
+      if(isGoogleUser){
+        console.log("Google User", isGoogleUserm)
+        const onboardingData = {
+          role: formData.role || "STUDENT",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Google",
+          ...values,
+        };
+        const response = await finalizeGoogleRegistration(onboardingData.role, onboardingData);
+        sessionStorage.removeItem("googleUserData");
+        localStorage.removeItem("onboardingFormData");
+        login(response.userResponse, response.token);
+        navigate("/student/dashboard");
+
+      }else if (isAzureUser) {
+        // Azure user - create new account with Azure credentials
+        const onboardingData = {
+          role: formData.role || "STUDENT",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          azureId: formData.azureId,
+          provider: formData.provider || "Microsoft",
+          ...values,
+        };
+
+        console.log("Azure Onboarding Data:", onboardingData);
+
+        const response = await finalizeStudentOnboarding(onboardingData);
+        console.log("Azure Onboarding Response:", response);
+
+        // Clear session storage after successful signup
+        sessionStorage.removeItem("azureUserData");
+        localStorage.removeItem("onboardingFormData");
+
+        login(response.userResponse, response.token);
+        navigate("/student/dashboard");
+      } else if (isOAuthUser) {
+        // OAuth user - just update profile details
+        const onboardingData = {
+          role: formData.role || "STUDENT",
+          ...values,
+        };
+
+        console.log("OAuth Onboarding Data:", onboardingData);
+
+        const response = await updateRole(
+          currentUser.id,
+          onboardingData,
         );
-        console.error(err);
-      } finally {
-        setIsLoading(false);
+
+        console.log("OAuth Onboarding Response:", response);
+
+        if (response.user && response.token) {
+          login(response.user, response.token);
+        }
+
+        localStorage.removeItem("onboardingFormData");
+        navigate("/student/dashboard");
+      } else {
+        // Regular signup flow - existing code
+        const onboardingData = {
+          role: formData.role || "STUDENT",
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          provider: formData.provider,
+          ...values,
+        };
+
+        console.log("Regular Onboarding Data:", onboardingData);
+
+        const response = await signUpUser(onboardingData);
+        console.log("Regular Onboarding Response:", response);
+        localStorage.removeItem("onboardingFormData");
+        login(response.user, response.token);
       }
     } catch (error) {
       console.error("Profile update failed:", error);
@@ -88,7 +167,7 @@ export default function StudentOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900 hover:text-white"
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -96,8 +175,12 @@ export default function StudentOnboarding() {
       </div>
 
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Complete your student profile</h1>
-        <p className="mt-2 text-lg text-gray-600">We need a few more details to set up your account</p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          Complete your student profile
+        </h1>
+        <p className="mt-2 text-lg text-gray-600">
+          We need a few more details to set up your account
+        </p>
       </div>
 
       <Card className="mt-10 w-full max-w-md">
@@ -138,7 +221,10 @@ export default function StudentOnboarding() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Year Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select your year level" />
@@ -169,5 +255,5 @@ export default function StudentOnboarding() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

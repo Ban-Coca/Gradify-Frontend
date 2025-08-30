@@ -4,78 +4,108 @@ import { useAuth } from "@/contexts/authentication-context";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { jwtDecode } from "jwt-decode";
 
-const getOAuthParams = (search) => {
-  const params = new URLSearchParams(search);
-  return {
-    exists: params.get("exists"),
-    token: params.get("token"),
-    email: params.get("email"),
-    firstName: params.get("firstName"),
-    lastName: params.get("lastName"),
-    provider: params.get("provider"),
-    role: params.get("role"),
-  };
-};
-
 const OAuth2Callback = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "",
-    provider: "Email"
-  });
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const { setFormData: setOnboardingData } = useOnboarding();
-  const actionRef = useRef(false);
+  const [isProcessed, setIsProcessed] = useState(false);
 
   useEffect(() => {
-    if (actionRef.current) return; // Prevent repeated actions
+    const processCallback = async () => {
+      if (isProcessed) return; // Prevent multiple executions
 
-    const {
-      exists,
-      token,
-      email,
-      firstName,
-      lastName,
-      provider,
-      role,
-    } = getOAuthParams(location.search);
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
+      const userParam = params.get("user");
+      const error = params.get("error");
+      const onboardingRequired = params.get("onboardingRequired");
+      const firstName = params.get("firstName");
+      const lastName = params.get("lastName");
+      const email = params.get("email");
+      try {
+        console.log("OAuth2 Callback Parameters:", {
+          token: token ? "✓ Present" : "✗ Missing",
+          user: userParam ? "✓ Present" : "✗ Missing",
+          error: error || "None",
+          onboardingRequired: onboardingRequired,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          fullURL: location.search,
+        });
+        if (error) {
+          console.error("Google OAuth error:", error);
+          setIsProcessed(true);
+          navigate("/login?error=oauth_failed", { replace: true });
+          return;
+        }
 
-    if (exists === "true" && token) {
-      const userData = jwtDecode(token);
-      actionRef.current = true;
-      login(userData, token);
-    } else if (exists === "false") {
-      setFormData({
-        firstName: firstName || "",
-        lastName: lastName || "",
-        email: email || "",
-        provider: provider || "",
-        role: role || "",
-      });
-      setOnboardingData({
-        firstName: firstName || "",
-        lastName: lastName || "",
-        email: email || "",
-        provider: provider || "",
-        role: role || "",
-      });
-      actionRef.current = true;
-      navigate("/onboarding/role");
-    } else {
-      actionRef.current = true;
-      navigate("/login");
-    }
-    // Only run on mount or when location.search changes
-    // eslint-disable-next-line
-  }, [location.search]);
+        if (onboardingRequired === 'true') {
+          const googleUserData = {
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+          };
+          sessionStorage.setItem(
+            "googleUserData",
+            JSON.stringify(googleUserData)
+          );
+          navigate("/onboarding/role", { replace: true });
+          return;
+        }
 
-  return null;
+        if (token && userParam) {
+          // Parse the user data from URL parameter
+          const userData = JSON.parse(decodeURIComponent(userParam));
+
+          // Store token in localStorage
+          localStorage.setItem("token", token);
+
+          // Always log in the user to store details in localStorage
+          await login(userData, token);
+          setIsProcessed(true);
+
+          // Check if user needs onboarding (role is PENDING or UNKNOWN)
+          if (
+            !userData.role ||
+            userData.role === "PENDING" ||
+            userData.role === "UNKNOWN"
+          ) {
+            navigate("/onboarding/role", { replace: true });
+          } else if (userData.role === "TEACHER") {
+            navigate("/teacher/dashboard", { replace: true });
+          } else if (userData.role === "STUDENT") {
+            navigate("/student/dashboard", { replace: true });
+          } else {
+            navigate("/onboarding/role", { replace: true });
+          }
+        } else {
+          // No token or user data, redirect to login
+          setIsProcessed(true);
+          navigate("/login?error=oauth_failed", { replace: true });
+        }
+      } catch (error) {
+        console.error("Google OAuth callback failed:", error);
+        setIsProcessed(true);
+        navigate("/login?error=oauth_processing_failed", { replace: true });
+      }
+    };
+
+    processCallback();
+  }, [location.search, login, navigate, isProcessed]);
+
+  if (isProcessed) {
+    return null; // Don't render anything after processing
+  }
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Processing Google login...</p>
+      </div>
+    </div>
+  );
 };
 
 export default OAuth2Callback;
