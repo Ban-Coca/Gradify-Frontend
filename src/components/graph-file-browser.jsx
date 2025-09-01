@@ -89,8 +89,8 @@ export default function GraphFileBrowser({
   });
 
   const saveExcelMutation = useMutation({
-    mutationFn: ({ folderName, fileName }) =>
-      saveExcelData(userId, folderName, fileName, getAuthHeader()),
+    mutationFn: ({ folderName, fileName, folderId, itemId }) =>
+      saveExcelData(userId, folderName, fileName, folderId, itemId, getAuthHeader()),
     onSuccess: (data) => {
       console.log("Excel data saved successfully");
     },
@@ -203,6 +203,8 @@ export default function GraphFileBrowser({
       saveExcelMutation.mutate({
         folderName,
         fileName: selectedFile.name,
+        folderId: currentFolderId,
+        itemId: selectedFile.id
       });
     }
   };
