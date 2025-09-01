@@ -120,7 +120,7 @@ function App() {
         <Route path="/teacher/reports/:tab?" element={<ReportsPage/>} />
         <Route path="/teacher/student-detais/:studentId" element={<StudentDetailsPage />} />   
         <Route path="/teacher/profile" element={<ProfilePage />} />
-        <Route path='teacher/settings' element={<TeacherSettings/>}/>
+        <Route path='/teacher/settings' element={<TeacherSettings/>}/>
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>

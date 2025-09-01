@@ -117,9 +117,10 @@ export default function TeacherSettings() {
     error: statusError,
     refetch: refetchStatus
   } = useQuery({
-    queryKey: ['subscriptionStatus', currentUser.userId],
-    queryFn: () => getSubscriptionStatus(currentUser.userId, getAuthHeader()),
+    queryKey: ['subscriptionStatus', currentUser?.userId],
+    queryFn: () => getSubscriptionStatus(currentUser?.userId, getAuthHeader()),
     refetchInterval: 30000, // Refetch every 30 seconds
+    enabled: !!currentUser
   });
 
   const { 
@@ -128,16 +129,16 @@ export default function TeacherSettings() {
     error: filesError,
     refetch: refetchFiles
   } = useQuery({
-    queryKey: ['trackedFiles', currentUser.userId],
-    queryFn: () => getTrackedFiles(currentUser.userId, getAuthHeader()),
-    enabled: subscriptionStatus?.hasActiveSubscription,
+    queryKey: ['trackedFiles', currentUser?.userId],
+    queryFn: () => getTrackedFiles(currentUser?.userId, getAuthHeader()),
+    enabled: !!currentUser && subscriptionStatus?.hasActiveSubscription,
   });
 
   // Mutations for subscription actions
   const createSubscriptionMutation = useMutation({
-    mutationFn: () => createNotificationSubscription(currentUser.userId, getAuthHeader()),
+    mutationFn: () => createNotificationSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser.userId]);
+      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
@@ -149,9 +150,9 @@ export default function TeacherSettings() {
   });
 
   const renewSubscriptionMutation = useMutation({
-    mutationFn: () => renewSubscription(currentUser.userId, getAuthHeader()),
+    mutationFn: () => renewSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser.userId]);
+      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
@@ -163,10 +164,10 @@ export default function TeacherSettings() {
   });
 
   const cancelSubscriptionMutation = useMutation({
-    mutationFn: () => cancelSubscription(currentUser.userId, getAuthHeader()),
+    mutationFn: () => cancelSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser.userId]);
-      queryClient.invalidateQueries(['trackedFiles', currentUser.userId]);
+      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
+      queryClient.invalidateQueries(['trackedFiles', currentUser?.userId]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
