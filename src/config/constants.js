@@ -147,8 +147,13 @@ export const API_ENDPOINTS = {
         SAVE_EXCEL: '/api/graph/save', // + /{folderName}/{fileName}
         
         // Notifications & Subscriptions
-        CREATE_SUBSCRIPTION: '/api/graph/notification/subscription',
+        CREATE_SUBSCRIPTION: '/api/graph/notification/subscribe',
         HANDLE_NOTIFICATION: '/api/graph/notification',
+        TRACKED_FILES: '/api/graph/tracked-files',
+        UNSUBSCRIBE: '/api/graph/subscription', // DELETE MAPPING
+        RENEW_SUBSCRIPTION: '/api/graph/subscription/renew',
+        SUBSCRIPTION_STATUS: '/api/graph/subscription/status'
+
     },
     
     // FCM (Firebase Cloud Messaging) for Push Notifications

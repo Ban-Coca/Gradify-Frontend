@@ -32,6 +32,7 @@ import { useEffect } from 'react'
 import NotificationsPage from './pages/NotificationPage'
 import ProfilePage from './pages/ProfilePage'
 import AzureCallback from './callbacks/AzureCallback'
+import TeacherSettings from './pages/SettingsPage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -119,6 +120,7 @@ function App() {
         <Route path="/teacher/reports/:tab?" element={<ReportsPage/>} />
         <Route path="/teacher/student-detais/:studentId" element={<StudentDetailsPage />} />   
         <Route path="/teacher/profile" element={<ProfilePage />} />
+        <Route path='teacher/settings' element={<TeacherSettings/>}/>
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
