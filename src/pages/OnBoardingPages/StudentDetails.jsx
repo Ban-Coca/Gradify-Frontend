@@ -58,13 +58,14 @@ export default function StudentOnboarding() {
   }, [currentUser]);
 
   async function onSubmit(values) {
-    setIsLoading(true);
+  setIsLoading(true);
+  setError(null);
     console.log("Form Values:", formData);
     try {
       const isAzureUser = formData.azureId;
       const isGoogleUser = sessionStorage.getItem('googleUserData');
       if(isGoogleUser){
-        console.log("Google User", isGoogleUserm)
+        console.log("Google User", isGoogleUser)
         const onboardingData = {
           role: formData.role || "STUDENT",
           firstName: formData.firstName,
@@ -119,8 +120,8 @@ export default function StudentOnboarding() {
 
         console.log("OAuth Onboarding Response:", response);
 
-        if (response.user && response.token) {
-          login(response.user, response.token);
+        if (response.userResponse && response.token) {
+          login(response.userResponse, response.token);
         }
 
         localStorage.removeItem("onboardingFormData");
@@ -142,18 +143,42 @@ export default function StudentOnboarding() {
         const response = await signUpUser(onboardingData);
         console.log("Regular Onboarding Response:", response);
         localStorage.removeItem("onboardingFormData");
-        login(response.user, response.token);
+        login(response.userResponse, response.token);
       }
     } catch (error) {
       console.error("Profile update failed:", error);
+      let msg = "Profile update failed.";
+      const respData = error?.response?.data;
+
+      if (respData) {
+        if (typeof respData === "string") {
+          msg = respData;
+        } else if (respData.message) {
+          msg = respData.message;
+        } else if (respData.error) {
+          msg = respData.error;
+        } else if (Array.isArray(respData.errors) && respData.errors.length) {
+          msg = respData.errors.map(e => e.message || e).join(", ");
+        } else {
+          // Fallback - attempt to pretty print the response body
+          try {
+            msg = JSON.stringify(respData);
+          } catch {
+            msg = String(respData);
+          }
+        }
+      } else if (error?.message) {
+        msg = error.message;
+      }
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
-      <Link to="/" className="mb-8 flex items-center gap-2">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 pb-4 pt-8">
+      <Link to="/" className="mb-8 flex items-center gap-1">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
           <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
@@ -167,7 +192,7 @@ export default function StudentOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -178,13 +203,68 @@ export default function StudentOnboarding() {
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           Complete your student profile
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <p className="mt-2 text-base text-gray-600">
           We need a few more details to set up your account
         </p>
       </div>
 
-      <Card className="mt-10 w-full max-w-md">
+      <Card className="mt-4 w-full max-w-md">
         <CardContent className="pt-6">
+          {error && (
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm"
+            >
+              <div className="flex items-start gap-2">
+                <div className="flex-shrink-0">
+                  <svg 
+                    className="h-4 w-4 text-red-400" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-red-800 mb-1">
+                    Something went wrong
+                  </h3>
+                  <p className="text-sm text-red-700 leading-relaxed mb-2">
+                    {error}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setError(null);
+                        form.reset();
+                      }}
+                      className="text-red-700 border-red-300 hover:bg-red-100 hover:border-red-400 transition-colors"
+                    >
+                      Try Again
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate("/signup")}
+                      className="text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      Back to Signup
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
