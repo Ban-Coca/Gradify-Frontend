@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
         LOGIN: '/api/user/login',
         REGISTER: '/api/user/register',
         OAUTH2_FAILURE: '/api/user/oauth2/failure',
+        CHECK_EMAIL_EXISTS: '/api/user/email-exists',
         
         // Profile Management
         UPDATE_PROFILE: '/api/user/update-profile',
