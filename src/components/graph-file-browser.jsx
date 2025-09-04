@@ -81,16 +81,22 @@ export default function GraphFileBrowser({
   } = useQuery({
     queryKey: ["folder-files", userId, currentPath],
     queryFn: () => {
-      
       return getFolderFiles(userId, currentFolderId, getAuthHeader());
     },
-    
+
     enabled: !!userId && !!currentFolderId && open,
   });
 
   const saveExcelMutation = useMutation({
     mutationFn: ({ folderName, fileName, folderId, itemId }) =>
-      saveExcelData(userId, folderName, fileName, folderId, itemId, getAuthHeader()),
+      saveExcelData(
+        userId,
+        folderName,
+        fileName,
+        folderId,
+        itemId,
+        getAuthHeader()
+      ),
     onSuccess: (data) => {
       console.log("Excel data saved successfully");
     },
@@ -204,7 +210,7 @@ export default function GraphFileBrowser({
         folderName,
         fileName: selectedFile.name,
         folderId: currentFolderId,
-        itemId: selectedFile.id
+        itemId: selectedFile.id,
       });
     }
   };
@@ -330,7 +336,9 @@ export default function GraphFileBrowser({
             <Alert className="border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Failed to save Excel data. Please try again.
+                {saveExcelMutation.error?.response?.data?.message ||
+                  saveExcelMutation.error?.message ||
+                  "Failed to save Excel data. Please try again."}
               </AlertDescription>
             </Alert>
           )}
