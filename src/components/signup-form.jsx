@@ -2,17 +2,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUpUser } from "@/services/user/authenticationService";
+import { checkEmailExists } from "@/services/user/authenticationService";
 import { useAuth } from "@/contexts/authentication-context";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { googleLogin, azureLogin } from "@/services/user/authenticationService";
 
@@ -44,15 +37,26 @@ export function SignupForm({ className, ...props }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
+    
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
+      setLoading(false);
       return;
     }
+    
     try {
       // Check if email already exists
-      await checkEmailExists(formData.email);
+      const response = await checkEmailExists(formData.email);
+      
+      if (!response.exists) {
+        console.log("Exist? ", response.exists);
+        setError("Email already exists. Please use a different email or try logging in.");
+        setLoading(false);
+        return;
+      }
 
-      // If we get here, email doesn't exist (checkEmailExists throws on existing email)
+      // If we get here, email doesn't exist - proceed with onboarding
       setOnboardingData({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -70,10 +74,8 @@ export function SignupForm({ className, ...props }) {
 
       navigate("/onboarding/role");
     } catch (error) {
-      // Email already exists or other error
-      setError(
-        "Email already exists. Please use a different email or try logging in."
-      );
+      console.error("Error checking email:", error);
+      setError("Unable to verify email. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -162,7 +164,7 @@ export function SignupForm({ className, ...props }) {
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
+          {loading ? "Checking email..." : "Register"}
         </Button>
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">

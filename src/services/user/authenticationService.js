@@ -121,7 +121,7 @@ export const checkEmailExists = async (email) => {
         const response = await api.get(`${API_ENDPOINTS.USER.CHECK_EMAIL_EXISTS}?email=${email}`)
         return response.data
     }catch(error){
-        console.log("Email already exists");
+        console.error("Error checking if email exists:", error);
         throw error
     }
 }
