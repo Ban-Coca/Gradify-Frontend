@@ -30,6 +30,8 @@ import { setupMessageListener } from './services/notification/firebaseService'
 import { useEffect } from 'react'
 import NotificationsPage from './pages/NotificationPage'
 import ProfilePage from './pages/ProfilePage'
+import AzureCallback from './callbacks/AzureCallback'
+import TeacherSettings from './pages/SettingsPage'
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, userRole, loading } = useAuth();
   if (loading) {
@@ -100,6 +102,7 @@ function App() {
         </RedirectIfAuthenticated>
       }/>
       <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+      <Route path="/auth/azure/callback" element={<AzureCallback />} />
       <Route path="/forgot-password" element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>} />
       <Route path="/verify-code" element={<RedirectIfAuthenticated><VerifyCode /></RedirectIfAuthenticated>} />
       <Route path="/reset-password" element={<RedirectIfAuthenticated><PasswordReset /></RedirectIfAuthenticated>} />
@@ -116,6 +119,7 @@ function App() {
         <Route path="/teacher/reports/:tab?" element={<ReportsPage/>} />
         <Route path="/teacher/student-detais/:studentId" element={<StudentDetailsPage />} />   
         <Route path="/teacher/profile" element={<ProfilePage />} />
+        <Route path='/teacher/settings' element={<TeacherSettings/>}/>
       </Route>
           
       <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>

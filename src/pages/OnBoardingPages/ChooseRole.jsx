@@ -13,6 +13,31 @@ export default function RoleSelection() {
   const location = useLocation();
   const { formData, setFormData } = useOnboarding();
 
+  useEffect(() => {
+    const azureUserData = sessionStorage.getItem('azureUserData');
+    const googleUserData = sessionStorage.getItem('googleUserData');
+    if (azureUserData) {
+      const parsedData = JSON.parse(azureUserData);
+      setFormData(prev => ({
+        ...prev,
+        azureId: parsedData.azureId,
+        email: parsedData.email,
+        firstName: parsedData.firstName,
+        lastName: parsedData.lastName,
+        provider: 'Microsoft'
+      }));
+    } else if(googleUserData){
+      const parsedData = JSON.parse(googleUserData)
+      setFormData(prev => ({
+        ...prev,
+        email: parsedData.email,
+        firstName: parsedData.firstName,
+        lastName: parsedData.lastName,
+        provider: 'Google'
+      }))
+    }
+  }, [setFormData]);
+  
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     const userRole = role.toUpperCase();

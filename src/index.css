@@ -8,7 +8,7 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: light;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
 
@@ -26,10 +26,10 @@
   --popover-foreground: #212529;
   --primary: #198754;
   --primary-foreground: #ffffff;
-  --secondary: #6c757d;
+  --secondary: #20c997;
   --secondary-foreground: #ffffff;
   --muted: #198754;
-  --muted-foreground: #6c757d;
+  --muted-foreground: #157347;
   --accent: #065f46;
   --accent-foreground: #ffffff;
   --destructive: #ff0019;
@@ -52,19 +52,21 @@
 }
 
 .dark {
+  color-scheme: dark;
+  
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.35 0.15 140);     /* Green in dark mode */
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.35 0.15 140);       /* Green in dark mode */
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.25 0.15 140);      /* Darker green in dark mode */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);

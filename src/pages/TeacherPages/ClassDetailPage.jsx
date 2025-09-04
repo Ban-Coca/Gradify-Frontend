@@ -50,9 +50,7 @@ import { UploadModal } from "@/components/upload-modal";
 import toast from "react-hot-toast";
 import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
-import { AddStudentModal } from "@/components/AddStudentModal";
-import { useQueryClient } from "@tanstack/react-query";
-
+import { GradeDisplayTable } from "@/components/grade-visibility";
 const ClassDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -96,10 +94,10 @@ const ClassDetailPage = () => {
   const studentsAtRisk = safeRosterData.filter((student) => {
     const percentage =
       student.percentage > 100 ? student.percentage / 100 : student.percentage;
-    return student.status === "At Risk" || percentage < 75;
+    return student.status === "At Risk" || percentage < 60;
   }).length;
 
-  const average = parseFloat(classAverageData / 100).toFixed(2);
+  const average = classAverageData?.toFixed(2);
 
   const updateSpreadsheetMutation = useMutation({
     mutationFn: ({ classId, data, headers }) =>
@@ -225,8 +223,13 @@ const ClassDetailPage = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "Not available";
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
+
     const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    return date.toLocaleDateString(undefined, options);
   };
 
   const toggleModal = () => {
@@ -295,9 +298,7 @@ const ClassDetailPage = () => {
                 classId={id}
                 //initialData = {classData.gradingScheme}
               />
-              <AiAnalyticsSheet
-                classId={id}
-              />
+              <AiAnalyticsSheet classId={id} />
               <Button variant="outline" onClick={openEditModal}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class Details
@@ -436,11 +437,17 @@ const ClassDetailPage = () => {
                 >
                   Class Roster
                 </TabsTrigger>
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="grades"
                   className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
                 >
                   Edit Grades
+                </TabsTrigger> */}
+                <TabsTrigger
+                  value="visibility"
+                  className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
+                >
+                  Grade Visibility
                 </TabsTrigger>
                 {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
                 <TabsTrigger
@@ -474,10 +481,10 @@ const ClassDetailPage = () => {
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    <Button size="sm" onClick={() => setIsAddStudentModalOpen(true)}>
+                    {/* <Button size="sm">
                       <UserPlus className="h-4 w-4 mr-1" />
                       Add Student
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
                 <StudentTable
@@ -527,8 +534,14 @@ const ClassDetailPage = () => {
               </TabsContent> */}
 
               <TabsContent value="reports">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <ReportsTab classId={id} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="visibility">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  <GradeDisplayTable classId={id} />
                 </div>
               </TabsContent>
             </Tabs>

@@ -1,10 +1,9 @@
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8080/api/reports";
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from '@/config/constants';
 
 export const createReport = async (reportDTO, authHeader) => {
   console.log(reportDTO);
-  const response = await axios.post(API_BASE_URL, reportDTO, {
+  const response = await api.post(API_ENDPOINTS.REPORTS, reportDTO, {
     headers: authHeader,
   });
   console.log(response.data);
@@ -12,47 +11,47 @@ export const createReport = async (reportDTO, authHeader) => {
 };
 
 export const getReportById = async (reportId, authHeader) => {
-  const response = await axios.get(`${API_BASE_URL}/${reportId}`, {
+  const response = await api.get(`${API_ENDPOINTS.REPORTS.GET_BY_ID}/${reportId}`, {
     headers: authHeader,
   });
   return response.data;
 };
 
 export const getReportsByStudentId = async (studentId, authHeader) => {
-  const response = await axios.get(`${API_BASE_URL}/student/${studentId}`, {
+  const response = await api.get(`${API_ENDPOINTS.REPORTS.GET_BY_STUDENT}/${studentId}`, {
     headers: authHeader,
   });
   return response.data;
 };
 
 export const getReportsByTeacherId = async (teacherId, authHeader) => {
-  const response = await axios.get(`${API_BASE_URL}/teacher/${teacherId}`, {
+  const response = await api.get(`${API_ENDPOINTS.REPORTS.GET_BY_TEACHER}/${teacherId}`, {
     headers: authHeader,
   });
   return response.data;
 };
 
 export const getReportsByClassId = async (classId, authHeader) => {
-  const response = await axios.get(`${API_BASE_URL}/class/${classId}`, {
+  const response = await api.get(`${API_ENDPOINTS.REPORTS.GET_BY_CLASS}/${classId}`, {
     headers: authHeader,
   });
   return response.data;
 };
 
 export const updateReport = async (reportId, reportDTO, authHeader) => {
-  const response = await axios.put(`${API_BASE_URL}/${reportId}`, reportDTO, {
+  const response = await api.put(`${API_ENDPOINTS.REPORTS.UPDATE}/${reportId}`, reportDTO, {
     headers: authHeader,
   });
   return response.data;
 };
 
 export const deleteReport = async (reportId, authHeader) => {
-  await axios.delete(`${API_BASE_URL}/${reportId}`, { headers: authHeader });
+  await api.delete(`${API_ENDPOINTS.REPORTS.DELETE}/${reportId}`, { headers: authHeader });
 };
 
 export const getAIGeneratedReport = async (studentId, classId, authHeader) => {
-  const response = await axios.get(
-    `${API_BASE_URL}/generate-suggestion/student/${studentId}/class/${classId}`,
+  const response = await api.get(
+    `${API_ENDPOINTS.REPORTS.GENERATE_SUGGESTION}/${studentId}/class/${classId}`,
     { headers: authHeader }
   );
   return response.data;

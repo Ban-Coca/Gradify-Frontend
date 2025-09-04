@@ -39,6 +39,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useStudent } from "@/hooks/use-student"
+import { useGrading } from "@/hooks/use-grading"
 
 export function GradesView() {
   const [selectedClass, setSelectedClass] = useState(null)
@@ -52,10 +54,6 @@ export function GradesView() {
   const studentId = currentUser?.userId
   const [error, setError] = useState(null)
   const [tableData, setTableData] = useState({})
-  const [grades, setGrades] = useState({})
-  const [assessmentMaxValues, setAssessmentMaxValues] = useState({})
-  const [gradesLoading, setGradesLoading] = useState(false)
-  const [gradesError, setGradesError] = useState(null)
   const [scheme, setScheme] = useState([])
   const [teacher, setTeacher] = useState(null)
   const [calculatedGrade, setCalculatedGrade] = useState(null)
@@ -67,7 +65,6 @@ export function GradesView() {
   const [viewMode, setViewMode] = useState("grid")
   const location = useLocation()
   const selectedClassIdFromState = location.state?.selectedClassId
-
   const COURSES_PER_PAGE = 6
 
   // Enhanced filtering and sorting
@@ -132,27 +129,16 @@ export function GradesView() {
     if (studentId) loadClasses()
   }, [studentId, getAuthHeader])
 
-  // Fetch table data (grades) when a class is selected
-  useEffect(() => {
-    async function loadTableData() {
-      if (!selectedClass) return
-      setGradesLoading(true)
-      setGradesError(null)
-      try {
-        const header = getAuthHeader ? getAuthHeader() : {}
-        const data = await getStudentCourseTableData(studentId, selectedClass, header)
-        setGrades(data.grades)
-        setAssessmentMaxValues(data.assessmentMaxValues)
-      } catch (err) {
-        setTableData({})
-        setGradesError(err.message)
-      } finally {
-        setGradesLoading(false)
-      }
-    }
-    if (selectedClass) loadTableData()
-  }, [selectedClass, studentId, getAuthHeader])
-
+  const { getGradingScheme } = useGrading(currentUser, selectedClass)
+  const { visibleStudentGrades, isLoading, error: studentGradesError } = useStudent(currentUser, selectedClass)
+  const assessmentMaxValues = visibleStudentGrades?.assessmentMaxValues || {}
+  const grades = visibleStudentGrades?.grades || {}
+  const gradesError = studentGradesError || null
+  const gradesLoading = isLoading
+  console.log('useStudent hook response:', { visibleStudentGrades, isLoading, studentGradesError })
+  console.log('selectedClass:', selectedClass)
+  console.log('currentUser:', currentUser)
+  console.log('grades:', grades)
   // Fetch teacher info
   useEffect(() => {
     async function fetchTeacher() {
