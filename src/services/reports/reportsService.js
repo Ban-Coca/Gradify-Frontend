@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from '@/config/constants';
 
 export const createReport = async (reportDTO, authHeader) => {
   console.log(reportDTO);
-  const response = await api.post(API_ENDPOINTS.REPORTS, reportDTO, {
+  const response = await api.post(API_ENDPOINTS.REPORTS.CREATE, reportDTO, {
     headers: authHeader,
   });
   console.log(response.data);

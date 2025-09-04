@@ -116,6 +116,16 @@ export const finalizeTeacherOnboarding = async (data) => {
     }
 }
 
+export const checkEmailExists = async (email) => {
+    try{
+        const response = await api.get(`${API_ENDPOINTS.USER.CHECK_EMAIL_EXISTS}?email=${email}`)
+        return response.data
+    }catch(error){
+        console.error("Error checking if email exists:", error);
+        throw error
+    }
+}
+
 export const finalizeStudentOnboarding = async (data) => {
     try{
         const response = await api.post(`${API_ENDPOINTS.AUTH.FINALIZE_STUDENT}`, data)
@@ -135,3 +145,4 @@ export const finalizeGoogleRegistration = async (role, data) => {
         throw error
     }
 }
+
