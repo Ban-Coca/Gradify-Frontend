@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/contexts/authentication-context";
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Layout from "@/components/layout";
 import { Loading } from '@/components/loading-state';
 import { getSpreadsheetById } from '@/services/teacher/spreadsheetservices';
@@ -17,28 +18,22 @@ export default function DisplaySpreadsheetPage(){
     const { currentUser, getAuthHeader } = useAuth();
     const navigate = useNavigate();
     const { id } = useParams();
-    const [spreadsheet, setSpreadsheet] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     
     // These are the fields we don't want to display in the grades columns
     const excludedFields = ['Student Number', 'First Name', 'Last Name'];
     
-    useEffect(() => {
-        const fetchSpreadsheet = async () => {
-            try {
-                setLoading(true);
-                const data = await getSpreadsheetById(id, getAuthHeader());
-                setSpreadsheet(data);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to load spreadsheet data');
-                setLoading(false);
-            }
-        };
-        
-        fetchSpreadsheet();
-    }, [id]);
+    const {
+        data: spreadsheet,
+        isLoading: loading,
+        error,
+        isError
+    } = useQuery({
+        queryKey: ['spreadsheet', id],
+        queryFn: () => getSpreadsheetById(id, getAuthHeader()),
+        enabled: !!id, // Only run query if id exists
+        staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+        retry: 2 // Retry failed requests 2 times
+    });
     
     // Get all unique column headers for the grades
     const getGradeColumns = () => {
@@ -62,18 +57,81 @@ export default function DisplaySpreadsheetPage(){
         return <Layout><Loading fullscreen variant="spinner" size="xl" /></Layout>;
     }
     
-    if (error) {
+    if (isError) {
         return (
             <Layout>
-                <div className="p-8 text-center">
-                    <h2 className="text-red-500 text-xl font-bold mb-4">Error</h2>
-                    <p>{error}</p>
-                    <button 
-                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={() => navigate('/teacher/spreadsheets')}
-                    >
-                        Back to Spreadsheets
-                    </button>
+                <div className="p-8">
+                    <Alert className="border-red-200 bg-red-50 mb-6">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-800">
+                            {(() => {
+                                const errorData = error?.response?.data;
+                                
+                                // Check if it's a detailed error with specific information
+                                if (errorData?.errorCode && errorData?.details) {
+                                    return (
+                                        <div className="space-y-2">
+                                            <div className="font-semibold">
+                                                {errorData.message || "Failed to load spreadsheet"}
+                                            </div>
+                                            <div className="text-sm">
+                                                Error Code: {errorData.errorCode}
+                                            </div>
+                                            {errorData.details.errors && (
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {errorData.details.errors.map((detailError, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="text-sm bg-red-100 p-2 rounded border-l-4 border-red-400"
+                                                        >
+                                                            {detailError.message || detailError}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                }
+                                
+                                // Fallback to generic error message
+                                return (
+                                    <div className="space-y-2">
+                                        <div className="font-semibold">
+                                            Failed to load spreadsheet data
+                                        </div>
+                                        <div className="text-sm">
+                                            {errorData?.message || 
+                                             error?.message || 
+                                             "An unexpected error occurred. Please try again."}
+                                        </div>
+                                        {error?.response?.status && (
+                                            <div className="text-xs text-red-600">
+                                                HTTP {error.response.status}: {error.response.statusText}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </AlertDescription>
+                    </Alert>
+                    
+                    <div className="flex gap-4 justify-center">
+                        <Button 
+                            variant="outline"
+                            onClick={() => refetch()}
+                            disabled={loading}
+                            className="flex items-center gap-2"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                            Try Again
+                        </Button>
+                        <Button 
+                            onClick={() => navigate('/teacher/spreadsheets')}
+                            className="flex items-center gap-2"
+                        >
+                            Back to Spreadsheets
+                        </Button>
+                    </div>
                 </div>
             </Layout>
         );
