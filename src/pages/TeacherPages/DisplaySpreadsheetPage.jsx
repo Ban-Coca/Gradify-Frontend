@@ -26,7 +26,8 @@ export default function DisplaySpreadsheetPage(){
         data: spreadsheet,
         isLoading: loading,
         error,
-        isError
+        isError,
+        refetch
     } = useQuery({
         queryKey: ['spreadsheet', id],
         queryFn: () => getSpreadsheetById(id, getAuthHeader()),
