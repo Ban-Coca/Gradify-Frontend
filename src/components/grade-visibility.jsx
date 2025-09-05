@@ -83,10 +83,24 @@ export function GradeDisplayTable({ classId }) {
   const handleVisibilityToggle = (assessmentName) => {
     if (!spreadsheet?.id) return;
 
-    toggleAssessment.mutate({
-      classSpreadsheetId: spreadsheet?.id,
-      assessmentName: assessmentName,
-    });
+    console.log(`Toggling visibility for ${assessmentName}`);
+    console.log("Current visibility:", getAssessmentVisibility(assessmentName));
+
+    toggleAssessment.mutate(
+      {
+        classSpreadsheetId: spreadsheet?.id,
+        assessmentName: assessmentName,
+      },
+      {
+        onSuccess: (data) => {
+          console.log("Toggle successful:", data);
+          // Force refetch of assessment status after successful toggle
+        },
+        onError: (error) => {
+          console.error("Toggle failed:", error);
+        },
+      }
+    );
   };
 
   const handleSaveVisibility = async () => {
@@ -159,14 +173,22 @@ export function GradeDisplayTable({ classId }) {
 
       {/* Visibility Controls */}
       <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-semibold mb-3">Assessment Visibility for Students</h3>
+        <h3 className="text-lg font-semibold mb-3">
+          Assessment Visibility for Students
+        </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {gradeColumns.map((column) => {
-            const isVisible = getAssessmentVisibility(column)
-            const isDisabled = toggleAssessment?.isLoading || !spreadsheet?.id || !toggleAssessment?.mutate
+            const isVisible = getAssessmentVisibility(column);
+            const isDisabled =
+              toggleAssessment?.isLoading ||
+              !spreadsheet?.id ||
+              !toggleAssessment?.mutate;
 
             return (
-              <div key={column} className="flex items-center justify-between p-2 bg-white rounded border">
+              <div
+                key={column}
+                className="flex items-center justify-between p-2 bg-white rounded border"
+              >
                 <div className="flex items-center gap-2">
                   {isVisible ? (
                     <Eye className="h-4 w-4 text-green-600" />
@@ -179,14 +201,19 @@ export function GradeDisplayTable({ classId }) {
                 <Switch
                   checked={isVisible}
                   onCheckedChange={(checked) => {
-                    console.log(`Debug - Switch clicked for ${column}, new value:`, checked)
-                    handleVisibilityToggle(column)
+                    console.log(
+                      `Debug - Switch clicked for ${column}, current:`,
+                      isVisible,
+                      "new value:",
+                      checked
+                    );
+                    handleVisibilityToggle(column);
                   }}
                   disabled={isDisabled}
                   className="cursor-pointer"
                 />
               </div>
-            )
+            );
           })}
         </div>
       </div>
