@@ -51,13 +51,15 @@ import {
 import Layout from "@/components/layout";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
+import {
   createNotificationSubscription,
   getSubscriptionStatus,
   renewSubscription,
   cancelSubscription,
-  getTrackedFiles 
+  getTrackedFiles,
 } from "@/services/teacher/microsoftGraphService";
+import { updateUser, getUserDetails } from "@/services/user/userService";
+import { getStudentCount } from "@/services/teacher/teacherService";
 import { useAuth } from "@/contexts/authentication-context";
 
 export default function TeacherSettings() {
@@ -76,9 +78,11 @@ export default function TeacherSettings() {
     confirm: false,
   });
   const [saveStatus, setSaveStatus] = useState("");
-  
-  // Profile form state
-  const [profileData, setProfileData] = useState({
+
+  const queryClient = useQueryClient();
+  const { currentUser, getAuthHeader, updateUserProfile } = useAuth();
+
+  const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -87,63 +91,73 @@ export default function TeacherSettings() {
     bio: "",
   });
 
-  const queryClient = useQueryClient();
-  const { currentUser, getAuthHeader } = useAuth();
+  const {
+    data: profileData,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["userProfile", currentUser?.userId],
+    queryFn: () => getUserDetails(currentUser?.userId, getAuthHeader()),
+    enabled: !!currentUser,
+    staleTime: 5 * 60 * 1000, // Don't refetch for 5 minutes
+  });
 
-  // Initialize profile data when currentUser is available
   useEffect(() => {
-    if (currentUser) {
-      setProfileData({
-        firstName: currentUser.firstName || "",
-        lastName: currentUser.lastName || "",
-        email: currentUser.email || "",
-        phoneNumber: currentUser.phoneNumber || "",
-        department: currentUser.department || "",
-        bio: currentUser.bio || "",
+    if (profileData) {
+      setFormData({
+        firstName: profileData.firstName || "",
+        lastName: profileData.lastName || "",
+        email: profileData.email || "",
+        phoneNumber: profileData.phoneNumber || "",
+        department: profileData.department || "",
+        bio: profileData.bio || "",
       });
     }
-  }, [currentUser]);
+  }, [profileData]);
 
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setSaveStatus("unsaved");
   };
 
-
-  // TanStack Query hooks for subscription management
-  const { 
-    data: subscriptionStatus, 
+  const {
+    data: subscriptionStatus,
     isLoading: isLoadingStatus,
     error: statusError,
-    refetch: refetchStatus
+    refetch: refetchStatus,
   } = useQuery({
-    queryKey: ['subscriptionStatus', currentUser?.userId],
+    queryKey: ["subscriptionStatus", currentUser?.userId],
     queryFn: () => getSubscriptionStatus(currentUser?.userId, getAuthHeader()),
     refetchInterval: 30000, // Refetch every 30 seconds
-    enabled: !!currentUser
+    enabled: !!currentUser,
   });
 
-  const { 
-    data: trackedFilesData, 
+  const {
+    data: trackedFilesData,
     isLoading: isLoadingFiles,
     error: filesError,
-    refetch: refetchFiles
+    refetch: refetchFiles,
   } = useQuery({
-    queryKey: ['trackedFiles', currentUser?.userId],
+    queryKey: ["trackedFiles", currentUser?.userId],
     queryFn: () => getTrackedFiles(currentUser?.userId, getAuthHeader()),
     enabled: !!currentUser && subscriptionStatus?.hasActiveSubscription,
   });
 
   // Mutations for subscription actions
   const createSubscriptionMutation = useMutation({
-    mutationFn: () => createNotificationSubscription(currentUser?.userId, getAuthHeader()),
+    mutationFn: () =>
+      createNotificationSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
+      queryClient.invalidateQueries([
+        "subscriptionStatus",
+        currentUser?.userId,
+      ]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
     onError: (error) => {
-      console.error('Failed to create subscription:', error);
+      console.error("Failed to create subscription:", error);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus(""), 2000);
     },
@@ -152,12 +166,15 @@ export default function TeacherSettings() {
   const renewSubscriptionMutation = useMutation({
     mutationFn: () => renewSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
+      queryClient.invalidateQueries([
+        "subscriptionStatus",
+        currentUser?.userId,
+      ]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
     onError: (error) => {
-      console.error('Failed to renew subscription:', error);
+      console.error("Failed to renew subscription:", error);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus(""), 2000);
     },
@@ -166,34 +183,63 @@ export default function TeacherSettings() {
   const cancelSubscriptionMutation = useMutation({
     mutationFn: () => cancelSubscription(currentUser?.userId, getAuthHeader()),
     onSuccess: () => {
-      queryClient.invalidateQueries(['subscriptionStatus', currentUser?.userId]);
-      queryClient.invalidateQueries(['trackedFiles', currentUser?.userId]);
+      queryClient.invalidateQueries([
+        "subscriptionStatus",
+        currentUser?.userId,
+      ]);
+      queryClient.invalidateQueries(["trackedFiles", currentUser?.userId]);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
     onError: (error) => {
-      console.error('Failed to cancel subscription:', error);
+      console.error("Failed to cancel subscription:", error);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus(""), 2000);
     },
   });
 
+  const updateUserMutation = useMutation({
+    mutationFn: (profileData) =>
+      updateUser(currentUser.userId, profileData, getAuthHeader()),
+    onSuccess: (updatedUserData) => {
+      // Update the user profile query cache
+      queryClient.invalidateQueries(["userProfile", currentUser?.userId]);
+
+      // Extract the actual user data from the response
+      if (updatedUserData) {
+        // If the response has userResponse nested, use that, otherwise use the data directly
+        const actualUserData = updatedUserData.userResponse || updatedUserData;
+        updateUserProfile(actualUserData);
+      }
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(""), 2000);
+    },
+    onError: (error) => {
+      console.error("Failed to update user: ", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus(""), 2000);
+    },
+  });
+
+  const {
+    data: studentCount,
+    isLoading: countLoading,
+    error: countError,
+    refetch: refetchCount,
+  } = useQuery({
+    queryKey: ["studentCount", currentUser?.userId],
+    queryFn: () => getStudentCount(currentUser?.userId, getAuthHeader()),
+    enabled: !!currentUser,
+  });
   const handleSettingChange = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
     setSaveStatus("unsaved");
   };
 
   const handleSaveSettings = () => {
     setSaveStatus("saving");
-    // TODO: Implement actual API call to save profile data
-    console.log('Saving profile data:', profileData);
-    console.log('Saving settings:', settings);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus(""), 2000);
-    }, 1000);
+    updateUserMutation.mutate(formData);
   };
 
   const handleCreateSubscription = () => {
@@ -266,27 +312,46 @@ export default function TeacherSettings() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
-            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=inactive]:text-white">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5 md:grid-cols-1 sm:flex sm:w-auto sm:overflow-x-auto sm:gap-1 sm:p-1">
+            <TabsTrigger
+              value="profile"
+              className="flex items-center gap-2 data-[state=inactive]:text-white sm:whitespace-nowrap sm:min-w-fit sm:px-3 sm:py-2"
+            >
               <User className="w-4 h-4" />
-              Profile
+              <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="files" className="flex items-center gap-2 data-[state=inactive]:text-white">
+            <TabsTrigger
+              value="files"
+              className="flex items-center gap-2 data-[state=inactive]:text-white sm:whitespace-nowrap sm:min-w-fit sm:px-3 sm:py-2"
+            >
               <Webhook className="w-4 h-4" />
-              File Tracking
+              <span className="hidden sm:inline">File Tracking</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=inactive]:text-white">
+            <TabsTrigger
+              value="notifications"
+              className="flex items-center gap-2 data-[state=inactive]:text-white sm:whitespace-nowrap sm:min-w-fit sm:px-3 sm:py-2"
+            >
               <Bell className="w-4 h-4" />
-              Notifications
+              <span className="hidden sm:inline">Notifications</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2 data-[state=inactive]:text-white">
+            <TabsTrigger
+              value="security"
+              className="flex items-center gap-2 data-[state=inactive]:text-white sm:whitespace-nowrap sm:min-w-fit sm:px-3 sm:py-2"
+            >
               <Shield className="w-4 h-4" />
-              Security
+              <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center gap-2 data-[state=inactive]:text-white">
+            <TabsTrigger
+              value="preferences"
+              className="flex items-center gap-2 data-[state=inactive]:text-white sm:whitespace-nowrap sm:min-w-fit sm:px-3 sm:py-2"
+            >
               <Settings className="w-4 h-4" />
-              Preferences
+              <span className="hidden sm:inline">Preferences</span>
             </TabsTrigger>
           </TabsList>
 
@@ -307,14 +372,22 @@ export default function TeacherSettings() {
                   <CardContent className="space-y-6">
                     <div className="flex items-center gap-6">
                       <Avatar className="w-20 h-20">
-                        <AvatarImage src={currentUser?.profilePicture || "/api/placeholder/80/80"} />
+                        <AvatarImage
+                          src={
+                            currentUser?.profilePicture ||
+                            "/api/placeholder/80/80"
+                          }
+                        />
                         <AvatarFallback className="bg-green-100 text-green-700 text-xl">
-                          {profileData.firstName?.charAt(0)?.toUpperCase() || ''}
-                          {profileData.lastName?.charAt(0)?.toUpperCase() || ''}
+                          {formData.firstName?.charAt(0)?.toUpperCase() || ""}
+                          {formData.lastName?.charAt(0)?.toUpperCase() || ""}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-2">
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                        >
                           <Upload className="w-4 h-4 mr-2" />
                           Upload Photo
                         </Button>
@@ -323,74 +396,86 @@ export default function TeacherSettings() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
-                        <Input 
-                          id="firstName" 
-                          value={profileData.firstName}
-                          onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                        <Input
+                          id="firstName"
+                          value={formData.firstName}
+                          onChange={(e) =>
+                            handleProfileChange("firstName", e.target.value)
+                          }
                           placeholder="Enter your first name"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name</Label>
-                        <Input 
-                          id="lastName" 
-                          value={profileData.lastName}
-                          onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                        <Input
+                          id="lastName"
+                          value={formData.lastName}
+                          onChange={(e) =>
+                            handleProfileChange("lastName", e.target.value)
+                          }
                           placeholder="Enter your last name"
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        value={profileData.email}
-                        onChange={(e) => handleProfileChange('email', e.target.value)}
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          handleProfileChange("email", e.target.value)
+                        }
                         placeholder="Enter your email address"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        value={profileData.phoneNumber}
-                        onChange={(e) => handleProfileChange('phoneNumber', e.target.value)}
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.phoneNumber}
+                        onChange={(e) =>
+                          handleProfileChange("phoneNumber", e.target.value)
+                        }
                         placeholder="Enter your phone number"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>
-                      <Input 
-                        id="department" 
-                        value={profileData.department}
-                        onChange={(e) => handleProfileChange('department', e.target.value)}
+                      <Input
+                        id="department"
+                        value={formData.department}
+                        onChange={(e) =>
+                          handleProfileChange("department", e.target.value)
+                        }
                         placeholder="Enter your department"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="bio">Bio</Label>
-                      <textarea 
-                        id="bio" 
+                      <textarea
+                        id="bio"
                         className="w-full min-h-[100px] p-3 border border-input bg-background rounded-md resize-none"
-                        value={profileData.bio}
-                        onChange={(e) => handleProfileChange('bio', e.target.value)}
+                        value={formData.bio}
+                        onChange={(e) =>
+                          handleProfileChange("bio", e.target.value)
+                        }
                         placeholder="Tell us about yourself..."
                       />
                     </div>
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -400,45 +485,42 @@ export default function TeacherSettings() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">User ID</span>
-                        <span className="font-medium">#{currentUser?.userId || 'N/A'}</span>
+                        <span className="font-medium">
+                          #{currentUser?.userId || "N/A"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Role</span>
-                        <span className="font-medium capitalize">{currentUser?.role || 'Teacher'}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Account Status</span>
-                        <Badge className="bg-green-600 hover:bg-green-700">
-                          {currentUser?.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
+                        <span className="font-medium capitalize">
+                          {currentUser?.role || "Teacher"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Member Since</span>
                         <span className="font-medium">
-                          {currentUser?.createdAt 
-                            ? new Date(currentUser.createdAt).toLocaleDateString() 
-                            : 'Unknown'
-                          }
+                          {profileData?.createdAt
+                            ? (() => {
+                                try {
+                                  const date = new Date(profileData.createdAt);
+                                  return isNaN(date.getTime())
+                                    ? "Unknown"
+                                    : date.toLocaleDateString();
+                                } catch (error) {
+                                  return "Unknown";
+                                }
+                              })()
+                            : "Unknown"}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Last Login</span>
-                        <span className="font-medium">
-                          {currentUser?.lastLoginAt 
-                            ? new Date(currentUser.lastLoginAt).toLocaleDateString() 
-                            : 'Unknown'
-                          }
-                        </span>
-                      </div>
-                      {currentUser?.role === 'TEACHER' && (
+                      {currentUser?.role === "TEACHER" && (
                         <>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Active Classes</span>
-                            <span className="font-medium">{currentUser?.activeClasses || 0}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Total Students</span>
-                            <span className="font-medium">{currentUser?.totalStudents || 0}</span>
+                            <span className="text-gray-500">
+                              Total Students
+                            </span>
+                            <span className="font-medium">
+                              {studentCount || 0}
+                            </span>
                           </div>
                         </>
                       )}
@@ -468,7 +550,9 @@ export default function TeacherSettings() {
                   <div className="flex items-center justify-center p-8">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600">Loading subscription status...</span>
+                      <span className="text-sm text-gray-600">
+                        Loading subscription status...
+                      </span>
                     </div>
                   </div>
                 )}
@@ -485,39 +569,47 @@ export default function TeacherSettings() {
 
                 {/* Connection Status */}
                 {!isLoadingStatus && subscriptionStatus && (
-                  <div className={`flex items-center justify-between p-4 rounded-lg border ${
-                    subscriptionStatus.hasActiveSubscription 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-yellow-50 border-yellow-200'
-                  }`}>
+                  <div
+                    className={`flex items-center justify-between p-4 rounded-lg border ${
+                      subscriptionStatus.hasActiveSubscription
+                        ? "bg-green-50 border-green-200"
+                        : "bg-yellow-50 border-yellow-200"
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        subscriptionStatus.hasActiveSubscription 
-                          ? 'bg-green-600' 
-                          : 'bg-yellow-600'
-                      }`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          subscriptionStatus.hasActiveSubscription
+                            ? "bg-green-600"
+                            : "bg-yellow-600"
+                        }`}
+                      >
                         <ExternalLink className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className={`font-medium ${
-                          subscriptionStatus.hasActiveSubscription 
-                            ? 'text-green-900' 
-                            : 'text-yellow-900'
-                        }`}>
-                          {subscriptionStatus.hasActiveSubscription 
-                            ? 'Microsoft 365 Connected' 
-                            : 'No Active Subscription'
-                          }
+                        <p
+                          className={`font-medium ${
+                            subscriptionStatus.hasActiveSubscription
+                              ? "text-green-900"
+                              : "text-yellow-900"
+                          }`}
+                        >
+                          {subscriptionStatus.hasActiveSubscription
+                            ? "Microsoft 365 Connected"
+                            : "No Active Subscription"}
                         </p>
-                        <p className={`text-sm ${
-                          subscriptionStatus.hasActiveSubscription 
-                            ? 'text-green-700' 
-                            : 'text-yellow-700'
-                        }`}>
-                          {subscriptionStatus.hasActiveSubscription 
-                            ? `Webhook subscriptions active • ${subscriptionStatus.trackedFilesCount || 0} files tracked`
-                            : 'Create a subscription to start tracking files'
-                          }
+                        <p
+                          className={`text-sm ${
+                            subscriptionStatus.hasActiveSubscription
+                              ? "text-green-700"
+                              : "text-yellow-700"
+                          }`}
+                        >
+                          {subscriptionStatus.hasActiveSubscription
+                            ? `Webhook subscriptions active • ${
+                                subscriptionStatus.trackedFilesCount || 0
+                              } files tracked`
+                            : "Create a subscription to start tracking files"}
                         </p>
                       </div>
                     </div>
@@ -530,54 +622,63 @@ export default function TeacherSettings() {
                       >
                         <RefreshCw className="w-4 h-4" />
                       </Button>
-                      <Badge className={`${
-                        subscriptionStatus.hasActiveSubscription 
-                          ? 'bg-green-600 hover:bg-green-700' 
-                          : 'bg-yellow-600 hover:bg-yellow-700'
-                      }`}>
-                        {subscriptionStatus.hasActiveSubscription ? 'Connected' : 'Disconnected'}
+                      <Badge
+                        className={`${
+                          subscriptionStatus.hasActiveSubscription
+                            ? "bg-green-600 hover:bg-green-700"
+                            : "bg-yellow-600 hover:bg-yellow-700"
+                        }`}
+                      >
+                        {subscriptionStatus.hasActiveSubscription
+                          ? "Connected"
+                          : "Disconnected"}
                       </Badge>
                     </div>
                   </div>
                 )}
 
                 {/* No Subscription State */}
-                {!isLoadingStatus && subscriptionStatus && !subscriptionStatus.hasActiveSubscription && (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Webhook className="w-8 h-8 text-gray-400" />
+                {!isLoadingStatus &&
+                  subscriptionStatus &&
+                  !subscriptionStatus.hasActiveSubscription && (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Webhook className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No Active Subscription
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        Create a webhook subscription to automatically track
+                        changes to your Microsoft files.
+                      </p>
+                      <Button
+                        onClick={handleCreateSubscription}
+                        disabled={createSubscriptionMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {createSubscriptionMutation.isPending ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Subscription
+                          </>
+                        )}
+                      </Button>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No Active Subscription
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      Create a webhook subscription to automatically track changes to your Microsoft files.
-                    </p>
-                    <Button
-                      onClick={handleCreateSubscription}
-                      disabled={createSubscriptionMutation.isPending}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {createSubscriptionMutation.isPending ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          Creating...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Create Subscription
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
+                  )}
 
                 {/* Tracked Files List */}
                 {subscriptionStatus?.hasActiveSubscription && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">Tracked Files</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Tracked Files
+                      </h4>
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={refetchFiles}
@@ -601,7 +702,9 @@ export default function TeacherSettings() {
                       <div className="flex items-center justify-center p-8 border rounded-lg">
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                          <span className="text-sm text-gray-600">Loading tracked files...</span>
+                          <span className="text-sm text-gray-600">
+                            Loading tracked files...
+                          </span>
                         </div>
                       </div>
                     ) : filesError ? (
@@ -614,7 +717,9 @@ export default function TeacherSettings() {
                     ) : trackedFiles.length === 0 ? (
                       <div className="text-center py-8 border rounded-lg bg-gray-50">
                         <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500">No files are currently being tracked.</p>
+                        <p className="text-gray-500">
+                          No files are currently being tracked.
+                        </p>
                       </div>
                     ) : (
                       <div className="border rounded-lg overflow-hidden">
@@ -658,11 +763,15 @@ export default function TeacherSettings() {
                                         : ""
                                     }
                                   >
-                                    {file.syncStatus || 'Unknown'}
+                                    {file.syncStatus || "Unknown"}
                                   </Badge>
                                 </div>
                                 <div className="col-span-2 text-gray-600">
-                                  {file.lastModified ? new Date(file.lastModified).toLocaleString() : 'Unknown'}
+                                  {file.lastModified
+                                    ? new Date(
+                                        file.lastModified
+                                      ).toLocaleString()
+                                    : "Unknown"}
                                 </div>
                                 <div className="col-span-1 text-gray-600 truncate text-xs">
                                   {file.itemId?.substring(0, 8)}...
@@ -696,7 +805,7 @@ export default function TeacherSettings() {
                         <Label htmlFor="subscriptionId">Subscription ID</Label>
                         <Input
                           id="subscriptionId"
-                          value={subscriptionStatus.subscriptionId || ''}
+                          value={subscriptionStatus.subscriptionId || ""}
                           readOnly
                           className="bg-gray-50 text-xs"
                         />
@@ -707,16 +816,20 @@ export default function TeacherSettings() {
                         </Label>
                         <Input
                           id="subscriptionExpiry"
-                          value={subscriptionStatus.expirationDateTime 
-                            ? new Date(subscriptionStatus.expirationDateTime).toLocaleString() 
-                            : 'Unknown'}
+                          value={
+                            subscriptionStatus.expirationDateTime
+                              ? new Date(
+                                  subscriptionStatus.expirationDateTime
+                                ).toLocaleString()
+                              : "Unknown"
+                          }
                           readOnly
                           className="bg-gray-50"
                         />
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
+                      <Button
                         onClick={handleRenewSubscription}
                         disabled={renewSubscriptionMutation.isPending}
                         className="bg-green-600 hover:bg-green-700"
@@ -779,25 +892,31 @@ export default function TeacherSettings() {
                         Receive notifications via email
                       </p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={settings.emailNotifications}
-                      onCheckedChange={(checked) => handleSettingChange('emailNotifications', checked)}
+                      onCheckedChange={(checked) =>
+                        handleSettingChange("emailNotifications", checked)
+                      }
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
-                      <Label className="font-medium">Student Performance Alerts</Label>
+                      <Label className="font-medium">
+                        Student Performance Alerts
+                      </Label>
                       <p className="text-sm text-gray-500">
                         Get notified when students are at risk
                       </p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={settings.performanceAlerts}
-                      onCheckedChange={(checked) => handleSettingChange('performanceAlerts', checked)}
+                      onCheckedChange={(checked) =>
+                        handleSettingChange("performanceAlerts", checked)
+                      }
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <Label className="font-medium">Weekly Reports</Label>
@@ -805,17 +924,21 @@ export default function TeacherSettings() {
                         Receive weekly performance summaries
                       </p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={settings.weeklyReports}
-                      onCheckedChange={(checked) => handleSettingChange('weeklyReports', checked)}
+                      onCheckedChange={(checked) =>
+                        handleSettingChange("weeklyReports", checked)
+                      }
                     />
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Notification Methods</h4>
+                  <h4 className="font-medium text-gray-900">
+                    Notification Methods
+                  </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Email Frequency</Label>
@@ -868,61 +991,91 @@ export default function TeacherSettings() {
                   <div className="space-y-2">
                     <Label htmlFor="currentPassword">Current Password</Label>
                     <div className="relative">
-                      <Input 
-                        id="currentPassword" 
-                        type={passwordVisible.current ? "text" : "password"} 
+                      <Input
+                        id="currentPassword"
+                        type={passwordVisible.current ? "text" : "password"}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() => setPasswordVisible(prev => ({ ...prev, current: !prev.current }))}
+                        onClick={() =>
+                          setPasswordVisible((prev) => ({
+                            ...prev,
+                            current: !prev.current,
+                          }))
+                        }
                       >
-                        {passwordVisible.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {passwordVisible.current ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="newPassword">New Password</Label>
                     <div className="relative">
-                      <Input 
-                        id="newPassword" 
-                        type={passwordVisible.new ? "text" : "password"} 
+                      <Input
+                        id="newPassword"
+                        type={passwordVisible.new ? "text" : "password"}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() => setPasswordVisible(prev => ({ ...prev, new: !prev.new }))}
+                        onClick={() =>
+                          setPasswordVisible((prev) => ({
+                            ...prev,
+                            new: !prev.new,
+                          }))
+                        }
                       >
-                        {passwordVisible.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {passwordVisible.new ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Label htmlFor="confirmPassword">
+                      Confirm New Password
+                    </Label>
                     <div className="relative">
-                      <Input 
-                        id="confirmPassword" 
-                        type={passwordVisible.confirm ? "text" : "password"} 
+                      <Input
+                        id="confirmPassword"
+                        type={passwordVisible.confirm ? "text" : "password"}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() => setPasswordVisible(prev => ({ ...prev, confirm: !prev.confirm }))}
+                        onClick={() =>
+                          setPasswordVisible((prev) => ({
+                            ...prev,
+                            confirm: !prev.confirm,
+                          }))
+                        }
                       >
-                        {passwordVisible.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {passwordVisible.confirm ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.
+                      Password must be at least 8 characters long and include
+                      uppercase, lowercase, numbers, and special characters.
                     </AlertDescription>
                   </Alert>
                   <Button className="w-full bg-green-600 hover:bg-green-700">
@@ -930,7 +1083,7 @@ export default function TeacherSettings() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -944,7 +1097,9 @@ export default function TeacherSettings() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
-                      <Label className="font-medium">Two-Factor Authentication</Label>
+                      <Label className="font-medium">
+                        Two-Factor Authentication
+                      </Label>
                       <p className="text-sm text-gray-500">
                         Add an extra layer of security to your account
                       </p>
@@ -953,7 +1108,7 @@ export default function TeacherSettings() {
                       Enable
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <Label className="font-medium">Login Notifications</Label>
@@ -963,7 +1118,7 @@ export default function TeacherSettings() {
                     </div>
                     <Switch defaultChecked />
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <Label className="font-medium">Session Timeout</Label>
@@ -983,7 +1138,7 @@ export default function TeacherSettings() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <Button variant="outline" className="w-full">
                     View Login History
                   </Button>
@@ -1008,9 +1163,11 @@ export default function TeacherSettings() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="language">Language</Label>
-                    <Select 
-                      value={settings.language} 
-                      onValueChange={(value) => handleSettingChange('language', value)}
+                    <Select
+                      value={settings.language}
+                      onValueChange={(value) =>
+                        handleSettingChange("language", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -1026,18 +1183,28 @@ export default function TeacherSettings() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="timezone">Timezone</Label>
-                    <Select 
+                    <Select
                       value={settings.timezone}
-                      onValueChange={(value) => handleSettingChange('timezone', value)}
+                      onValueChange={(value) =>
+                        handleSettingChange("timezone", value)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pst">Pacific Standard Time</SelectItem>
-                        <SelectItem value="est">Eastern Standard Time</SelectItem>
-                        <SelectItem value="cst">Central Standard Time</SelectItem>
-                        <SelectItem value="mst">Mountain Standard Time</SelectItem>
+                        <SelectItem value="pst">
+                          Pacific Standard Time
+                        </SelectItem>
+                        <SelectItem value="est">
+                          Eastern Standard Time
+                        </SelectItem>
+                        <SelectItem value="cst">
+                          Central Standard Time
+                        </SelectItem>
+                        <SelectItem value="mst">
+                          Mountain Standard Time
+                        </SelectItem>
                         <SelectItem value="utc">UTC</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1047,14 +1214,16 @@ export default function TeacherSettings() {
                       <Label className="font-medium">Dark Mode</Label>
                       <p className="text-sm text-gray-500">Toggle dark theme</p>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={settings.darkMode}
-                      onCheckedChange={(checked) => handleSettingChange('darkMode', checked)}
+                      onCheckedChange={(checked) =>
+                        handleSettingChange("darkMode", checked)
+                      }
                     />
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1079,14 +1248,17 @@ export default function TeacherSettings() {
                     Privacy Settings
                   </Button>
                   <Separator />
-                  <Button className="w-full justify-start" variant="destructive">
+                  <Button
+                    className="w-full justify-start"
+                    variant="destructive"
+                  >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>
                 </CardContent>
               </Card>
             </div>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
