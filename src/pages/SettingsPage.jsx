@@ -80,7 +80,7 @@ export default function TeacherSettings() {
   const [saveStatus, setSaveStatus] = useState("");
 
   const queryClient = useQueryClient();
-  const { currentUser, getAuthHeader } = useAuth();
+  const { currentUser, getAuthHeader, updateUserProfile } = useAuth();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -201,17 +201,27 @@ export default function TeacherSettings() {
   const updateUserMutation = useMutation({
     mutationFn: (profileData) =>
       updateUser(currentUser.userId, profileData, getAuthHeader()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["firstName"], currentUser?.userId);
+    onSuccess: (updatedUserData) => {
+      // Update the user profile query cache
+      queryClient.invalidateQueries(["userProfile", currentUser?.userId]);
+
+      // Extract the actual user data from the response
+      if (updatedUserData) {
+        // If the response has userResponse nested, use that, otherwise use the data directly
+        const actualUserData = updatedUserData.userResponse || updatedUserData;
+        updateUserProfile(actualUserData);
+      }
+
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus(""), 2000);
     },
-    onError: () => {
+    onError: (error) => {
       console.error("Failed to update user: ", error);
       setSaveStatus("error");
-      setSaveStatus(() => setSaveStatus(""), 2000);
+      setTimeout(() => setSaveStatus(""), 2000);
     },
   });
+
   const {
     data: studentCount,
     isLoading: countLoading,

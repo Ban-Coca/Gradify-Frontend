@@ -105,7 +105,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
                 <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start text-left min-w-0">
-                <span className="font-medium">
+                <span className="font-medium truncate w-full max-w-[150px]">
                   {currentUser?.firstName} {currentUser?.lastName}
                 </span>
                 <p className="text-xs text-muted-foreground truncate w-full">{currentUser?.email}</p>
