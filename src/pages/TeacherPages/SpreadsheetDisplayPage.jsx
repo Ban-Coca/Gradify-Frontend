@@ -61,9 +61,26 @@ export default function SpreadsheetDisplayPage() {
         
         // Check if grades is an object and extract its keys
         if (firstRecord.grades && typeof firstRecord.grades === 'object') {
-            // Filter out non-grade columns if needed
-            const excludedFields = ['id', 'studentNumber', 'Student Number', 'First Name', 'Last Name'];
-            return Object.keys(firstRecord.grades).filter(key => !excludedFields.includes(key));
+            // Create a set of excluded fields in lowercase for easier comparison
+            const excludedFields = new Set([
+                'id', 'studentnumber', 'student number', 
+                'first name', 'last name', 'firstname', 'lastname',
+                'name', 'full name', 'fullname',
+                'project id', 'number', 'student id'
+            ]);
+            
+            const allKeys = Object.keys(firstRecord.grades);
+            console.log('All grade keys:', allKeys);
+            console.log('Excluded fields:', Array.from(excludedFields));
+            
+            const filteredKeys = allKeys.filter(key => {
+                const isExcluded = excludedFields.has(key.toLowerCase());
+                console.log(`Key: "${key}" (lowercase: "${key.toLowerCase()}") - Excluded: ${isExcluded}`);
+                return !isExcluded;
+            });
+            
+            console.log('Final filtered keys (grade columns):', filteredKeys);
+            return filteredKeys;
         }
         
         return [];
@@ -92,8 +109,17 @@ export default function SpreadsheetDisplayPage() {
         return spreadsheetData.gradeRecords.map((record) => (
             <tr key={record.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{record.studentNumber || record.grades?.["Student Number"] || ""}</td>
-                <td className="p-3">{record.grades?.["First Name"] || ""}</td>
-                <td className="p-3">{record.grades?.["Last Name"] || ""}</td>
+                <td className="p-3">
+                    {record.grades?.["First Name"] || 
+                     record.grades?.["FirstName"] || 
+                     record.grades?.["FIRSTNAME"] || 
+                     record.grades?.["NAME"] || ""}
+                </td>
+                <td className="p-3">
+                    {record.grades?.["Last Name"] || 
+                     record.grades?.["LastName"] || 
+                     record.grades?.["LASTNAME"] || ""}
+                </td>
                 {gradeColumns.map((column) => (
                     <td key={`${record.id}-${column}`} className="p-3">
                         {/* Convert any non-string values to string */}

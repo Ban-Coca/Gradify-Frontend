@@ -20,7 +20,7 @@ export const updateUser = async (userId, payload, header)=>{
         )
         return response.data
     }catch(error){
-        console.log("Error occured when trying to update user details")
+        console.log("Error occurred when trying to update user details")
         throw error
     }
 }
