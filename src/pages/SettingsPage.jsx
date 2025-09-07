@@ -1100,19 +1100,19 @@ export default function TeacherSettings() {
                   )}
 
                   {/* Alternative: Add link to Microsoft account portal for Microsoft users */}
-                  {(currentUser?.provider === "microsoft" ||
-                    currentUser?.authProvider === "microsoft") && (
+                  {(currentUser?.provider === "Microsoft" ||
+                    currentUser?.provider === "Google") && (
                     <Button
                       className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() =>
-                        window.open(
-                          "https://account.microsoft.com/security/password",
-                          "_blank"
-                        )
-                      }
+                      onClick={() => {
+                        const url = currentUser?.provider === "Microsoft" 
+                          ? "https://account.microsoft.com/security/password"
+                          : "https://myaccount.google.com/security";
+                        window.open(url, "_blank");
+                      }}
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      Manage Password in Microsoft Account
+                      Manage Password in {currentUser?.provider} Account
                     </Button>
                   )}
                 </CardContent>
