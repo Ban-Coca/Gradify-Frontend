@@ -976,7 +976,7 @@ export default function TeacherSettings() {
 
           {/* Security Tab */}
           <TabsContent value="security" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -988,103 +988,137 @@ export default function TeacherSettings() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={passwordVisible.current ? "text" : "password"}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() =>
-                          setPasswordVisible((prev) => ({
-                            ...prev,
-                            current: !prev.current,
-                          }))
-                        }
-                      >
-                        {passwordVisible.current ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
+                  {/* Check if user is Microsoft user */}
+                  {currentUser?.provider === "Microsoft" ||
+                  currentUser?.provider === "Google" ? (
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <AlertCircle className="h-4 w-4 text-accent" />
+                      <AlertDescription className="text-accent font-medium">
+                        Password changes are managed through your {currentUser.provider} account. Please visit the {currentUser.provider} account portal to
+                        update your password.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="currentPassword">
+                          Current Password
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="currentPassword"
+                            type={passwordVisible.current ? "text" : "password"}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
+                            onClick={() =>
+                              setPasswordVisible((prev) => ({
+                                ...prev,
+                                current: !prev.current,
+                              }))
+                            }
+                          >
+                            {passwordVisible.current ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="newPassword"
+                            type={passwordVisible.new ? "text" : "password"}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
+                            onClick={() =>
+                              setPasswordVisible((prev) => ({
+                                ...prev,
+                                new: !prev.new,
+                              }))
+                            }
+                          >
+                            {passwordVisible.new ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">
+                          Confirm New Password
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="confirmPassword"
+                            type={passwordVisible.confirm ? "text" : "password"}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
+                            onClick={() =>
+                              setPasswordVisible((prev) => ({
+                                ...prev,
+                                confirm: !prev.confirm,
+                              }))
+                            }
+                          >
+                            {passwordVisible.confirm ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Password must be at least 8 characters long and
+                          include uppercase, lowercase, numbers, and special
+                          characters.
+                        </AlertDescription>
+                      </Alert>
+                      <Button className="w-full bg-green-600 hover:bg-green-700">
+                        Update Password
                       </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={passwordVisible.new ? "text" : "password"}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() =>
-                          setPasswordVisible((prev) => ({
-                            ...prev,
-                            new: !prev.new,
-                          }))
-                        }
-                      >
-                        {passwordVisible.new ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">
-                      Confirm New Password
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        type={passwordVisible.confirm ? "text" : "password"}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1"
-                        onClick={() =>
-                          setPasswordVisible((prev) => ({
-                            ...prev,
-                            confirm: !prev.confirm,
-                          }))
-                        }
-                      >
-                        {passwordVisible.confirm ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      Password must be at least 8 characters long and include
-                      uppercase, lowercase, numbers, and special characters.
-                    </AlertDescription>
-                  </Alert>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                    Update Password
-                  </Button>
+                    </>
+                  )}
+
+                  {/* Alternative: Add link to Microsoft account portal for Microsoft users */}
+                  {(currentUser?.provider === "microsoft" ||
+                    currentUser?.authProvider === "microsoft") && (
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={() =>
+                        window.open(
+                          "https://account.microsoft.com/security/password",
+                          "_blank"
+                        )
+                      }
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Manage Password in Microsoft Account
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="w-5 h-5 text-green-600" />
@@ -1143,7 +1177,7 @@ export default function TeacherSettings() {
                     View Login History
                   </Button>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </TabsContent>
 
