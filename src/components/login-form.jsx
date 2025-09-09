@@ -18,10 +18,12 @@ export function LoginForm({
     email: "",
     password: "",
   })
+  
   const [fieldErrors, setFieldErrors] = useState({
     email: false,
     password: false
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
