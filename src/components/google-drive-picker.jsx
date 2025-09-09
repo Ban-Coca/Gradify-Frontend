@@ -36,12 +36,10 @@ export function GoogleDrivePicker({ userEmail }) {
 
   const handleOpenPicker = () => {
     if (isLoading) {
-      console.log("Still loading access token...");
       return;
     }
 
     if (isError || !data?.accessToken) {
-      console.error("No valid access token available");
       toast.error("Fetching access token failed");
       return;
     }
@@ -59,7 +57,7 @@ export function GoogleDrivePicker({ userEmail }) {
       ...(userEmail && { authuser: userEmail }),
       callbackFunction: (data) => {
         if (data.action === "cancel") {
-          console.log("Closing Google Picker");
+          return
         } else if (data.action === "picked") {
           saveSheetMutation.mutate(data.docs[0].url);
         }

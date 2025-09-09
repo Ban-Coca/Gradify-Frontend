@@ -252,18 +252,14 @@ export default function TeacherSettings() {
           formData[key] !== null &&
           formData[key] !== undefined
         ) {
-          console.log(`Adding to FormData: ${key} =`, formData[key]);
           submitData.append(key, formData[key]);
         }
       });
 
       submitData.append("profilePicture", formData.profilePicture);
 
-      console.log("📤 Submitting FormData");
       updateUserMutation.mutate(submitData);
     } else {
-      console.log("📝 Submitting JSON data (no file)");
-      // Regular JSON submission for non-file updates
       const { profilePicture, ...jsonData } = formData;
       updateUserMutation.mutate(jsonData);
     }
