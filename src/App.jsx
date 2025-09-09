@@ -13,7 +13,6 @@ import { Navigate } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage";
 import SpreadsheetsPage from "./pages/TeacherPages/SpreadsheetsPage";
 import { Loading } from "./components/loading-state";
-import DisplaySpreadsheetPage from "./pages/TeacherPages/DisplaySpreadsheetPage";
 import SpreadsheetDisplayPage from "./pages/TeacherPages/SpreadsheetDisplayPage";
 import ClassesPage from "./pages/TeacherPages/ClassesPage";
 import ClassDetailPage from "./pages/TeacherPages/ClassDetailPage";
@@ -21,18 +20,18 @@ import ReportsPage from "./pages/TeacherPages/ReportPage";
 import RoleSelection from "./pages/OnBoardingPages/ChooseRole";
 import TeacherOnboarding from "./pages/OnBoardingPages/TeacherDetails";
 import StudentOnboarding from "./pages/OnBoardingPages/StudentDetails";
-import { OnboardingProvider } from "./contexts/onboarding-context";
 import GradesPage from "./pages/StudentPages/GradesPage";
 import FeedbackPage from "./pages/StudentPages/FeedbackPage";
 import ProgressTrendsPage from "./pages/StudentPages/ProgressTrendsPage";
 import { Toaster } from "react-hot-toast";
 import StudentDetailsPage from "./pages/TeacherPages/StudentDetailsPage";
 import { setupMessageListener } from "./services/notification/firebaseService";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import NotificationsPage from "./pages/NotificationPage";
 import ProfilePage from "./pages/ProfilePage";
 import AzureCallback from "./callbacks/AzureCallback";
 import TeacherSettings from "./pages/SettingsPage";
+import WorkInProgress from "./pages/WorkInProgress";
 
 export const RoleBasedComponent = ({ children, allowedRoles }) => {
   const { userRole } = useAuth();
@@ -45,10 +44,47 @@ export const RoleBasedComponent = ({ children, allowedRoles }) => {
 };
 
 function App() {
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+
+  useEffect(() => {
+    // Check maintenance mode from environment variable
+    const maintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+    setIsMaintenanceMode(maintenanceMode);
+  }, []);
+
   useEffect(() => {
     setupMessageListener();
   }, []);
-  
+
+  if (isMaintenanceMode) {
+    return (
+      <>
+        <WorkInProgress />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "#333",
+              color: "#fff",
+            },
+            success: {
+              style: {
+                background: "#fff",
+                color: "#000",
+              },
+            },
+            error: {
+              style: {
+                background: "#EF4444",
+              },
+            },
+          }}
+        />
+      </>
+    );
+  }
+
   const ProtectedRoute = ({ allowedRoles }) => {
     const { isAuthenticated, userRole, loading } = useAuth();
     if (loading) {
