@@ -20,7 +20,6 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Bell,
@@ -49,7 +48,7 @@ import {
   X,
 } from "lucide-react";
 import Layout from "@/components/layout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createNotificationSubscription,
@@ -61,9 +60,11 @@ import {
 import { updateUser, getUserDetails } from "@/services/user/userService";
 import { getStudentCount } from "@/services/teacher/teacherService";
 import { useAuth } from "@/contexts/authentication-context";
+import toast from "react-hot-toast";
 
 export default function TeacherSettings() {
   const [activeTab, setActiveTab] = useState("profile");
+  const [profilePicture, setProfilePicture] = useState(null);
   const [settings, setSettings] = useState({
     emailNotifications: true,
     performanceAlerts: true,
@@ -81,7 +82,7 @@ export default function TeacherSettings() {
 
   const queryClient = useQueryClient();
   const { currentUser, getAuthHeader, updateUserProfile } = useAuth();
-
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -89,6 +90,7 @@ export default function TeacherSettings() {
     phoneNumber: "",
     department: "",
     bio: "",
+    profilePicture: null,
   });
 
   const {
@@ -239,7 +241,28 @@ export default function TeacherSettings() {
 
   const handleSaveSettings = () => {
     setSaveStatus("saving");
-    updateUserMutation.mutate(formData);
+    // Check if we have a file to upload
+    if (formData.profilePicture && formData.profilePicture instanceof File) {
+      const submitData = new FormData();
+
+      // Add all form fields except the file first
+      Object.keys(formData).forEach((key) => {
+        if (
+          key !== "profilePicture" &&
+          formData[key] !== null &&
+          formData[key] !== undefined
+        ) {
+          submitData.append(key, formData[key]);
+        }
+      });
+
+      submitData.append("profilePicture", formData.profilePicture);
+
+      updateUserMutation.mutate(submitData);
+    } else {
+      const { profilePicture, ...jsonData } = formData;
+      updateUserMutation.mutate(jsonData);
+    }
   };
 
   const handleCreateSubscription = () => {
@@ -255,6 +278,48 @@ export default function TeacherSettings() {
   const handleCancelSubscription = () => {
     setSaveStatus("saving");
     cancelSubscriptionMutation.mutate();
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Please select a valid image file (JPG, PNG, or GIF)");
+        return;
+      }
+
+      // Validate file size (2MB)
+      const maxSize = 10 * 1024 * 1024; // 2MB in bytes
+      if (file.size > maxSize) {
+        toast.error("File size must be less than 2MB");
+        return;
+      }
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+
+      // Update form data with the actual file
+      setFormData((prev) => ({ ...prev, profilePicture: file }));
+      setProfilePicture(previewUrl);
+      setSaveStatus("unsaved");
+    }
+  };
+
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveProfilePicture = () => {
+    setProfilePicture(null);
+    setFormData((prev) => ({ ...prev, profilePicture: null }));
+    setSaveStatus("unsaved");
+
+    // Clear file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   // Get tracked files from API response
@@ -374,7 +439,8 @@ export default function TeacherSettings() {
                       <Avatar className="w-20 h-20">
                         <AvatarImage
                           src={
-                            currentUser?.profilePicture ||
+                            profilePicture ||
+                            currentUser?.profilePictureUrl ||
                             "/api/placeholder/80/80"
                           }
                         />
@@ -384,16 +450,42 @@ export default function TeacherSettings() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Photo
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleUploadButtonClick}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Photo
+                          </Button>
+                          {(profilePicture || currentUser?.profilePicture) && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={handleRemoveProfilePicture}
+                              className="text-red-600 border-red-300 hover:bg-red-200 hover:text-red-600"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Remove
+                            </Button>
+                          )}
+                        </div>
+
                         <p className="text-sm text-gray-500">
                           JPG, PNG or GIF. Max size 2MB.
                         </p>
+
+                        {/* Hidden file input */}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
                       </div>
                     </div>
 
@@ -533,342 +625,381 @@ export default function TeacherSettings() {
 
           {/* File Tracking Tab */}
           <TabsContent value="files" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Webhook className="w-5 h-5 text-green-600" />
-                  Microsoft File Tracking
-                </CardTitle>
-                <CardDescription>
-                  Manage webhook subscriptions for tracking Microsoft files and
-                  documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Loading State */}
-                {isLoadingStatus && (
-                  <div className="flex items-center justify-center p-8">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-gray-600">
-                        Loading subscription status...
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error State */}
-                {statusError && (
-                  <Alert className="border-red-200 bg-red-50">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-700">
-                      Failed to load subscription status. Please try again.
+            {currentUser?.provider === "Google" ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Webhook className="w-5 h-5 text-green-600" />
+                    Microsoft File Tracking
+                  </CardTitle>
+                  <CardDescription>
+                    File tracking is only available for Microsoft 365 users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-700">
+                      Microsoft File Tracking is not available for Google
+                      accounts. This feature is specifically designed for
+                      Microsoft 365 integration.
                     </AlertDescription>
                   </Alert>
-                )}
-
-                {/* Connection Status */}
-                {!isLoadingStatus && subscriptionStatus && (
-                  <div
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      subscriptionStatus.hasActiveSubscription
-                        ? "bg-green-50 border-green-200"
-                        : "bg-yellow-50 border-yellow-200"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          subscriptionStatus.hasActiveSubscription
-                            ? "bg-green-600"
-                            : "bg-yellow-600"
-                        }`}
-                      >
-                        <ExternalLink className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p
-                          className={`font-medium ${
-                            subscriptionStatus.hasActiveSubscription
-                              ? "text-green-900"
-                              : "text-yellow-900"
-                          }`}
-                        >
-                          {subscriptionStatus.hasActiveSubscription
-                            ? "Microsoft 365 Connected"
-                            : "No Active Subscription"}
-                        </p>
-                        <p
-                          className={`text-sm ${
-                            subscriptionStatus.hasActiveSubscription
-                              ? "text-green-700"
-                              : "text-yellow-700"
-                          }`}
-                        >
-                          {subscriptionStatus.hasActiveSubscription
-                            ? `Webhook subscriptions active • ${
-                                subscriptionStatus.trackedFilesCount || 0
-                              } files tracked`
-                            : "Create a subscription to start tracking files"}
-                        </p>
-                      </div>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Webhook className="w-8 h-8 text-gray-400" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={refetchStatus}
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                      </Button>
-                      <Badge
-                        className={`${
-                          subscriptionStatus.hasActiveSubscription
-                            ? "bg-green-600 hover:bg-green-700"
-                            : "bg-yellow-600 hover:bg-yellow-700"
-                        }`}
-                      >
-                        {subscriptionStatus.hasActiveSubscription
-                          ? "Connected"
-                          : "Disconnected"}
-                      </Badge>
-                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Feature Not Available
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      File tracking requires a Microsoft 365 account to access
+                      Microsoft Graph APIs for document monitoring.
+                    </p>
                   </div>
-                )}
-
-                {/* No Subscription State */}
-                {!isLoadingStatus &&
-                  subscriptionStatus &&
-                  !subscriptionStatus.hasActiveSubscription && (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Webhook className="w-8 h-8 text-gray-400" />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Webhook className="w-5 h-5 text-green-600" />
+                    Microsoft File Tracking
+                  </CardTitle>
+                  <CardDescription>
+                    Manage webhook subscriptions for tracking Microsoft files
+                    and documents
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* ...existing code... */}
+                  {/* Loading State */}
+                  {isLoadingStatus && (
+                    <div className="flex items-center justify-center p-8">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm text-gray-600">
+                          Loading subscription status...
+                        </span>
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No Active Subscription
-                      </h3>
-                      <p className="text-gray-500 mb-4">
-                        Create a webhook subscription to automatically track
-                        changes to your Microsoft files.
-                      </p>
-                      <Button
-                        onClick={handleCreateSubscription}
-                        disabled={createSubscriptionMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {createSubscriptionMutation.isPending ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            Creating...
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create Subscription
-                          </>
-                        )}
-                      </Button>
                     </div>
                   )}
 
-                {/* Tracked Files List */}
-                {subscriptionStatus?.hasActiveSubscription && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">
-                        Tracked Files
-                      </h4>
+                  {/* Error State */}
+                  {statusError && (
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <AlertDescription className="text-red-700">
+                        Failed to load subscription status. Please try again.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Connection Status */}
+                  {!isLoadingStatus && subscriptionStatus && (
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
+                        subscriptionStatus.hasActiveSubscription
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            subscriptionStatus.hasActiveSubscription
+                              ? "bg-green-600"
+                              : "bg-yellow-600"
+                          }`}
+                        >
+                          <ExternalLink className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p
+                            className={`font-medium ${
+                              subscriptionStatus.hasActiveSubscription
+                                ? "text-green-900"
+                                : "text-yellow-900"
+                            }`}
+                          >
+                            {subscriptionStatus.hasActiveSubscription
+                              ? "Microsoft 365 Connected"
+                              : "No Active Subscription"}
+                          </p>
+                          <p
+                            className={`text-sm ${
+                              subscriptionStatus.hasActiveSubscription
+                                ? "text-green-700"
+                                : "text-yellow-700"
+                            }`}
+                          >
+                            {subscriptionStatus.hasActiveSubscription
+                              ? `Webhook subscriptions active • ${
+                                  subscriptionStatus.trackedFilesCount || 0
+                                } files tracked`
+                              : "Create a subscription to start tracking files"}
+                          </p>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={refetchFiles}
+                          onClick={refetchStatus}
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
                         >
                           <RefreshCw className="w-4 h-4" />
                         </Button>
+                        <Badge
+                          className={`${
+                            subscriptionStatus.hasActiveSubscription
+                              ? "bg-green-600 hover:bg-green-700"
+                              : "bg-yellow-600 hover:bg-yellow-700"
+                          }`}
+                        >
+                          {subscriptionStatus.hasActiveSubscription
+                            ? "Connected"
+                            : "Disconnected"}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Subscription State */}
+                  {!isLoadingStatus &&
+                    subscriptionStatus &&
+                    !subscriptionStatus.hasActiveSubscription && (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Webhook className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                          No Active Subscription
+                        </h3>
+                        <p className="text-gray-500 mb-4">
+                          Create a webhook subscription to automatically track
+                          changes to your Microsoft files.
+                        </p>
                         <Button
-                          size="sm"
+                          onClick={handleCreateSubscription}
+                          disabled={createSubscriptionMutation.isPending}
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add File
+                          {createSubscriptionMutation.isPending ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Creating...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Create Subscription
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                  {/* Tracked Files List */}
+                  {subscriptionStatus?.hasActiveSubscription && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-gray-900">
+                          Tracked Files
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={refetchFiles}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add File
+                          </Button>
+                        </div>
+                      </div>
+
+                      {isLoadingFiles ? (
+                        <div className="flex items-center justify-center p-8 border rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-sm text-gray-600">
+                              Loading tracked files...
+                            </span>
+                          </div>
+                        </div>
+                      ) : filesError ? (
+                        <Alert className="border-red-200 bg-red-50">
+                          <AlertCircle className="h-4 w-4 text-red-600" />
+                          <AlertDescription className="text-red-700">
+                            Failed to load tracked files. Please try again.
+                          </AlertDescription>
+                        </Alert>
+                      ) : trackedFiles.length === 0 ? (
+                        <div className="text-center py-8 border rounded-lg bg-gray-50">
+                          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                          <p className="text-gray-500">
+                            No files are currently being tracked.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="border rounded-lg overflow-hidden">
+                          <div className="bg-gray-50 px-4 py-3 border-b">
+                            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
+                              <div className="col-span-3">File Name</div>
+                              <div className="col-span-3">Path</div>
+                              <div className="col-span-2">Status</div>
+                              <div className="col-span-2">Last Modified</div>
+                              <div className="col-span-1">Item ID</div>
+                              <div className="col-span-1">Actions</div>
+                            </div>
+                          </div>
+
+                          <div className="divide-y">
+                            {trackedFiles.map((file, index) => (
+                              <div
+                                key={file.itemId || index}
+                                className="px-4 py-3 hover:bg-gray-50"
+                              >
+                                <div className="grid grid-cols-12 gap-4 items-center text-sm">
+                                  <div className="col-span-3 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-gray-400" />
+                                    <span className="font-medium text-gray-900 truncate">
+                                      {file.fileName}
+                                    </span>
+                                  </div>
+                                  <div className="col-span-3 text-gray-600 truncate">
+                                    {file.filePath}
+                                  </div>
+                                  <div className="col-span-2">
+                                    <Badge
+                                      variant={
+                                        file.syncStatus === "SYNCED"
+                                          ? "default"
+                                          : "secondary"
+                                      }
+                                      className={
+                                        file.syncStatus === "SYNCED"
+                                          ? "bg-green-600 hover:bg-green-700"
+                                          : ""
+                                      }
+                                    >
+                                      {file.syncStatus || "Unknown"}
+                                    </Badge>
+                                  </div>
+                                  <div className="col-span-2 text-gray-600">
+                                    {file.lastModified
+                                      ? new Date(
+                                          file.lastModified
+                                        ).toLocaleString()
+                                      : "Unknown"}
+                                  </div>
+                                  <div className="col-span-1 text-gray-600 truncate text-xs">
+                                    {file.itemId?.substring(0, 8)}...
+                                  </div>
+                                  <div className="col-span-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Webhook Settings */}
+                  {subscriptionStatus?.hasActiveSubscription && (
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-gray-900">
+                        Subscription Settings
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="subscriptionId">
+                            Subscription ID
+                          </Label>
+                          <Input
+                            id="subscriptionId"
+                            value={subscriptionStatus.subscriptionId || ""}
+                            readOnly
+                            className="bg-gray-50 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="subscriptionExpiry">
+                            Subscription Expiry
+                          </Label>
+                          <Input
+                            id="subscriptionExpiry"
+                            value={
+                              subscriptionStatus.expirationDateTime
+                                ? new Date(
+                                    subscriptionStatus.expirationDateTime
+                                  ).toLocaleString()
+                                : "Unknown"
+                            }
+                            readOnly
+                            className="bg-gray-50"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleRenewSubscription}
+                          disabled={renewSubscriptionMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {renewSubscriptionMutation.isPending ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Renewing...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                              Renew Subscription
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={handleCancelSubscription}
+                          disabled={cancelSubscriptionMutation.isPending}
+                          variant="outline"
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          {cancelSubscriptionMutation.isPending ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2" />
+                              Cancelling...
+                            </>
+                          ) : (
+                            <>
+                              <X className="w-4 h-4 mr-2" />
+                              Cancel Subscription
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
-
-                    {isLoadingFiles ? (
-                      <div className="flex items-center justify-center p-8 border rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                          <span className="text-sm text-gray-600">
-                            Loading tracked files...
-                          </span>
-                        </div>
-                      </div>
-                    ) : filesError ? (
-                      <Alert className="border-red-200 bg-red-50">
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                        <AlertDescription className="text-red-700">
-                          Failed to load tracked files. Please try again.
-                        </AlertDescription>
-                      </Alert>
-                    ) : trackedFiles.length === 0 ? (
-                      <div className="text-center py-8 border rounded-lg bg-gray-50">
-                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500">
-                          No files are currently being tracked.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="border rounded-lg overflow-hidden">
-                        <div className="bg-gray-50 px-4 py-3 border-b">
-                          <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
-                            <div className="col-span-3">File Name</div>
-                            <div className="col-span-3">Path</div>
-                            <div className="col-span-2">Status</div>
-                            <div className="col-span-2">Last Modified</div>
-                            <div className="col-span-1">Item ID</div>
-                            <div className="col-span-1">Actions</div>
-                          </div>
-                        </div>
-
-                        <div className="divide-y">
-                          {trackedFiles.map((file, index) => (
-                            <div
-                              key={file.itemId || index}
-                              className="px-4 py-3 hover:bg-gray-50"
-                            >
-                              <div className="grid grid-cols-12 gap-4 items-center text-sm">
-                                <div className="col-span-3 flex items-center gap-2">
-                                  <FileText className="w-4 h-4 text-gray-400" />
-                                  <span className="font-medium text-gray-900 truncate">
-                                    {file.fileName}
-                                  </span>
-                                </div>
-                                <div className="col-span-3 text-gray-600 truncate">
-                                  {file.filePath}
-                                </div>
-                                <div className="col-span-2">
-                                  <Badge
-                                    variant={
-                                      file.syncStatus === "SYNCED"
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                    className={
-                                      file.syncStatus === "SYNCED"
-                                        ? "bg-green-600 hover:bg-green-700"
-                                        : ""
-                                    }
-                                  >
-                                    {file.syncStatus || "Unknown"}
-                                  </Badge>
-                                </div>
-                                <div className="col-span-2 text-gray-600">
-                                  {file.lastModified
-                                    ? new Date(
-                                        file.lastModified
-                                      ).toLocaleString()
-                                    : "Unknown"}
-                                </div>
-                                <div className="col-span-1 text-gray-600 truncate text-xs">
-                                  {file.itemId?.substring(0, 8)}...
-                                </div>
-                                <div className="col-span-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Webhook Settings */}
-                {subscriptionStatus?.hasActiveSubscription && (
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-900">
-                      Subscription Settings
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="subscriptionId">Subscription ID</Label>
-                        <Input
-                          id="subscriptionId"
-                          value={subscriptionStatus.subscriptionId || ""}
-                          readOnly
-                          className="bg-gray-50 text-xs"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="subscriptionExpiry">
-                          Subscription Expiry
-                        </Label>
-                        <Input
-                          id="subscriptionExpiry"
-                          value={
-                            subscriptionStatus.expirationDateTime
-                              ? new Date(
-                                  subscriptionStatus.expirationDateTime
-                                ).toLocaleString()
-                              : "Unknown"
-                          }
-                          readOnly
-                          className="bg-gray-50"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleRenewSubscription}
-                        disabled={renewSubscriptionMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {renewSubscriptionMutation.isPending ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                            Renewing...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Renew Subscription
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={handleCancelSubscription}
-                        disabled={cancelSubscriptionMutation.isPending}
-                        variant="outline"
-                        className="border-red-600 text-red-600 hover:bg-red-50"
-                      >
-                        {cancelSubscriptionMutation.isPending ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2" />
-                            Cancelling...
-                          </>
-                        ) : (
-                          <>
-                            <X className="w-4 h-4 mr-2" />
-                            Cancel Subscription
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Notifications Tab */}
@@ -994,8 +1125,10 @@ export default function TeacherSettings() {
                     <Alert className="border-blue-200 bg-blue-50">
                       <AlertCircle className="h-4 w-4 text-accent" />
                       <AlertDescription className="text-accent font-medium">
-                        Password changes are managed through your {currentUser.provider} account. Please visit the {currentUser.provider} account portal to
-                        update your password.
+                        Password changes are managed through your{" "}
+                        {currentUser.provider} account. Please visit the{" "}
+                        {currentUser.provider} account portal to update your
+                        password.
                       </AlertDescription>
                     </Alert>
                   ) : (
@@ -1100,84 +1233,24 @@ export default function TeacherSettings() {
                   )}
 
                   {/* Alternative: Add link to Microsoft account portal for Microsoft users */}
-                  {(currentUser?.provider === "microsoft" ||
-                    currentUser?.authProvider === "microsoft") && (
+                  {(currentUser?.provider === "Microsoft" ||
+                    currentUser?.provider === "Google") && (
                     <Button
                       className="w-full bg-blue-600 hover:bg-blue-700"
-                      onClick={() =>
-                        window.open(
-                          "https://account.microsoft.com/security/password",
-                          "_blank"
-                        )
-                      }
+                      onClick={() => {
+                        const url =
+                          currentUser?.provider === "Microsoft"
+                            ? "https://account.microsoft.com/security/password"
+                            : "https://myaccount.google.com/security";
+                        window.open(url, "_blank");
+                      }}
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      Manage Password in Microsoft Account
+                      Manage Password in {currentUser?.provider} Account
                     </Button>
                   )}
                 </CardContent>
               </Card>
-
-              {/* <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-green-600" />
-                    Security Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your account security and privacy settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <Label className="font-medium">
-                        Two-Factor Authentication
-                      </Label>
-                      <p className="text-sm text-gray-500">
-                        Add an extra layer of security to your account
-                      </p>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Enable
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <Label className="font-medium">Login Notifications</Label>
-                      <p className="text-sm text-gray-500">
-                        Get notified of new device logins
-                      </p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
-                      <Label className="font-medium">Session Timeout</Label>
-                      <p className="text-sm text-gray-500">
-                        Automatically log out after inactivity
-                      </p>
-                    </div>
-                    <Select defaultValue="30min">
-                      <SelectTrigger className="w-24">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15min">15m</SelectItem>
-                        <SelectItem value="30min">30m</SelectItem>
-                        <SelectItem value="1hour">1h</SelectItem>
-                        <SelectItem value="4hours">4h</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button variant="outline" className="w-full">
-                    View Login History
-                  </Button>
-                </CardContent>
-              </Card> */}
             </div>
           </TabsContent>
 

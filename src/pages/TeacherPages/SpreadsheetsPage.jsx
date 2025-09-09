@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GraphFileBrowser from "@/components/graph-file-browser";
+import { GoogleDrivePicker } from "@/components/google-drive-picker";
 export default function SpreadsheetsPage() {
   const { currentUser, getAuthHeader } = useAuth();
   const fileInputRef = React.useRef(null);
@@ -566,6 +567,7 @@ export default function SpreadsheetsPage() {
             >
               Link Google Spreadsheet
             </TabsTrigger>
+
             <TabsTrigger
               value="microsoft-excel"
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
@@ -648,17 +650,19 @@ export default function SpreadsheetsPage() {
                   <LinkIcon className="w-4 h-4 mr-2" />
                   {isProcessingUrl ? "Processing..." : "Import Spreadsheet"}
                 </Button>
+
+                {/* <div className="flex items-center my-2">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="mx-4 text-gray-500 text-sm">or</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                <div className="flex justify-center">
+                  <GoogleDrivePicker userEmail={currentUser.email} />
+                </div> */}
               </div>
 
-              <div className="mt-6 text-sm text-gray-600 space-y-2">
-                <p className="font-medium">Supported services:</p>
-                <div className="grid grid-cols-1 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>Google Sheets</span>
-                  </div>
-                </div>
-                <p className="mt-4 text-xs">
+              <div className="mt-2 text-sm text-gray-600 space-y-2">
+                <p className="mt-2 text-xs">
                   <strong>Note:</strong> Make sure your spreadsheet is shared
                   with view access.
                 </p>
@@ -666,27 +670,34 @@ export default function SpreadsheetsPage() {
             </div>
           </TabsContent>
           <TabsContent value="microsoft-excel" className="p-6">
-            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+            <div
+              className={`flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 ${
+                currentUser?.provider !== "Microsoft"
+                  ? "opacity-50"
+                  : "hover:border-gray-400"
+              } transition-colors`}
+            >
               <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Microsoft Excel
               </h2>
               <p className="text-gray-600 mb-4">
-                Browse your OneDrive file from here
+                {currentUser?.provider !== "Microsoft"
+                  ? "Microsoft Excel integration is only available for Microsoft accounts"
+                  : "Browse your OneDrive file from here"}
               </p>
               <Button
-                className="w-fit transition-all duration-300 hover:scale-105"
+                className="w-fit transition-all duration-300"
                 onClick={() => setModalOpen(true)}
+                disabled={currentUser?.provider !== "Microsoft"}
               >
                 Browse Drive Files
               </Button>
-              {/* {selectedFile && (
-                                <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
-                                    <span className="mr-2">📄</span>
-                                    <span className="text-sm text-gray-700">{selectedFile.name}</span>
-                                </div>
-                            )}
-                            <p className="text-sm text-gray-500 mt-2">Supported formats: .xlsx, .xls, .csv</p> */}
+              {currentUser?.provider !== "Microsoft" && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Please sign in with a Microsoft account to use this feature
+                </p>
+              )}
             </div>
           </TabsContent>
         </Tabs>

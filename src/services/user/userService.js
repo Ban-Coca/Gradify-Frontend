@@ -13,17 +13,39 @@ export const updateRole = async (userId, payload) => {
     }
 }
 
-export const updateUser = async (userId, payload, header)=>{
-    try{
-        const response = await api.put(`${API_ENDPOINTS.USER.UPDATE_USER}/${userId}`, payload, 
-            {headers: header}
-        )
-        return response.data
-    }catch(error){
-        console.log("Error occurred when trying to update user details")
-        throw error
+export const updateUser = async (userId, payload, header) => {
+    try {
+        // Determine content type based on payload type
+        const isFormData = payload instanceof FormData;
+        
+        if (isFormData) {
+            for (let [key, value] of payload.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                } else {
+                    console.log(`  ${key}: ${value}`);
+                }
+            }
+        }
+
+        const config = {
+            headers: {
+                ...header,
+                ...(isFormData ? { 'Content-Type': 'multipart/form-data' } : {})
+            }
+        };
+
+        const response = await api.put(
+            `${API_ENDPOINTS.USER.UPDATE_USER}/${userId}`, 
+            payload, 
+            config
+        );
+        
+        return response.data;
+    } catch (error) {
+        throw error;
     }
-}
+};
 
 export const getUserDetails = async (userId, header) => {
     try{

@@ -156,7 +156,10 @@ export const API_ENDPOINTS = {
         SUBSCRIPTION_STATUS: '/api/graph/subscription/status'
 
     },
-    
+    GOOGLE: {
+        GET_ACCESS_TOKEN: '/api/google/access-token', // + ?userId={userId}
+        SAVE_SHEET: '/api/google/drive/save' // + ?userId={userId}&urlLink={urlLink}
+    },
     // FCM (Firebase Cloud Messaging) for Push Notifications
     FCM: {
         REGISTER_DEVICE: '/api/fcm/register-device',
