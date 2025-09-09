@@ -61,7 +61,6 @@ export function GoogleDrivePicker({ userEmail }) {
         if (data.action === "cancel") {
           console.log("Closing Google Picker");
         } else if (data.action === "picked") {
-          console.log(data);
           saveSheetMutation.mutate(data.docs[0].url);
         }
       },

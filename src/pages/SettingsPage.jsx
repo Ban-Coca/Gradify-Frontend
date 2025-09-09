@@ -60,6 +60,7 @@ import {
 import { updateUser, getUserDetails } from "@/services/user/userService";
 import { getStudentCount } from "@/services/teacher/teacherService";
 import { useAuth } from "@/contexts/authentication-context";
+import toast from "react-hot-toast";
 
 export default function TeacherSettings() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -240,12 +241,8 @@ export default function TeacherSettings() {
 
   const handleSaveSettings = () => {
     setSaveStatus("saving");
-
-    console.log("🔍 Save Settings - Form Data:", formData);
-
     // Check if we have a file to upload
     if (formData.profilePicture && formData.profilePicture instanceof File) {
-      console.log("📁 Creating FormData with file");
       const submitData = new FormData();
 
       // Add all form fields except the file first
@@ -260,8 +257,6 @@ export default function TeacherSettings() {
         }
       });
 
-      // Add the file separately
-      console.log("Adding file to FormData:", formData.profilePicture);
       submitData.append("profilePicture", formData.profilePicture);
 
       console.log("📤 Submitting FormData");
@@ -270,7 +265,6 @@ export default function TeacherSettings() {
       console.log("📝 Submitting JSON data (no file)");
       // Regular JSON submission for non-file updates
       const { profilePicture, ...jsonData } = formData;
-      console.log("JSON payload:", jsonData);
       updateUserMutation.mutate(jsonData);
     }
   };
@@ -296,14 +290,14 @@ export default function TeacherSettings() {
       // Validate file type
       const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
-        alert("Please select a valid image file (JPG, PNG, or GIF)");
+        toast.error("Please select a valid image file (JPG, PNG, or GIF)");
         return;
       }
 
       // Validate file size (2MB)
-      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      const maxSize = 10 * 1024 * 1024; // 2MB in bytes
       if (file.size > maxSize) {
-        alert("File size must be less than 2MB");
+        toast.error("File size must be less than 2MB");
         return;
       }
 
