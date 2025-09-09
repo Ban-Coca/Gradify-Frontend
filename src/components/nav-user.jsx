@@ -101,7 +101,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 hover:text-primary">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={currentUser?.profileImage} alt={currentUser?.firstName} />
+                <AvatarImage src={currentUser?.profilePictureUrl} alt={currentUser?.firstName} />
                 <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start text-left min-w-0">
@@ -115,10 +115,10 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleProfileClick}>
+            {/* <DropdownMenuItem onClick={handleProfileClick}>
               <User className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Profile</span>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem onClick={handleSettingsClick}>
               <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Settings</span>
