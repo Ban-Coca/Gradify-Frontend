@@ -116,7 +116,7 @@ const ClassDetailPage = () => {
 
       if (classSpreadsheet[0]?.isGoogleSheets === true) {
         return await syncSheet(userId, sheetId, headers);
-      } else if (classSpreadsheet[0]?.folderId === id) {
+      } else if (Boolean(classSpreadsheet?.[0]?.folderId)) {
         return await syncSheetExcel(userId, sheetId, headers);
       } else {
         throw new Error("Invalid sync condition");
@@ -435,7 +435,7 @@ const ClassDetailPage = () => {
                 onClick={() => {
                   if (
                     classSpreadsheet[0]?.isGoogleSheets === true ||
-                    classSpreadsheet[0]?.folderId === id
+                    Boolean(classSpreadsheet?.[0]?.folderId)
                   ) {
                     syncSheetMutation.mutate();
                   } else {
@@ -447,7 +447,7 @@ const ClassDetailPage = () => {
                 {syncSheetMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : classSpreadsheet[0]?.isGoogleSheets === true ||
-                  classSpreadsheet[0]?.folderId === id ? (
+                  Boolean(classSpreadsheet?.[0]?.folderId) ? (
                   <RefreshCw className="h-4 w-4 mr-2" />
                 ) : (
                   <Upload className="h-4 w-4 mr-2" />
@@ -455,7 +455,7 @@ const ClassDetailPage = () => {
                 {syncSheetMutation.isPending
                   ? "Syncing..."
                   : classSpreadsheet[0]?.isGoogleSheets === true ||
-                    classSpreadsheet[0]?.folderId === id
+                    Boolean(classSpreadsheet?.[0]?.folderId)
                   ? "Sync data"
                   : "Update Data"}
               </Button>
