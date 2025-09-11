@@ -28,3 +28,16 @@ export const saveSheet = async (userId, urlLink, header) => {
         throw error
     }
 }
+
+export const syncSheet = async (userId, sheetId, header) => {
+  try{
+    const response = await api.put(
+      `${API_ENDPOINTS.GOOGLE.SYNC_SHEET}?userId=${userId}&sheetId=${sheetId}`, {
+        headers: header
+      }
+    )
+    return response.data;
+  } catch(error){
+    throw error
+  }
+}

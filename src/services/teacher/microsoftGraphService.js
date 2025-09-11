@@ -111,3 +111,15 @@ export const getTrackedFiles = async (userId, header) => {
   }
 };
 
+export const syncSheetExcel = async (userId, sheetId, header) => {
+  try{
+    const response = await api.put(
+      `${API_ENDPOINTS.MICROSOFT_GRAPH.SYNC_EXCEL}?userId=${userId}&sheetId=${sheetId}`, {
+        headers: header
+      }
+    )
+    return response.data;
+  } catch(error){
+    throw error
+  }
+}
