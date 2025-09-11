@@ -148,7 +148,7 @@ export default function LandingPage() {
               { name: "Features", id: "features" },
               { name: "Benefits", id: "benefits" },
               { name: "Testimonials", id: "testimonials" },
-              { name: "Pricing", id: "pricing" },
+              // { name: "Pricing", id: "pricing" },
             ].map((item, i) => (
               <motion.div
                 key={item.name}
@@ -172,7 +172,7 @@ export default function LandingPage() {
               to="/signup"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.2 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -182,7 +182,7 @@ export default function LandingPage() {
         </div>
       </motion.header>
       <main className="flex-1 pt-16">
-        <section id="home" ref={heroRef} className="w-full py-12 md:py-16 lg:py-24 xl:pb-32 xl:pt:16">
+        <section id="home" ref={heroRef} className="w-full py-12 md:py-16 lg:py-24 xl:pb-20 xl:pt-10">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2"
@@ -225,34 +225,10 @@ export default function LandingPage() {
                       size="lg"
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
-                      Start Free Trial
+                      Start Now
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </MotionLink>
-                  <MotionLink
-                    to="/demo"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button size="lg" variant="outline">
-                      Schedule Demo
-                    </Button>
-                  </MotionLink>
-                </motion.div>
-                <motion.div
-                  className="flex items-center gap-4 text-sm"
-                  initial={{ opacity: 0 }}
-                  animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                >
-                  <div className="flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-emerald-600" />
-                    <span>No credit card required</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4 text-emerald-600" />
-                    <span>14-day free trial</span>
-                  </div>
                 </motion.div>
               </motion.div>
               <motion.div
@@ -605,7 +581,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="pricing" ref={pricingRef} className="w-full py-12 md:py-24 lg:py-32">
+        {/* <section id="pricing" ref={pricingRef} className="w-full py-12 md:py-24 lg:py-32">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="flex flex-col items-center justify-center space-y-4 text-center"
@@ -733,7 +709,7 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         <section ref={ctaRef} className="w-full py-12 md:py-24 lg:py-32 bg-emerald-50">
           <div className="container mx-auto px-4 md:px-6">

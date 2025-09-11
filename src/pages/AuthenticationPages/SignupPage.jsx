@@ -2,6 +2,8 @@ import { SignupForm } from "@/components/signup-form"
 import { GalleryVerticalEnd } from "lucide-react"
 import animated from "@/assets/grades-animate.svg"
 import logo from '@/assets/gradifyLogo.svg'
+import { motion } from "motion/react";
+
 export default function SignupPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -21,11 +23,37 @@ export default function SignupPage() {
         </div>
       </div>
       <div className="hidden lg:flex flex-col items-center relative justify-center bg-primary shadow-2xs">
-        <div className="flex flex-col h-auto items-center justify-center text-white gap-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              transition: {
+                delay: 0.3,
+                duration: 0.6,
+                ease: "easeOut",
+              },
+            }}
+          className="flex flex-col h-auto items-center justify-center text-white gap-2"
+        >
             <h1 className="text-6xl font-bold">Join Gradify</h1>
             <h3 className="text-xl font-bold italic">From struggling to succeeding</h3>
-        </div>
-        <img src={animated} alt="Illustration" className="animated h-128 w-128" />
+        </motion.div>
+        <motion.img 
+          src={animated} 
+          alt="Illustration" 
+          className="animated h-128 w-128" 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            transition: {
+              delay: 0.5,
+              duration: 0.8,
+              ease: "easeOut",
+            },
+          }}
+        />
       </div>
     </div>
   )
