@@ -40,10 +40,20 @@ export default function LoginPage() {
             <h1 className="text-6xl font-bold">Gradify</h1>
             <h3 className="text-xl font-bold italic">Learning Reoptimized</h3>
         </motion.div>
-        <img
+        <motion.img
           src={loginImg}
           alt="Image"
           className="animated w-128 h-128"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            transition: {
+              delay: 0.5,
+              duration: 0.8,
+              ease: "easeOut",
+            },
+          }}
         />
       </div>
     </div>
