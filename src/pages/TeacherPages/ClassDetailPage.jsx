@@ -35,6 +35,7 @@ import {
   getClassAverage,
   getStudentCount,
   getClassRoster,
+  getSpreadsheetByClassId,
 } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
@@ -55,6 +56,9 @@ import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservic
 import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
 import { GradeDisplayTable } from "@/components/grade-visibility";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { syncSheet } from "@/services/teacher/googleService";
+import { syncSheetExcel } from "@/services/teacher/microsoftGraphService";
+
 const ClassDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -89,6 +93,45 @@ const ClassDetailPage = () => {
     enabled: !!id,
   });
 
+  // BACKGROUND FUNCTION FOR WILL BE USED FOR SYNCING
+  const { data: classSpreadsheet, isLoading: isClassSpreadsheetLoading } =
+    useQuery({
+      queryKey: ["classSpreadsheet", id],
+      queryFn: () => getSpreadsheetByClassId(id, getAuthHeader()),
+      staleTime: Infinity,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
+
+  const syncSheetMutation = useMutation({
+    mutationFn: async () => {
+      const userId = currentUser?.userId || currentUser?.id;
+      const sheetId = classSpreadsheet[0]?.id;
+      const headers = getAuthHeader();
+
+      if (!userId || !sheetId) {
+        throw new Error("Missing userId or sheetId for sync");
+      }
+
+      if (classSpreadsheet[0]?.isGoogleSheets === true) {
+        return await syncSheet(userId, sheetId, headers);
+      } else if (classSpreadsheet[0]?.folderId === id) {
+        return await syncSheetExcel(userId, sheetId, headers);
+      } else {
+        throw new Error("Invalid sync condition");
+      }
+    },
+    onSuccess: (data) => {
+      // Refetch class/roster data after sync
+      queryClient.invalidateQueries({ queryKey: ["classSpreadsheet", id] });
+      queryClient.invalidateQueries({ queryKey: ["classRoster", id] });
+      toast.success("Data synced successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to sync data: " + error.message);
+    },
+  });
   const safeRosterData = Array.isArray(rosterData) ? rosterData : [];
 
   const studentsAtRisk = safeRosterData.filter((student) => {
@@ -144,10 +187,10 @@ const ClassDetailPage = () => {
       updateClassById(classId, updatedData, headers),
     onSuccess: (response) => {
       console.log("Class updated successfully:", response);
-      
+
       // Invalidate and refetch the class details query to get updated data
       queryClient.invalidateQueries({ queryKey: ["classDetails", id] });
-      
+
       // Close modal and show success message
       toggleModal();
       toast.success("Class updated successfully!");
@@ -388,10 +431,35 @@ const ClassDetailPage = () => {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class Details
               </Button>
-              <Button onClick={() => setIsUploadModalOpen(true)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Update Data
+              <Button
+                onClick={() => {
+                  if (
+                    classSpreadsheet[0]?.isGoogleSheets === true ||
+                    classSpreadsheet[0]?.folderId === id
+                  ) {
+                    syncSheetMutation.mutate();
+                  } else {
+                    setIsUploadModalOpen(true);
+                  }
+                }}
+                disabled={syncSheetMutation.isPending}
+              >
+                {syncSheetMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : classSpreadsheet[0]?.isGoogleSheets === true ||
+                  classSpreadsheet[0]?.folderId === id ? (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                {syncSheetMutation.isPending
+                  ? "Syncing..."
+                  : classSpreadsheet[0]?.isGoogleSheets === true ||
+                    classSpreadsheet[0]?.folderId === id
+                  ? "Sync data"
+                  : "Update Data"}
               </Button>
+
               <DeleteClassConfirmation
                 classId={classData.classId}
                 className={classData?.className}
@@ -534,7 +602,6 @@ const ClassDetailPage = () => {
                 >
                   Grade Visibility
                 </TabsTrigger>
-                {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
                 <TabsTrigger
                   value="reports"
                   className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
@@ -566,10 +633,6 @@ const ClassDetailPage = () => {
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    {/* <Button size="sm">
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      Add Student
-                    </Button> */}
                   </div>
                 </div>
                 <StudentTable
@@ -601,23 +664,6 @@ const ClassDetailPage = () => {
                 <GradeEditTable classId={id} className="w-full" />
               </TabsContent>
 
-              {/* <TabsContent value="engagement">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex gap-2 items-center">
-                    <select className="border rounded-md px-3 py-2">
-                      <option>Last 5 Weeks</option>
-                      <option>Last 10 Weeks</option>
-                      <option>Entire Semester</option>
-                    </select>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-1" />
-                    Export Report
-                  </Button>
-                </div>
-                <EngagementMetrics />
-              </TabsContent> */}
-
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <ReportsTab classId={id} />
@@ -633,6 +679,7 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
+
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

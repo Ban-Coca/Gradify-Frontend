@@ -153,12 +153,14 @@ export const API_ENDPOINTS = {
         TRACKED_FILES: '/api/graph/tracked-files',
         UNSUBSCRIBE: '/api/graph/subscription', // DELETE MAPPING
         RENEW_SUBSCRIPTION: '/api/graph/subscription/renew',
-        SUBSCRIPTION_STATUS: '/api/graph/subscription/status'
+        SUBSCRIPTION_STATUS: '/api/graph/subscription/status',
+        SYNC_EXCEL: '/api/graph/sync-excel-sheet' // + ?userId={usesrId}&sheetId={sheetId}
 
     },
     GOOGLE: {
         GET_ACCESS_TOKEN: '/api/google/access-token', // + ?userId={userId}
-        SAVE_SHEET: '/api/google/drive/save' // + ?userId={userId}&urlLink={urlLink}
+        SAVE_SHEET: '/api/google/drive/save', // + ?userId={userId}&urlLink={urlLink}
+        SYNC_SHEET: '/api/google/sync-sheet' // + ?userId={usesrId}&sheetId={sheetId}
     },
     // FCM (Firebase Cloud Messaging) for Push Notifications
     FCM: {

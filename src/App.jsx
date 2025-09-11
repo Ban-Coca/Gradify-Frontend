@@ -203,7 +203,7 @@ function App() {
           />
           <Route path="/teacher/reports/:tab?" element={<ReportsPage />} />
           <Route
-            path="/teacher/student-detais/:studentId"
+            path="/teacher/student-details/:studentId"
             element={<StudentDetailsPage />}
           />
           <Route path="/teacher/profile" element={<ProfilePage />} />

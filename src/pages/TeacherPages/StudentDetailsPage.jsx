@@ -9,8 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function StudentDetailsPage() {
-    const params = { id: "12345" } // This would normally be fetched from the URL params
-  // This would normally be fetched from your database
+  const params = { id: "12345" } 
   const student = {
     id: params.id,
     name: "Maria Teresa Santos",
