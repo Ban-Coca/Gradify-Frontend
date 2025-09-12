@@ -21,7 +21,6 @@ const AzureCallback = () => {
             // Handle user data - can come as individual params or JSON string
             let userData = null;
             const userJson = searchParams.get('user');
-            console.log("user", userJson);
             if (userJson) {
                 // New format: user data as JSON string
                 try {
@@ -77,7 +76,7 @@ const AzureCallback = () => {
                     return;
                 }
 
-                if (token && userData && provider) {
+                if (token && userData && (userData?.provider || provider)) {
                     // Normalize user data structure - include all available attributes
                     const user = { 
                         userId: userData.userId || userData.id, 
