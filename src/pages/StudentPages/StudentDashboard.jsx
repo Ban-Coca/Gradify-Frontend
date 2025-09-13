@@ -5,14 +5,17 @@ import { DashboardShell } from "@/components/student-dashboard/dashboard-shell";
 import { ClassesList } from "@/components/student-dashboard/classes-list";
 import { SubjectPerformance } from "@/components/student-dashboard/recent-feedaback";
 import { PerformanceChart } from "@/components/student-dashboard/performance-chart";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 export const metadata = {
   title: "Dashboard | Gradify",
   description: "Student dashboard for tracking academic performance",
 };
 
 const StudentDashboard = () => {
+  const helmet = useDocumentTitle("Dashboard", "Welcome back! Here's an overview of your academic performance.");
   return (
     <Layout>
+      {helmet}
       <DashboardHeader
         heading="Dashboard"
         text="Welcome back! Here's an overview of your academic performance."

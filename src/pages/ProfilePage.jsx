@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import Layout from "@/components/layout";
 import { User, Mail, Calendar, MapPin, Edit, Camera, Save, X, Phone, Briefcase, GraduationCap, BookOpen, Users, Award, School } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,8 @@ import { useAuth } from "@/contexts/authentication-context";
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const { userRole, currentUser } = useAuth(); // Get both role and user data
+
+  const helmet = useDocumentTitle("Profile", "Manage your profile information.");
 
   
   // Base profile data structure that works for both roles
@@ -337,6 +340,7 @@ export default function ProfilePage() {
 
   return (
     <Layout>
+      {helmet}
       <div className="space-y-6 py-6">
         {/* Header */}
         <div className="flex items-center justify-between">

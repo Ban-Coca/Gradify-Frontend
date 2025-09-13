@@ -24,6 +24,7 @@ import {
 } from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { updateRole } from "@/services/user/userService";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const formSchema = z.object({
   institution: z.string().min(1, { message: "Institution is required." }),
@@ -36,6 +37,7 @@ export default function TeacherOnboarding() {
   const { login, currentUser, getAuthHeader } = useAuth();
   const [error, setError] = useState(null);
   const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const helmet = useDocumentTitle("Teacher Details", "Complete your teacher profile.");
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -155,6 +157,7 @@ export default function TeacherOnboarding() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
+      {helmet}
       <Link href="/" className="mb-8 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
           <img src={logo} alt="Logo" className="h-8 w-8" />

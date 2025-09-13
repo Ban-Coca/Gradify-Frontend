@@ -18,6 +18,7 @@ import Lenis from "lenis"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 
 const MotionCard = motion.create(Card)
 const MotionLink = motion.create(Link)
@@ -38,6 +39,8 @@ export default function LandingPage() {
   const testimonialsInView = useInView(testimonialsRef, { once: true, amount: 0.3 })
   const pricingInView = useInView(pricingRef, { once: true, amount: 0.3 })
   const ctaInView = useInView(ctaRef, { once: true, amount: 0.5 })
+
+  const helmet = useDocumentTitle("Gradify", "Streamline your grading process with AI-powered tools for teachers and students.");
 
   // Initialize Lenis smooth scrolling
   useEffect(() => {
@@ -124,6 +127,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {helmet}
       <motion.header
         className="border-b fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}

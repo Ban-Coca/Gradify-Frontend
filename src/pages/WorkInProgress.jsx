@@ -1,5 +1,5 @@
-import { useRef, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   Clock,
@@ -7,23 +7,32 @@ import {
   Hammer,
   Wrench,
   Zap,
-} from "lucide-react"
-import { motion, useInView } from "framer-motion"
-import Lenis from "lenis"
+} from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import Lenis from "lenis";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
-const MotionCard = motion.create(Card)
-const MotionLink = motion.create(Link)
-const MotionButton = motion.create(Button)
+const MotionCard = motion.create(Card);
+const MotionLink = motion.create(Link);
+const MotionButton = motion.create(Button);
 
 export default function WorkInProgress() {
-  const heroRef = useRef(null)
-  const featuresRef = useRef(null)
+  const heroRef = useRef(null);
+  const featuresRef = useRef(null);
 
-  const heroInView = useInView(heroRef, { once: true, amount: 0.3 })
-  const featuresInView = useInView(featuresRef, { once: true, amount: 0.3 })
+  const heroInView = useInView(heroRef, { once: true, amount: 0.3 });
+  const featuresInView = useInView(featuresRef, { once: true, amount: 0.3 });
+
+  const helmet = useDocumentTitle("Work in Progress", "This page is under construction.");
 
   // Initialize Lenis smooth scrolling
   useEffect(() => {
@@ -35,19 +44,19 @@ export default function WorkInProgress() {
       smooth: true,
       smoothTouch: false,
       touchMultiplier: 2,
-    })
+    });
 
     function raf(time) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
+      lenis.raf(time);
+      requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf)
+    requestAnimationFrame(raf);
 
     return () => {
-      lenis.destroy()
-    }
-  }, [])
+      lenis.destroy();
+    };
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -60,7 +69,7 @@ export default function WorkInProgress() {
         staggerChildren: 0.2,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -69,7 +78,7 @@ export default function WorkInProgress() {
       y: 0,
       transition: { duration: 0.5 },
     },
-  }
+  };
 
   const cardHoverVariants = {
     hover: {
@@ -77,7 +86,7 @@ export default function WorkInProgress() {
       boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
       transition: { duration: 0.3 },
     },
-  }
+  };
 
   const floatingVariants = {
     animate: {
@@ -89,10 +98,11 @@ export default function WorkInProgress() {
         ease: "easeInOut",
       },
     },
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
+      {helmet}
       <motion.header
         className="border-b fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm"
         initial={{ opacity: 0, y: -20 }}
@@ -116,7 +126,10 @@ export default function WorkInProgress() {
       </motion.header>
 
       <main className="flex-1 pt-16">
-        <section ref={heroRef} className="w-full h-screen py-12 md:py-16 lg:py-24 xl:pb-32 xl:pt:16">
+        <section
+          ref={heroRef}
+          className="w-full h-screen py-12 md:py-16 lg:py-24 xl:pb-32 xl:pt:16"
+        >
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="flex flex-col items-center justify-center text-center space-y-8"
@@ -124,10 +137,7 @@ export default function WorkInProgress() {
               initial="hidden"
               animate={heroInView ? "visible" : "hidden"}
             >
-              <motion.div
-                className="relative"
-                variants={itemVariants}
-              >
+              <motion.div className="relative" variants={itemVariants}>
                 <motion.div
                   className="flex items-center justify-center w-32 h-32 bg-emerald-100 rounded-full mb-6"
                   variants={floatingVariants}
@@ -155,7 +165,9 @@ export default function WorkInProgress() {
                 <motion.h1
                   className="text-4xl font-bold tracking-tighter sm:text-6xl xl:text-7xl/none"
                   initial={{ opacity: 0, y: 20 }}
-                  animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  animate={
+                    heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                  }
                   transition={{ duration: 0.7, delay: 0.2 }}
                 >
                   Work in Progress
@@ -166,7 +178,8 @@ export default function WorkInProgress() {
                   animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
                   transition={{ duration: 0.7, delay: 0.4 }}
                 >
-                  We're crafting something amazing! This feature is currently under development and will be available soon.
+                  We're crafting something amazing! This feature is currently
+                  under development and will be available soon.
                 </motion.p>
               </motion.div>
 
@@ -183,7 +196,10 @@ export default function WorkInProgress() {
           </div>
         </section>
 
-        <section ref={featuresRef} className="w-full py-12 md:py-24 lg:py-32 bg-muted/40">
+        <section
+          ref={featuresRef}
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/40"
+        >
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="flex flex-col items-center justify-center space-y-4 text-center mb-12"
@@ -198,9 +214,12 @@ export default function WorkInProgress() {
                 >
                   Coming Soon
                 </motion.div>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What We're Building</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  What We're Building
+                </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Here's a sneak peek at what we're working on to make your experience even better.
+                  Here's a sneak peek at what we're working on to make your
+                  experience even better.
                 </p>
               </motion.div>
             </motion.div>
@@ -210,17 +229,22 @@ export default function WorkInProgress() {
                 {
                   icon: <Wrench className="h-10 w-10 text-emerald-600" />,
                   title: "Enhanced Features",
-                  description: "New tools and capabilities to improve your workflow and productivity.",
+                  description:
+                    "New tools and capabilities to improve your workflow and productivity.",
                 },
                 {
                   icon: <Zap className="h-10 w-10 text-emerald-600" />,
                   title: "Performance Improvements",
-                  description: "Faster load times and smoother interactions across the platform.",
+                  description:
+                    "Faster load times and smoother interactions across the platform.",
                 },
                 {
-                  icon: <GraduationCap className="h-10 w-10 text-emerald-600" />,
+                  icon: (
+                    <GraduationCap className="h-10 w-10 text-emerald-600" />
+                  ),
                   title: "Better User Experience",
-                  description: "Intuitive design updates and streamlined navigation for all users.",
+                  description:
+                    "Intuitive design updates and streamlined navigation for all users.",
                 },
               ].map((feature, index) => (
                 <MotionCard
@@ -229,7 +253,11 @@ export default function WorkInProgress() {
                   variants={cardHoverVariants}
                   whileHover="hover"
                   initial={{ opacity: 0, y: 20 }}
-                  animate={featuresInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  animate={
+                    featuresInView
+                      ? { opacity: 1, y: 0 }
+                      : { opacity: 0, y: 20 }
+                  }
                   transition={{ duration: 0.5, delay: 0.1 * index }}
                 >
                   <CardHeader className="text-center">
@@ -277,10 +305,12 @@ export default function WorkInProgress() {
                 <span className="text-xl font-bold">Gradify</span>
               </motion.div>
             </Link>
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Gradify. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Gradify. All rights reserved.
+            </p>
           </motion.div>
         </div>
       </motion.footer>
     </div>
-  )
+  );
 }

@@ -10,6 +10,7 @@
   import {Search, Plus, Filter} from "lucide-react";
   import { useAuth } from "@/contexts/authentication-context";
   import NewClass from "@/pages/TeacherPages/NewClass.jsx";
+  import { useDocumentTitle } from "@/hooks/use-document-title";
 
   const ClassesPage = () => {
     const { tab } = useParams(); // Read the `tab` parameter from the URL
@@ -26,6 +27,7 @@
 
     const classesPerPage = 6;
     const [currentPage, setCurrentPage] = useState(1);
+    const helmet = useDocumentTitle("Classes", "Manage your classes and view student information.");
 
     useEffect(() => {
       const fetchClasses = async () => {
@@ -176,6 +178,7 @@
 
     return (
       <Layout>
+        {helmet}
         <div className="space-y-6">
           {/* Header */}
           <div className="mt-5 flex flex-col md:flex-row md:items-center md:justify-between">

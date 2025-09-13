@@ -6,11 +6,14 @@ import { motion } from 'framer-motion';
 import { ForgotPasswordForm } from '@/components/forget_password_1';
 import forgotPasswordImg from '@/assets/forgot-password-animate.svg';
 import logo from '@/assets/gradifyLogo.svg'
+import { useDocumentTitle } from "@/hooks/use-document-title";
 export default function ForgotPassword() {
     const ref = useRef(null)
+    const helmet = useDocumentTitle("Forgot Password", "Reset your Gradify account password.");
     return (
       <div 
         className="grid min-h-svh lg:grid-cols-2">
+        {helmet}
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
             <a href="#" className="flex items-center gap-2 font-medium">

@@ -48,6 +48,7 @@ import {
   X,
 } from "lucide-react";
 import Layout from "@/components/layout";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -79,6 +80,8 @@ export default function TeacherSettings() {
     confirm: false,
   });
   const [saveStatus, setSaveStatus] = useState("");
+
+  const helmet = useDocumentTitle("Settings", "Manage your account settings and preferences.");
 
   const queryClient = useQueryClient();
   const { currentUser, getAuthHeader, updateUserProfile } = useAuth();
@@ -326,6 +329,7 @@ export default function TeacherSettings() {
   const trackedFiles = trackedFilesData?.trackedFiles || [];
   return (
     <Layout>
+      {helmet}
       <div className="p-8">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-8 rounded-lg mb-8">
