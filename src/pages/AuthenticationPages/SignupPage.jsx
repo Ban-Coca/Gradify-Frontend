@@ -3,10 +3,13 @@ import { GalleryVerticalEnd } from "lucide-react"
 import animated from "@/assets/grades-animate.svg"
 import logo from '@/assets/gradifyLogo.svg'
 import { motion } from "motion/react";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function SignupPage() {
+  const helmet = useDocumentTitle("Sign Up", "Create your Gradify account.");
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
+      {helmet}
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">

@@ -5,15 +5,18 @@ import { AlertCircle } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const Unauthorized = () => {
   const navigate = useNavigate();
+  const helmet = useDocumentTitle("Unauthorized", "You do not have permission to access this page.");
 
   const goBack = () => navigate(-1);
   const goHome = () => navigate("/");
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-slate-50">
+      {helmet}
       <Card className="w-full max-w-md border-red-200 shadow-lg">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">

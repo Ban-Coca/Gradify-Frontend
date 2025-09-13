@@ -27,12 +27,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function NotificationsPage() {
   const { currentUser, getAuthHeader } = useAuth();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+
+  const helmet = useDocumentTitle("Notifications", "View and manage your notifications.");
 
   const {
     notifications,
@@ -123,6 +126,7 @@ export default function NotificationsPage() {
 
   return (
     <Layout>
+      {helmet}
       <div className="space-y-6 py-6">
         <div className="flex items-center justify-between">
           <div>

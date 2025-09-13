@@ -58,6 +58,7 @@ import { GradeDisplayTable } from "@/components/grade-visibility";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { syncSheet } from "@/services/teacher/googleService";
 import { syncSheetExcel } from "@/services/teacher/microsoftGraphService";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const ClassDetailPage = () => {
   const navigate = useNavigate();
@@ -70,6 +71,8 @@ const ClassDetailPage = () => {
   const [editForm, setEditForm] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const helmet = useDocumentTitle("Class Details", "View and manage class information, students, and grades.");
 
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery(
     {
@@ -393,6 +396,7 @@ const ClassDetailPage = () => {
   }
   return (
     <Layout>
+      {helmet}
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">

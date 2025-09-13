@@ -27,6 +27,7 @@ import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GraphFileBrowser from "@/components/graph-file-browser";
 import { GoogleDrivePicker } from "@/components/google-drive-picker";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 export default function SpreadsheetsPage() {
   const { currentUser, getAuthHeader } = useAuth();
   const fileInputRef = React.useRef(null);
@@ -38,6 +39,8 @@ export default function SpreadsheetsPage() {
   const [debugInfo, setDebugInfo] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const helmet = useDocumentTitle("Spreadsheets", "Import and manage spreadsheet data for your classes.");
 
   const isValidSpreadsheetUrl = (url) => {
     if (!url) return false;
@@ -420,6 +423,7 @@ export default function SpreadsheetsPage() {
 
   return (
     <Layout>
+      {helmet}
       <Toaster richColors />
 
       <div className="bg-gray-50 p-6 rounded-lg border mt-4 mb-4">

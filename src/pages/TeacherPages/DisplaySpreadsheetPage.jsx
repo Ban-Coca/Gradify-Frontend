@@ -13,11 +13,14 @@ import {
     TableHeader, 
     TableRow 
 } from "@/components/ui/table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function DisplaySpreadsheetPage(){
     const { currentUser, getAuthHeader } = useAuth();
     const navigate = useNavigate();
     const { id } = useParams();
+    
+    const helmet = useDocumentTitle("Spreadsheet Display", "View and analyze spreadsheet data for your class.");
     
     // These are the fields we don't want to display in the grades columns
     const excludedFields = ['Student Number', 'First Name', 'Last Name'];
@@ -55,12 +58,13 @@ export default function DisplaySpreadsheetPage(){
     };
 
     if (loading) {
-        return <Layout><Loading fullscreen variant="spinner" size="xl" /></Layout>;
+        return <Layout>{helmet}<Loading fullscreen variant="spinner" size="xl" /></Layout>;
     }
     
     if (isError) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-8">
                     <Alert className="border-red-200 bg-red-50 mb-6">
                         <AlertCircle className="h-4 w-4 text-red-600" />
@@ -142,6 +146,7 @@ export default function DisplaySpreadsheetPage(){
     
     return (
         <Layout>
+            {helmet}
             <div className="p-4">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold">{spreadsheet.className}</h1>

@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import { getSpreadsheetById } from "@/services/teacher/spreadsheetservices";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function SpreadsheetDisplayPage() {
     const { id } = useParams();
@@ -11,6 +12,8 @@ export default function SpreadsheetDisplayPage() {
     const [spreadsheetData, setSpreadsheetData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const helmet = useDocumentTitle("Spreadsheet", "View detailed spreadsheet data and grades.");
 
     useEffect(() => {
 
@@ -135,6 +138,7 @@ export default function SpreadsheetDisplayPage() {
     if (loading) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <Skeleton className="h-8 w-64 mb-4" />
                     <Skeleton className="h-6 w-full mb-2" />
@@ -149,6 +153,7 @@ export default function SpreadsheetDisplayPage() {
     if (error) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <h1 className="text-xl md:text-2xl font-bold text-red-500">Error</h1>
                     <p className="mt-2">{error}</p>
@@ -161,6 +166,7 @@ export default function SpreadsheetDisplayPage() {
     if (!spreadsheetData) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <h1 className="text-xl md:text-2xl font-bold">No Data Found</h1>
                     <p className="mt-2">The spreadsheet data could not be loaded.</p>
@@ -171,6 +177,7 @@ export default function SpreadsheetDisplayPage() {
 
     return (
         <Layout>
+            {helmet}
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-xl md:text-2xl font-bold">

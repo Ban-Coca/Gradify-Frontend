@@ -41,6 +41,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import NewClass from "@/pages/TeacherPages/NewClass.jsx";
 import { useTeacher } from "@/hooks/use-teacher";
 import { useReports } from "@/hooks/use-reports";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState("math101");
@@ -52,6 +53,7 @@ const TeacherDashboard = () => {
   const { currentUser, getAuthHeader } = useAuth();
   // Add state for new class modal
   const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  const helmet = useDocumentTitle("Dashboard", "Welcome to your teacher dashboard. Manage your classes and track student performance.");
   const { studentCountQuery, atRiskStudentsQuery, topStudentsQuery } =
     useTeacher(currentUser.userId);
   // Calculate the classes to display for the current page
@@ -141,6 +143,7 @@ const TeacherDashboard = () => {
 
   return (
     <Layout>
+      {helmet}
       {/* Welcome Banner */}
       <div className="mt-5 mb-6 bg-gradient-to-r from-primary to-green-400 text-white font-bold text-2xl md:text-4xl p-6 rounded-lg shadow-md items-center">
         <div>
