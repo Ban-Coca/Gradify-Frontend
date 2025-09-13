@@ -73,15 +73,15 @@ export const resetPassword = async (credential) => {
     }
 }
 
-export const resendCode = async(email) => {
-    try{
+export const resendCode = async (email) => {
+    try {
         const response = await api.post(`${API_ENDPOINTS.USER.RESEND_CODE}`, {
             email
         }, { timeout: 30000 })
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error("Error resending verification code: ", error);
-        throw error
+        throw error;
     }
 }
 

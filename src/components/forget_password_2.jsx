@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { verifyResetCode, resendCode } from "@/services/user/authenticationService"
 import { motion, AnimatePresence } from "motion/react"
 import { X, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export function EnterCodeForm({
   className,
@@ -213,9 +214,9 @@ export function EnterCodeForm({
         variants={itemVariants}
       >
         Go back to {" "}
-        <a href="/login" className="underline underline-offset-4">
+        <Link to="/login" className="underline underline-offset-4">
           Log in?
-        </a>
+        </Link>
       </motion.div>
     </motion.form>)
   );

@@ -89,7 +89,7 @@ export function ForgotPasswordForm({
       >
         Go back to {" "}
         <Link to="/login" className="underline underline-offset-4">
-          Log in?
+          Go back to Log in?
         </Link>
       </motion.div>
     </motion.form>)
