@@ -2,9 +2,10 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { requestPasswordReset } from "@/services/user/authenticationService"
+import { motion } from "motion/react"
 export function ForgotPasswordForm({
   className,
   ...props
@@ -13,6 +14,22 @@ export function ForgotPasswordForm({
   const [email, setEmail] = useState("")
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 },
+    },
+  }
+
+  const buttonHoverVariants = {
+    hover: {
+      scale: 1.02,
+      transition: { duration: 0.2 },
+    },
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -31,14 +48,20 @@ export function ForgotPasswordForm({
     setEmail(e.target.value)
   }
   return (
-    (<form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-2 text-center">
+    (<motion.form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props} initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} >
+      <motion.div 
+        className="flex flex-col items-center gap-2 text-center"
+        variants={itemVariants}
+      >
         <h1 className="text-2xl font-bold">Forgot Your Password?</h1>
         <p className="text-muted-foreground text-sm text-balance">
           We'll help you reset it and get back to your account.
         </p>
-      </div>
-      <div className="grid gap-6">
+      </motion.div>
+      <motion.div 
+        className="grid gap-6"
+        variants={itemVariants}
+      >
         <div className="grid gap-3">
           <Label htmlFor="email">Enter your email address here</Label>
           <Input 
@@ -54,16 +77,21 @@ export function ForgotPasswordForm({
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
         </div>
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Sending..." : "Verify email"}
-        </Button>
-      </div>
-      <div className="text-center text-sm">
+        <motion.div variants={buttonHoverVariants} whileHover="hover">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Sending..." : "Verify email"}
+          </Button>
+        </motion.div>
+      </motion.div>
+      <motion.div 
+        className="text-center text-sm"
+        variants={itemVariants}
+      >
         Go back to {" "}
-        <a href="/signup" className="underline underline-offset-4">
+        <Link to="/login" className="underline underline-offset-4">
           Log in?
-        </a>
-      </div>
-    </form>)
+        </Link>
+      </motion.div>
+    </motion.form>)
   );
 }
