@@ -17,6 +17,10 @@
       }
     },
     {
+      "src": "/favicon.svg",
+      "dest": "/favicon.svg"
+    },
+    {
       "src": "/firebase-messaging-sw.js",
       "dest": "/firebase-messaging-sw.js"
     },
