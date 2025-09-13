@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@radix-ui/react-label';
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ForgotPasswordForm } from '@/components/forget_password_1';
 import forgotPasswordImg from '@/assets/forgot-password-animate.svg';
@@ -16,12 +16,12 @@ export default function ForgotPassword() {
         {helmet}
         <div className="flex flex-col gap-4 p-6 md:p-10">
           <div className="flex justify-center gap-2 md:justify-start">
-            <a href="#" className="flex items-center gap-2 font-medium">
+            <Link to="/" className="flex items-center gap-2 font-medium">
               <div className="flex h-6 w-6 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
                 <img src={logo} alt="Logo" className="h-6 w-6" />
               </div>
               Gradify
-            </a>
+            </Link>
           </div>
           <div className="flex flex-1 items-center justify-center">
             <div className="w-full max-w-xs">
@@ -46,10 +46,20 @@ export default function ForgotPassword() {
               <h1 className="text-6xl font-bold">Gradify</h1>
               <h3 className="text-xl font-bold italic">Learning Reoptimized</h3>
           </motion.div>
-          <img
+          <motion.img
             src={forgotPasswordImg}
             alt="Image"
             className="animated w-128 h-128"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              transition: {
+                delay: 0.5,
+                duration: 0.8,
+                ease: "easeOut",
+              },
+            }}
           />
         </div>
       </div>

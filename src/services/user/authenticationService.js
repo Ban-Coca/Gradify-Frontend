@@ -38,7 +38,7 @@ export const loginUser = async (credential) => {
 
 export const requestPasswordReset = async (email) => {
     try {
-        const response = await api.post(`${API_ENDPOINTS.USER.REQUEST_PASSWORD_RESET}`, { email });
+        const response = await api.post(`${API_ENDPOINTS.USER.REQUEST_PASSWORD_RESET}`, { email }, { timeout: 30000 });
         return response.data;
     } catch (error) {
         console.error('Error requesting password reset:', error);
@@ -51,7 +51,7 @@ export const verifyResetCode = async (email, code) => {
         const response = await api.post(`${API_ENDPOINTS.USER.VERIFY_RESET_CODE}`, { 
             email, 
             code 
-        });
+        }, { timeout: 30000 });
         return response.data;
     } catch (error) {
         console.error('Error verifying reset code:', error);
@@ -65,10 +65,22 @@ export const resetPassword = async (credential) => {
             email: credential.email,
             resetToken: credential.resetToken,
             newPassword: credential.password,
-        });
+        }, { timeout: 30000 });
         return response.data;
     } catch (error) {
         console.error('Error resetting password:', error);
+        throw error;
+    }
+}
+
+export const resendCode = async (email) => {
+    try {
+        const response = await api.post(`${API_ENDPOINTS.USER.RESEND_CODE}`, {
+            email
+        }, { timeout: 30000 })
+        return response.data;
+    } catch (error) {
+        console.error("Error resending verification code: ", error);
         throw error;
     }
 }

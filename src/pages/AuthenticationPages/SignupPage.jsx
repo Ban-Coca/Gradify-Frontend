@@ -4,6 +4,7 @@ import animated from "@/assets/grades-animate.svg"
 import logo from '@/assets/gradifyLogo.svg'
 import { motion } from "motion/react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { Link } from "react-router-dom";
 
 export default function SignupPage() {
   const helmet = useDocumentTitle("Sign Up", "Create your Gradify account.");
@@ -12,12 +13,12 @@ export default function SignupPage() {
       {helmet}
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <Link to="/" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
               <img src={logo} alt="Logo" className="h-6 w-6" />
             </div>
             Gradify
-          </a>
+          </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">

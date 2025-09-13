@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
         REQUEST_PASSWORD_RESET: '/api/user/request-password-reset',
         VERIFY_RESET_CODE: '/api/user/verify-reset-code',
         RESET_PASSWORD: '/api/user/reset-password',
+        RESEND_CODE: '/api/user/resend-code'
     },
     
     // Student Related

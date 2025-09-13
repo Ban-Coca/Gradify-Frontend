@@ -6,6 +6,7 @@ import { InputOTPPattern } from "./code_input"
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { resetPassword } from "@/services/user/authenticationService"
+import { motion } from "motion/react"
 
 export function PasswordResetForm({
   className,
@@ -19,6 +20,22 @@ export function PasswordResetForm({
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 },
+    },
+  }
+
+  const buttonHoverVariants = {
+    hover: {
+      scale: 1.02,
+      transition: { duration: 0.2 },
+    },
+  }
 
   useEffect(() => {
     // Get email and resetToken from location state
@@ -71,19 +88,28 @@ export function PasswordResetForm({
     setConfirmPassword(e.target.value)
   }
   return (
-    (<form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-2 text-center">
+    (<motion.form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props} initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} >
+      <motion.div 
+        className="flex flex-col items-center gap-2 text-center"
+        variants={itemVariants}
+      >
         <h1 className="text-2xl font-bold text-nowrap">Set New Password</h1>
         <p className="text-muted-foreground text-sm text-balance">
           Verification successful!
         </p>
-      </div>
+      </motion.div>
       {error && (
-        <div className="text-red-500 text-sm text-center">
+        <motion.div 
+          className="text-red-500 text-sm text-center"
+          variants={itemVariants}
+        >
           {error}
-        </div>
+        </motion.div>
       )}
-      <div className="grid gap-6">
+      <motion.div 
+        className="grid gap-6"
+        variants={itemVariants}
+      >
         <div className="grid gap-2">
             <Label htmlFor="password">Enter a new Password</Label>
             <Input 
@@ -106,10 +132,12 @@ export function PasswordResetForm({
               placeholder="Confirm Password"
               required />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Resetting..." : "Reset Password"}
-          </Button>
-        </div>
-    </form>)
+          <motion.div variants={buttonHoverVariants} whileHover="hover">
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Resetting..." : "Reset Password"}
+            </Button>
+          </motion.div>
+        </motion.div>
+    </motion.form>)
   );
 }
