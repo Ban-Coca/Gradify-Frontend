@@ -172,7 +172,7 @@ export function GradeDisplayTable({ classId }) {
       </div>
 
       {/* Visibility Controls */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="mb-6 p-4 bg-gray-50 dark:bg-card border dark:border-emerald-800 rounded-lg">
         <h3 className="text-lg font-semibold mb-3">
           Assessment Visibility for Students
         </h3>
@@ -187,7 +187,7 @@ export function GradeDisplayTable({ classId }) {
             return (
               <div
                 key={column}
-                className="flex items-center justify-between p-2 bg-white rounded border"
+                className="flex items-center justify-between p-2 bg-white dark:bg-black rounded border"
               >
                 <div className="flex items-center gap-2">
                   {isVisible ? (
@@ -274,8 +274,8 @@ export function GradeDisplayTable({ classId }) {
                         <div
                           className={`p-2 rounded ${
                             isVisible
-                              ? "bg-green-50 text-green-800"
-                              : "bg-gray-50 text-gray-500"
+                              ? "bg-green-50 dark:bg-emerald-900 text-green-800 dark:text-gray-200"
+                              : "bg-gray-50 dark:bg-card text-gray-500 dark:text-gray-200"
                           }`}
                         >
                           {record.grades[column] || "-"}
@@ -291,16 +291,16 @@ export function GradeDisplayTable({ classId }) {
       </div>
 
       {/* Summary */}
-      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-semibold text-blue-800 mb-2">Visibility Summary</h4>
+      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border dark:border-blue-800">
+        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Visibility Summary</h4>
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-blue-700">
+          <span className="text-sm text-blue-700 dark:text-blue-300">
             Visible to students:{" "}
             {Object.values(assessmentStatus?.data || {}).filter(Boolean).length}{" "}
             assessments
           </span>
-          <span className="text-sm text-blue-700">•</span>
-          <span className="text-sm text-blue-700">
+          <span className="text-sm text-blue-700 dark:text-blue-300">•</span>
+          <span className="text-sm text-blue-700 dark:text-blue-300">
             Hidden from students:{" "}
             {
               Object.values(assessmentStatus?.data || {}).filter((v) => !v)

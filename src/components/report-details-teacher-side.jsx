@@ -31,7 +31,7 @@ export function ReportDetailsModal({ report, isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent aria-describedby="report-details-description" className="sm:max-w-[600px]">
+      <DialogContent aria-describedby="report-details-description" className="sm:max-w-[600px] border dark:border-emerald-800">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Report Details</DialogTitle>

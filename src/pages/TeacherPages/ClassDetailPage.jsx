@@ -411,13 +411,13 @@ const ClassDetailPage = () => {
         </div>
 
         {/* Class Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white dark:bg-card dark:border-accent rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">
                 {classData?.className}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
                 {classData.semester || "No semester"} - {classData.section} -
                 {classData.schedule || "No Schedule"} -{" "}
                 {classData.room || "No Room"}
@@ -474,22 +474,22 @@ const ClassDetailPage = () => {
 
           {/* Class Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 w-full">
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Students</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Students</p>
               <p className="font-bold text-lg">{studentCountData}</p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Avg. Grade</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Avg. Grade</p>
               <p className="font-bold text-lg">{average}</p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Students at Risk</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Students at Risk</p>
               <p className="font-bold text-lg">
                 {isRosterLoading ? "..." : studentsAtRisk}
               </p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Last Updated</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Last Updated</p>
               <p className="font-bold text-lg">
                 {formatDate(classData.updatedAt)}
               </p>

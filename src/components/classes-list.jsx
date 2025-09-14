@@ -23,7 +23,7 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
           {paginatedClasses.map((classItem) => (
             <Card
               key={classItem.classId}
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-accent"
               onClick={() => navigateToClass(classItem.classId)}
             >
               <CardHeader className="pb-2">
@@ -65,7 +65,7 @@ const ClassesList = ({ classes, view, loading, error, navigateToClass }) => {
           {paginatedClasses.map((classItem) => (
             <Card
               key={classItem.classId}
-              className="cursor-pointer hover:bg-gray-50"
+              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-accent"
               onClick={() => navigateToClass(classItem.classId)}
             >
               <CardContent className="px-6">

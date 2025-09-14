@@ -28,6 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GraphFileBrowser from "@/components/graph-file-browser";
 import { GoogleDrivePicker } from "@/components/google-drive-picker";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+
 export default function SpreadsheetsPage() {
   const { currentUser, getAuthHeader } = useAuth();
   const fileInputRef = React.useRef(null);
@@ -426,11 +427,11 @@ export default function SpreadsheetsPage() {
       {helmet}
       <Toaster richColors />
 
-      <div className="bg-gray-50 p-6 rounded-lg border mt-4 mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+      <div className="bg-gray-50 dark:bg-card p-6 rounded-lg border dark:border-emerald-900 mt-4 mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-200">
           Import Spreadsheet Data
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-200 mt-2">
           Upload or link a spreadsheet to import student grades
         </p>
       </div>
@@ -556,9 +557,9 @@ export default function SpreadsheetsPage() {
         </Alert>
       )}
 
-      <div className="bg-white rounded-lg border shadow-sm">
+      <div className="bg-white dark:bg-card rounded-lg border shadow-sm">
         <Tabs defaultValue="upload" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-black">
             <TabsTrigger
               value="upload"
               className="data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 hover:text-green-600 transition-colors duration-200"
@@ -581,12 +582,12 @@ export default function SpreadsheetsPage() {
           </TabsList>
 
           <TabsContent value="upload" className="p-6">
-            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
+            <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-black rounded-lg p-8 border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors">
               <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Upload Spreadsheet
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Drag and drop your file here, or click to browse
               </p>
               <Button
@@ -616,24 +617,24 @@ export default function SpreadsheetsPage() {
               {selectedFile && (
                 <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
                   <span className="mr-2">📄</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-200">
                     {selectedFile.name}
                   </span>
                 </div>
               )}
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Supported formats: .xlsx, .xls, .csv
               </p>
             </div>
           </TabsContent>
 
           <TabsContent value="google-link" className="p-6">
-            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300">
+            <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-black rounded-lg p-8 border-2 border-dashed border-gray-300">
               <LinkIcon className="w-12 h-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Link Spreadsheet
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Enter the URL of your spreadsheet document
               </p>
 
@@ -665,7 +666,7 @@ export default function SpreadsheetsPage() {
                 </div> */}
               </div>
 
-              <div className="mt-2 text-sm text-gray-600 space-y-2">
+              <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 space-y-2">
                 <p className="mt-2 text-xs">
                   <strong>Note:</strong> Make sure your spreadsheet is shared
                   with view access.
@@ -675,17 +676,17 @@ export default function SpreadsheetsPage() {
           </TabsContent>
           <TabsContent value="microsoft-excel" className="p-6">
             <div
-              className={`flex flex-col items-center justify-center bg-gray-50 rounded-lg p-8 border-2 border-dashed border-gray-300 ${
+              className={`flex flex-col items-center justify-center bg-gray-50 dark:bg-black rounded-lg p-8 border-2 border-dashed border-gray-300 ${
                 currentUser?.provider !== "Microsoft"
                   ? "opacity-50"
                   : "hover:border-gray-400"
               } transition-colors`}
             >
               <FolderOpen className="w-12 h-12 text-gray-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Microsoft Excel
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 {currentUser?.provider !== "Microsoft"
                   ? "Microsoft Excel integration is only available for Microsoft accounts"
                   : "Browse your OneDrive file from here"}
@@ -698,7 +699,7 @@ export default function SpreadsheetsPage() {
                 Browse Drive Files
               </Button>
               {currentUser?.provider !== "Microsoft" && (
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Please sign in with a Microsoft account to use this feature
                 </p>
               )}

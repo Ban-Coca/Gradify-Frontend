@@ -55,7 +55,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full">
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={currentUser?.profileImage} alt={currentUser?.firstName} />
-                        <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
+                        <AvatarFallback className="bg-primary/10 dark:bg-emerald-600 text-primary">{getUserInitials()}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
@@ -64,10 +64,10 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
                       {currentUser?.firstName} {currentUser?.lastName}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleProfileClick}>
+                    {/* <DropdownMenuItem onClick={handleProfileClick}>
                       <User className="mr-2 h-4 w-4 group-hover:text-white" />
                       <span>Profile</span>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem onClick={handleSettingsClick}>
                       <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
                       <span>Settings</span>
@@ -99,16 +99,16 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
       <div className="p-4 border-t">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 hover:text-primary">
+            <Button variant="ghost" className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 dark:hover:bg-emerald-700 hover:text-primary hover:dark:text-emerald-200">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={currentUser?.profilePictureUrl} alt={currentUser?.firstName} />
-                <AvatarFallback className="bg-primary/10 text-primary">{getUserInitials()}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 dark:bg-emerald-700 text-primary dark:text-emerald-400">{getUserInitials()}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-start text-left min-w-0">
                 <span className="font-medium truncate w-full max-w-[150px]">
                   {currentUser?.firstName} {currentUser?.lastName}
                 </span>
-                <p className="text-xs text-muted-foreground truncate w-full">{currentUser?.email}</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground truncate w-full">{currentUser?.email}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>
