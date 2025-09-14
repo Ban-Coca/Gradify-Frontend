@@ -19,7 +19,7 @@ import Lenis from "lenis"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useDocumentTitle } from "@/hooks/use-document-title"
-
+import { ThemeToggle } from '@/components/theme-toggle'
 const MotionCard = motion.create(Card)
 const MotionLink = motion.create(Link)
 const MotionButton = motion.create(Button)
@@ -182,6 +182,7 @@ export default function LandingPage() {
             >
               <Button>Get Started</Button>
             </MotionLink>
+            <ThemeToggle/>
           </div>
         </div>
       </motion.header>
@@ -715,7 +716,7 @@ export default function LandingPage() {
           </div>
         </section> */}
 
-        <section ref={ctaRef} className="w-full py-12 md:py-24 lg:py-32 bg-emerald-50">
+        <section ref={ctaRef} className="w-full py-12 md:py-24 lg:py-32 bg-emerald-50 dark:bg-emerald-950">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
               className="flex flex-col items-center justify-center space-y-4 text-center"

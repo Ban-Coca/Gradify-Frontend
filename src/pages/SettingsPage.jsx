@@ -61,6 +61,7 @@ import {
 import { updateUser, getUserDetails } from "@/services/user/userService";
 import { getStudentCount } from "@/services/teacher/teacherService";
 import { useAuth } from "@/contexts/authentication-context";
+import { useTheme } from "@/contexts/theme-context";
 import toast from "react-hot-toast";
 
 export default function TeacherSettings() {
@@ -85,6 +86,7 @@ export default function TeacherSettings() {
 
   const queryClient = useQueryClient();
   const { currentUser, getAuthHeader, updateUserProfile } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -1326,10 +1328,8 @@ export default function TeacherSettings() {
                       <p className="text-sm text-gray-500">Toggle dark theme</p>
                     </div>
                     <Switch
-                      checked={settings.darkMode}
-                      onCheckedChange={(checked) =>
-                        handleSettingChange("darkMode", checked)
-                      }
+                      checked={isDark}
+                      onCheckedChange={toggleTheme}
                     />
                   </div>
                 </CardContent>
