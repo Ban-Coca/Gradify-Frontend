@@ -78,7 +78,7 @@ export default function AppSidebar() {
 
   // Determine the items to display based on the user's role
   const items = currentUser?.role === "TEACHER" ? teacherItems : studentItems;
-
+  
   const isActive = (path) => {
     // Handle multiple URLs (array)
     if (Array.isArray(path)) {

@@ -216,7 +216,7 @@ export function NotificationDropdown() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-center"
+            className="w-full justify-center dark:hover:bg-primary"
             asChild
           >
             <Link to="/notifications">View all notifications</Link>

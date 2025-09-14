@@ -99,7 +99,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
       <div className="p-4 border-t">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 dark:hover:bg-emerald-700 hover:text-primary hover:dark:text-emerald-200">
+            <Button variant="ghost" aria-label="More options" className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 dark:hover:bg-emerald-700 hover:text-primary hover:dark:text-emerald-200">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={currentUser?.profilePictureUrl} alt={currentUser?.firstName} />
                 <AvatarFallback className="bg-primary/10 dark:bg-emerald-700 text-primary dark:text-emerald-400">{getUserInitials()}</AvatarFallback>
@@ -119,7 +119,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
               <User className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Profile</span>
             </DropdownMenuItem> */}
-            <DropdownMenuItem onClick={handleSettingsClick}>
+            <DropdownMenuItem onClick={handleSettingsClick} className="hover:dark:bg-emerald-600">
               <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Settings</span>
             </DropdownMenuItem>
@@ -128,7 +128,7 @@ export default function NavUser({ currentUser, onLogout, isCollapsed = false }) 
               onClick={onLogout} 
               className="text-red-600 hover:text-red-700 hover:bg-red-100 focus:text-red-700 focus:bg-red-50"
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4 hover:dark:text-destructive" />
               <span>Logout</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
