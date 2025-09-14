@@ -40,7 +40,7 @@ export default function LandingPage() {
   const pricingInView = useInView(pricingRef, { once: true, amount: 0.3 })
   const ctaInView = useInView(ctaRef, { once: true, amount: 0.5 })
 
-  const helmet = useDocumentTitle("Gradify", "Streamline your grading process with AI-powered tools for teachers and students.");
+  const helmet = useDocumentTitle(null, "Streamline your grading process with AI-powered tools for teachers and students.");
 
   // Initialize Lenis smooth scrolling
   useEffect(() => {
