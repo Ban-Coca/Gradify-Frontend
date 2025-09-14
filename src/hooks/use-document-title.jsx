@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 export function useDocumentTitle(title, description = '', appName = 'Gradify') {
-  const fullTitle = title ? `${title} | ${appName}` : appName;
+  const fullTitle = title ? `${title} - ${appName}` : appName;
   const prevTitle = useRef();
 
   useEffect(() => {

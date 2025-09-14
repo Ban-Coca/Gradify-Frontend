@@ -105,7 +105,7 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-2xl text-primary p-4 font-bold mt-5">
+          <SidebarGroupLabel className="text-2xl text-primary dark:text-white p-4 font-bold mt-5">
             GRADIFY
           </SidebarGroupLabel>
           <SidebarGroupContent>

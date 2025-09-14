@@ -159,11 +159,11 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Total Students
               </p>
               <h3 className="text-2xl font-bold">{studentCountQuery.data}</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground ">
                 Across all classes
               </p>
             </div>
@@ -175,7 +175,7 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Students at Risk
               </p>
               <h3 className="text-2xl font-bold">{atRiskStudentsQuery.data}</h3>
@@ -197,7 +197,7 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Top Performers
               </p>
               <h3 className="text-2xl font-bold">{topStudentsQuery.data}</h3>
@@ -386,9 +386,9 @@ const TeacherDashboard = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate("/uploads")}
+                onClick={() => navigate("/reports")}
               >
-                View All Uploads
+                View All Reports
               </Button>
             </CardFooter>
           </Card>
