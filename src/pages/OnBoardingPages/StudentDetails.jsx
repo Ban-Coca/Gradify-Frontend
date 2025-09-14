@@ -179,13 +179,13 @@ export default function StudentOnboarding() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 pb-4 pt-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-gray-900 px-4 pb-4 pt-8">
       {helmet}
       <Link to="/" className="mb-8 flex items-center gap-1">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
           <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
-        <span className="text-xl font-semibold text-gray-900">Gradify</span>
+        <span className="text-xl font-semibold text-gray-900 dark:text-white">Gradify</span>
       </Link>
 
       {/* Improved Back Button */}
@@ -195,7 +195,7 @@ export default function StudentOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-white"
+          className="mb-6 flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -203,10 +203,10 @@ export default function StudentOnboarding() {
       </div>
 
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Complete your student profile
         </h1>
-        <p className="mt-2 text-base text-gray-600">
+        <p className="mt-2 text-base text-gray-600 dark:text-gray-300">
           We need a few more details to set up your account
         </p>
       </div>
@@ -216,7 +216,7 @@ export default function StudentOnboarding() {
           {error && (
             <div
               role="alert"
-              className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm"
+              className="mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 shadow-sm"
             >
               <div className="flex items-start gap-2">
                 <div className="flex-shrink-0">
@@ -234,10 +234,10 @@ export default function StudentOnboarding() {
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-red-800 mb-1">
+                  <h3 className="font-medium text-red-800 dark:text-red-200 mb-1">
                     Something went wrong
                   </h3>
-                  <p className="text-sm text-red-700 leading-relaxed mb-2">
+                  <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed mb-2">
                     {error}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-1">
@@ -249,7 +249,7 @@ export default function StudentOnboarding() {
                         setError(null);
                         form.reset();
                       }}
-                      className="text-red-700 border-red-300 hover:bg-red-100 hover:border-red-400 transition-colors"
+                      className="text-red-700 dark:text-red-300 border-red-300 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-400 dark:hover:border-red-600 transition-colors"
                     >
                       Try Again
                     </Button>
@@ -258,7 +258,7 @@ export default function StudentOnboarding() {
                       variant="ghost"
                       size="sm"
                       onClick={() => navigate("/signup")}
-                      className="text-red-600 hover:bg-red-100 transition-colors"
+                      className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                     >
                       Back to Signup
                     </Button>
