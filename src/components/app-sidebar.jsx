@@ -5,7 +5,7 @@ import {
   Inbox,
   Folder,
   LayoutDashboard,
-  ClipboardList, 
+  ClipboardList,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -23,6 +23,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import NavUser from "@/components/nav-user";
+import { useEffect, useRef, useState } from "react";
 
 const teacherItems = [
   {
@@ -71,10 +72,13 @@ const studentItems = [
 ];
 
 export default function AppSidebar() {
+  const sidebarWrapperRef = useRef(null);
+  const prevFocusRef = useRef(null);
+  const [isOverlay, setIsOverlay] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, currentUser } = useAuth();
-  const { state } = useSidebar();
+  const { state, isMobile, setOpen, setOpenMobile } = useSidebar();
 
   // Determine the items to display based on the user's role
   const items = currentUser?.role === "TEACHER" ? teacherItems : studentItems;
@@ -98,11 +102,24 @@ export default function AppSidebar() {
   };
 
   const handleLogout = () => {
+    if (isMobile) {
+      // Blur focused element if it's inside the sidebar to prevent aria-hidden error
+      const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+      if (sidebar && sidebar.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
     logout();
     navigate("/login");
   };
+  
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar
+      collapsible="icon"
+    >
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-2xl text-primary dark:text-white p-4 font-bold mt-5">

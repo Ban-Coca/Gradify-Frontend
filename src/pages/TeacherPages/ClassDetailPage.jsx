@@ -272,30 +272,30 @@ const ClassDetailPage = () => {
         <div className="space-y-6">
           {/* Header skeleton */}
           <div className="flex items-center gap-2 mb-4 mt-5">
-            <div className="h-9 w-32 bg-gray-200 rounded-md animate-pulse"></div>
+            <div className="h-9 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
           </div>
 
           {/* Class header skeleton */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white dark:bg-card dark:border-accent rounded-lg shadow-sm p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="space-y-3">
-                <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-64 bg-stone-200 dark:bg-stone-700 rounded animate-pulse"></div>
+                <div className="h-4 w-96 bg-stone-200 dark:bg-stone-600 rounded animate-pulse"></div>
               </div>
               <div className="flex flex-col md:flex-row gap-2">
-                <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse"></div>
-                <div className="h-10 w-32 bg-gray-200 rounded-md animate-pulse"></div>
-                <div className="h-10 w-36 bg-gray-200 rounded-md animate-pulse"></div>
-                <div className="h-10 w-28 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-36 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-28 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
               </div>
             </div>
 
             {/* Stats skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 w-full">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-50 p-3 rounded-md text-center">
-                  <div className="h-4 w-16 bg-gray-200 rounded animate-pulse mx-auto mb-2"></div>
-                  <div className="h-6 w-12 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                <div key={i} className="bg-stone-50 dark:bg-card p-3 rounded-md text-center">
+                  <div className="h-4 w-16 bg-stone-200 dark:bg-stone-600 rounded animate-pulse mx-auto mb-2"></div>
+                  <div className="h-6 w-12 bg-stone-200 dark:bg-stone-600 rounded animate-pulse mx-auto"></div>
                 </div>
               ))}
             </div>
@@ -314,8 +314,8 @@ const ClassDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-64 w-full bg-gray-100 rounded animate-pulse"></div>
+                <div className="h-10 w-full bg-stone-200 dark:bg-stone-700 rounded animate-pulse"></div>
+                <div className="h-64 w-full bg-stone-100 dark:bg-stone-800 rounded animate-pulse"></div>
               </div>
             </CardContent>
           </Card>
