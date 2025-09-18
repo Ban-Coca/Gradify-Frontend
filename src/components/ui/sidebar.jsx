@@ -53,6 +53,16 @@ function SidebarProvider({
   const isMobile = useIsMobile(); //
   const [openMobile, setOpenMobile] = React.useState(false);
 
+  React.useEffect(() => {
+    if (isMobile && !openMobile) {
+      // Move focus to a safe element, e.g., the main content or body
+      const mainContent = document.querySelector('[data-slot="sidebar-inset"]') || document.body;
+      if (mainContent && mainContent !== document.activeElement) {
+        mainContent.focus();
+      }
+    }
+  }, [isMobile, openMobile]);
+
   const readCookie = (name) => {
     try {
       const raw =
@@ -170,6 +180,8 @@ function Sidebar({
   ...props
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+  const sidebarRef = React.useRef(null);
+  const toggleButtonRef = React.useRef(null);
 
   if (collapsible === "none") {
     return (
@@ -187,8 +199,17 @@ function Sidebar({
   }
 
   if (isMobile) {
+    const handleOpenChange = (open) => {
+      setOpenMobile(open);
+      if (!open) {
+        if (sidebarRef.current?.contains(document.activeElement)) {
+          (document.activeElement).blur();
+        }
+        document.dispatchEvent(new CustomEvent("sidebar-mobile-close"));
+      }
+    };
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet open={openMobile} onOpenChange={handleOpenChange} {...props}>
         <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"
@@ -203,7 +224,9 @@ function Sidebar({
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div ref={sidebarRef} className="flex h-full w-full flex-col">
+            {children}
+          </div>
         </SheetContent>
       </Sheet>
     );
@@ -243,6 +266,7 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         )}
+        inert={state === "collapsed" && collapsible === "offcanvas"}
         {...props}
       >
         <div
