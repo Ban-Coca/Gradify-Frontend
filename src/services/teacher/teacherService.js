@@ -140,3 +140,17 @@ export const getAssessmentStatus = async (classSpreadSheetId, header) => {
         throw error;
     }
 }
+
+export const getStudentDetail = async (classId, studentId, header) => {
+    try{
+        const response = await api.get(
+            `${API_ENDPOINTS.TEACHER.STUDENT_DETAIL}/class/${classId}/student/${studentId}`, {
+                headers: header
+            }
+        )
+
+        return response.data
+    } catch(error){
+        throw error;
+    }
+}

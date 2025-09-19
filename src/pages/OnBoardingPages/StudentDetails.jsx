@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { updateRole } from "@/services/user/userService";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 const formSchema = z.object({
   studentNumber: z.string().min(1, { message: "Student number is required." }),
   major: z.string().min(1, { message: "Major is required." }),
@@ -40,6 +41,7 @@ export default function StudentOnboarding() {
   const [error, setError] = useState(null);
   const { login, currentUser, getAuthHeader } = useAuth();
   const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const helmet = useDocumentTitle("Student Details", "Complete your student profile.");
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -58,13 +60,14 @@ export default function StudentOnboarding() {
   }, [currentUser]);
 
   async function onSubmit(values) {
-    setIsLoading(true);
+  setIsLoading(true);
+  setError(null);
     console.log("Form Values:", formData);
     try {
       const isAzureUser = formData.azureId;
       const isGoogleUser = sessionStorage.getItem('googleUserData');
       if(isGoogleUser){
-        console.log("Google User", isGoogleUserm)
+        console.log("Google User", isGoogleUser)
         const onboardingData = {
           role: formData.role || "STUDENT",
           firstName: formData.firstName,
@@ -119,8 +122,8 @@ export default function StudentOnboarding() {
 
         console.log("OAuth Onboarding Response:", response);
 
-        if (response.user && response.token) {
-          login(response.user, response.token);
+        if (response.userResponse && response.token) {
+          login(response.userResponse, response.token);
         }
 
         localStorage.removeItem("onboardingFormData");
@@ -142,22 +145,47 @@ export default function StudentOnboarding() {
         const response = await signUpUser(onboardingData);
         console.log("Regular Onboarding Response:", response);
         localStorage.removeItem("onboardingFormData");
-        login(response.user, response.token);
+        login(response.userResponse, response.token);
       }
     } catch (error) {
       console.error("Profile update failed:", error);
+      let msg = "Profile update failed.";
+      const respData = error?.response?.data;
+
+      if (respData) {
+        if (typeof respData === "string") {
+          msg = respData;
+        } else if (respData.message) {
+          msg = respData.message;
+        } else if (respData.error) {
+          msg = respData.error;
+        } else if (Array.isArray(respData.errors) && respData.errors.length) {
+          msg = respData.errors.map(e => e.message || e).join(", ");
+        } else {
+          // Fallback - attempt to pretty print the response body
+          try {
+            msg = JSON.stringify(respData);
+          } catch {
+            msg = String(respData);
+          }
+        }
+      } else if (error?.message) {
+        msg = error.message;
+      }
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
-      <Link to="/" className="mb-8 flex items-center gap-2">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-neutral-900 px-4 pb-4 pt-8">
+      {helmet}
+      <Link to="/" className="mb-8 flex items-center gap-1">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
           <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
-        <span className="text-xl font-semibold text-gray-900">Gradify</span>
+        <span className="text-xl font-semibold text-gray-900 dark:text-white">Gradify</span>
       </Link>
 
       {/* Improved Back Button */}
@@ -167,7 +195,7 @@ export default function StudentOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          className="mb-6 flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -175,16 +203,71 @@ export default function StudentOnboarding() {
       </div>
 
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Complete your student profile
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <p className="mt-2 text-base text-gray-600 dark:text-gray-300">
           We need a few more details to set up your account
         </p>
       </div>
 
-      <Card className="mt-10 w-full max-w-md">
+      <Card className="mt-4 w-full max-w-md">
         <CardContent className="pt-6">
+          {error && (
+            <div
+              role="alert"
+              className="mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4 shadow-sm"
+            >
+              <div className="flex items-start gap-2">
+                <div className="flex-shrink-0">
+                  <svg 
+                    className="h-4 w-4 text-red-400" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-red-800 dark:text-red-200 mb-1">
+                    Something went wrong
+                  </h3>
+                  <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed mb-2">
+                    {error}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setError(null);
+                        form.reset();
+                      }}
+                      className="text-red-700 dark:text-red-300 border-red-300 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-400 dark:hover:border-red-600 transition-colors"
+                    >
+                      Try Again
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate("/signup")}
+                      className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                    >
+                      Back to Signup
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField

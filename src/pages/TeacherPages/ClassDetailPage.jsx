@@ -22,6 +22,9 @@ import {
   Search,
   UserPlus,
   Filter,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { StudentTable } from "@/components/student-table";
 import { GradeEditTable } from "@/components/grade-edit-table";
@@ -32,10 +35,11 @@ import {
   getClassAverage,
   getStudentCount,
   getClassRoster,
+  getSpreadsheetByClassId,
 } from "@/services/teacher/classServices";
 import { useAuth } from "@/contexts/authentication-context";
 import GradingSchemeModal from "@/components/grading-schemes";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReportsTab } from "@/components/reports-tab";
 import {
   Sheet,
@@ -51,19 +55,24 @@ import toast from "react-hot-toast";
 import { updateClassSpreadsheetData } from "@/services/teacher/spreadsheetservices";
 import AiAnalyticsSheet from "@/components/ai-analytics-sheet";
 import { GradeDisplayTable } from "@/components/grade-visibility";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { syncSheet } from "@/services/teacher/googleService";
+import { syncSheetExcel } from "@/services/teacher/microsoftGraphService";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+
 const ClassDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const { currentUser, getAuthHeader } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [classData, setClassData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [gradingSchemeModal, setGradingSchemeModal] = useState(false);
-  const [error, setError] = useState(null);
   const [editForm, setEditForm] = useState(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const helmet = useDocumentTitle("Class Details", "View and manage class information, students, and grades.");
 
   const { data: classAverageData, isLoading: isClassAverageLoading } = useQuery(
     {
@@ -87,6 +96,45 @@ const ClassDetailPage = () => {
     enabled: !!id,
   });
 
+  // BACKGROUND FUNCTION FOR WILL BE USED FOR SYNCING
+  const { data: classSpreadsheet, isLoading: isClassSpreadsheetLoading } =
+    useQuery({
+      queryKey: ["classSpreadsheet", id],
+      queryFn: () => getSpreadsheetByClassId(id, getAuthHeader()),
+      staleTime: Infinity,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
+
+  const syncSheetMutation = useMutation({
+    mutationFn: async () => {
+      const userId = currentUser?.userId || currentUser?.id;
+      const sheetId = classSpreadsheet[0]?.id;
+      const headers = getAuthHeader();
+
+      if (!userId || !sheetId) {
+        throw new Error("Missing userId or sheetId for sync");
+      }
+
+      if (classSpreadsheet[0]?.isGoogleSheets === true) {
+        return await syncSheet(userId, sheetId, headers);
+      } else if (Boolean(classSpreadsheet?.[0]?.folderId)) {
+        return await syncSheetExcel(userId, sheetId, headers);
+      } else {
+        throw new Error("Invalid sync condition");
+      }
+    },
+    onSuccess: (data) => {
+      // Refetch class/roster data after sync
+      queryClient.invalidateQueries({ queryKey: ["classSpreadsheet", id] });
+      queryClient.invalidateQueries({ queryKey: ["classRoster", id] });
+      toast.success("Data synced successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to sync data: " + error.message);
+    },
+  });
   const safeRosterData = Array.isArray(rosterData) ? rosterData : [];
 
   const studentsAtRisk = safeRosterData.filter((student) => {
@@ -111,101 +159,68 @@ const ClassDetailPage = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchClassDetails = async () => {
-      try {
-        const response = await getClassById(id, getAuthHeader());
-        console.log("Class Details:", response);
-        setClassData({
-          ...response,
-          startTimeZone: response.startTimeZone || "AM",
-          endTimeZone: response.endTimeZone || "AM",
-        });
-        console.log("Class Data:", classData);
-      } catch (err) {
-        console.error("Error fetching class details:", err);
-        setError("Failed to fetch class details. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: classData,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["classDetails", id],
+    queryFn: async () => {
+      const response = await getClassById(id, getAuthHeader());
+      console.log("Class Details:", response);
+      return {
+        ...response,
+        startTimeZone: response.startTimeZone || "AM",
+        endTimeZone: response.endTimeZone || "AM",
+      };
+    },
+    enabled: !!id,
+    onSuccess: (data) => {
+      console.log("Class Data:", data);
+    },
+    onError: (err) => {
+      console.error("Error fetching class details:", err);
+      toast.error("Failed to fetch class details. Please try again later.");
+    },
+  });
 
-    fetchClassDetails();
-  }, [id]);
+  const updateClassMutation = useMutation({
+    mutationFn: ({ classId, updatedData, headers }) =>
+      updateClassById(classId, updatedData, headers),
+    onSuccess: (response) => {
+      console.log("Class updated successfully:", response);
+
+      // Invalidate and refetch the class details query to get updated data
+      queryClient.invalidateQueries({ queryKey: ["classDetails", id] });
+
+      // Close modal and show success message
+      toggleModal();
+      toast.success("Class updated successfully!");
+    },
+    onError: (error) => {
+      console.error("Error updating class:", error);
+      toast.error("Failed to update class. Please try again.");
+    },
+  });
 
   const openEditModal = () => {
     setEditForm({ ...classData });
     setIsModalOpen(true);
   };
 
-  // const allTimes = [];
-
-  // for (let hour = 7; hour <= 22; hour++) {
-  //   for (let min = 0; min < 60; min += 30) {
-  //     if (hour === 22 && min > 0) continue;
-  //     const value = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
-  //     let displayHour = hour % 12 === 0 ? 12 : hour % 12;
-  //     let ampm = hour < 12 ? "AM" : "PM";
-  //     const display = `${displayHour}:${min.toString().padStart(2, "0")} ${ampm}`;
-  //     allTimes.push({ value, display, hour, min, ampm });
-  //   }
-  // }
-  // const getFilteredTimes = (zone) => {
-  //   if (zone === "AM") {
-  //     return allTimes.filter(t => t.ampm === "AM" && t.hour >= 7 && t.hour <= 11);
-  //   } else {
-  //     return allTimes.filter(
-  //       t =>
-  //         t.ampm === "PM" &&
-  //         t.hour >= 12 &&
-  //         (t.hour < 22 || (t.hour === 22 && t.min === 0))
-  //     );
-  //   }
-  // };
-
-  // // Helper for days
-  // const handleEditDaysChange = (e) => {
-  //   const { value, checked } = e.target;
-  //   setEditForm((prev) => ({
-  //     ...prev,
-  //     days: checked ? [...(prev.days || []), value] : (prev.days || []).filter((day) => day !== value),
-  //   }));
-  // };
-
-  // const handleEditSelectChange = (name, value) => {
-  //   setEditForm((prev) => ({ ...prev, [name]: value }));
-  // };
-
-  // // Helper for schedule string
-  // const getEditScheduleString = () => {
-  //   if (!editForm?.days?.length || !editForm.startTime || !editForm.endTime) return "";
-  //   const days = editForm.days.map(d => d.slice(0, 3)).join("/");
-  //   const formatTime = (t) => {
-  //     const [h, m] = t.split(":");
-  //     const hour = ((+h + 11) % 12) + 1;
-  //     return `${hour}:${m}`;
-  //   };
-  //   if (editForm.startTimeZone === editForm.endTimeZone) {
-  //     return `${days} ${formatTime(editForm.startTime)}-${formatTime(editForm.endTime)} ${editForm.startTimeZone}`;
-  //   }
-  //   return `${days} ${formatTime(editForm.startTime)} ${editForm.startTimeZone}-${formatTime(editForm.endTime)} ${editForm.endTimeZone}`;
-  // };
-
   const handleUpdateClass = async () => {
-    try {
-      const updatedData = {
-        ...editForm,
-        // schedule: getEditScheduleString(),
-      };
-      const header = getAuthHeader();
-      console.log("Header in handleUpdateClass", header);
-      const response = await updateClassById(id, updatedData, header);
-      console.log("Class updated successfully:", response);
-      setClassData(editForm);
-      toggleModal();
-    } catch (error) {
-      console.error("Error updating class:", error);
-    }
+    const updatedData = {
+      ...editForm,
+    };
+    const header = getAuthHeader();
+    console.log("Header in handleUpdateClass", header);
+
+    updateClassMutation.mutate({
+      classId: id,
+      updatedData,
+      headers: header,
+    });
   };
 
   const handleClassDeleted = (className) => {
@@ -238,16 +253,6 @@ const ClassDetailPage = () => {
     setGradingSchemeModal(!gradingSchemeModal);
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex justify-center items-center h-screen">
-          <p>Loading class details...</p>
-        </div>
-      </Layout>
-    );
-  }
-
   const handleUploadComplete = (file) => {
     // file: { file: File }
     const teacherId = currentUser?.userId || currentUser?.id;
@@ -260,9 +265,138 @@ const ClassDetailPage = () => {
       headers: getAuthHeader(),
     });
   };
+  // Loading state
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-center gap-2 mb-4 mt-5">
+            <div className="h-9 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+          </div>
 
+          {/* Class header skeleton */}
+          <div className="bg-white dark:bg-card dark:border-accent rounded-lg shadow-sm p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="space-y-3">
+                <div className="h-8 w-64 bg-stone-200 dark:bg-stone-700 rounded animate-pulse"></div>
+                <div className="h-4 w-96 bg-stone-200 dark:bg-stone-600 rounded animate-pulse"></div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-2">
+                <div className="h-10 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-32 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-36 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+                <div className="h-10 w-28 bg-stone-200 dark:bg-stone-700 rounded-md animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Stats skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 w-full">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-stone-50 dark:bg-card p-3 rounded-md text-center">
+                  <div className="h-4 w-16 bg-stone-200 dark:bg-stone-600 rounded animate-pulse mx-auto mb-2"></div>
+                  <div className="h-6 w-12 bg-stone-200 dark:bg-stone-600 rounded animate-pulse mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Main content skeleton */}
+          <Card className="mb-5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                Loading Class Details...
+              </CardTitle>
+              <CardDescription>
+                Please wait while we fetch your class information
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="h-10 w-full bg-stone-200 dark:bg-stone-700 rounded animate-pulse"></div>
+                <div className="h-64 w-full bg-stone-100 dark:bg-stone-800 rounded animate-pulse"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          {/* Header with navigation */}
+          <div className="flex items-center gap-2 mb-4 mt-5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/teacher/classes")}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Classes
+            </Button>
+          </div>
+
+          {/* Error content */}
+          <Card className="mb-5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="h-5 w-5" />
+                Error Loading Class Details
+              </CardTitle>
+              <CardDescription>
+                We encountered an issue while loading your class information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {error?.message ||
+                    "Failed to load class details. This could be due to a network issue or server error."}
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={() => refetch()}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/teacher/classes")}
+                >
+                  Return to Classes
+                </Button>
+              </div>
+
+              {/* Additional help */}
+              <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                <h4 className="font-medium text-gray-900 mb-2">
+                  Troubleshooting:
+                </h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Check your internet connection</li>
+                  <li>• Refresh the page or try again in a few moments</li>
+                  <li>• Contact support if the problem persists</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
+      {helmet}
       <div className="space-y-6">
         {/* Header with navigation */}
         <div className="flex items-center gap-2 mb-4 mt-5">
@@ -277,13 +411,13 @@ const ClassDetailPage = () => {
         </div>
 
         {/* Class Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white dark:bg-card dark:border-accent rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="font-bold text-2xl md:text-3xl">
                 {classData?.className}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
                 {classData.semester || "No semester"} - {classData.section} -
                 {classData.schedule || "No Schedule"} -{" "}
                 {classData.room || "No Room"}
@@ -301,10 +435,35 @@ const ClassDetailPage = () => {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Class Details
               </Button>
-              <Button onClick={() => setIsUploadModalOpen(true)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Update Data
+              <Button
+                onClick={() => {
+                  if (
+                    classSpreadsheet[0]?.isGoogleSheets === true ||
+                    Boolean(classSpreadsheet?.[0]?.folderId)
+                  ) {
+                    syncSheetMutation.mutate();
+                  } else {
+                    setIsUploadModalOpen(true);
+                  }
+                }}
+                disabled={syncSheetMutation.isPending}
+              >
+                {syncSheetMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : classSpreadsheet[0]?.isGoogleSheets === true ||
+                  Boolean(classSpreadsheet?.[0]?.folderId) ? (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                ) : (
+                  <Upload className="h-4 w-4 mr-2" />
+                )}
+                {syncSheetMutation.isPending
+                  ? "Syncing..."
+                  : classSpreadsheet[0]?.isGoogleSheets === true ||
+                    Boolean(classSpreadsheet?.[0]?.folderId)
+                  ? "Sync data"
+                  : "Update Data"}
               </Button>
+
               <DeleteClassConfirmation
                 classId={classData.classId}
                 className={classData?.className}
@@ -315,22 +474,22 @@ const ClassDetailPage = () => {
 
           {/* Class Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 w-full">
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Students</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Students</p>
               <p className="font-bold text-lg">{studentCountData}</p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Avg. Grade</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Avg. Grade</p>
               <p className="font-bold text-lg">{average}</p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Students at Risk</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Students at Risk</p>
               <p className="font-bold text-lg">
                 {isRosterLoading ? "..." : studentsAtRisk}
               </p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-md text-center">
-              <p className="text-sm text-gray-500">Last Updated</p>
+            <div className="bg-gray-50 dark:bg-card border dark:border-emerald-800 p-3 rounded-md text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-300">Last Updated</p>
               <p className="font-bold text-lg">
                 {formatDate(classData.updatedAt)}
               </p>
@@ -360,9 +519,9 @@ const ClassDetailPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={classData.className}
+                  value={editForm?.className || ""}
                   onChange={(e) =>
-                    setClassData({ ...classData, className: e.target.value })
+                    setEditForm({ ...editForm, className: e.target.value })
                   }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
@@ -373,9 +532,9 @@ const ClassDetailPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={classData.semester}
+                  value={editForm?.semester || ""}
                   onChange={(e) =>
-                    setClassData({ ...classData, semester: e.target.value })
+                    setEditForm({ ...editForm, semester: e.target.value })
                   }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
@@ -386,9 +545,9 @@ const ClassDetailPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={classData.schedule}
+                  value={editForm?.schedule || ""}
                   onChange={(e) =>
-                    setClassData({ ...classData, schedule: e.target.value })
+                    setEditForm({ ...editForm, schedule: e.target.value })
                   }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
@@ -399,9 +558,9 @@ const ClassDetailPage = () => {
                 </label>
                 <input
                   type="text"
-                  value={classData.room}
+                  value={editForm?.room || ""}
                   onChange={(e) =>
-                    setClassData({ ...classData, room: e.target.value })
+                    setEditForm({ ...editForm, room: e.target.value })
                   }
                   className="mt-1 block w-full border rounded-md px-3 py-2"
                 />
@@ -447,7 +606,6 @@ const ClassDetailPage = () => {
                 >
                   Grade Visibility
                 </TabsTrigger>
-                {/* <TabsTrigger value="engagement"className="text-white data-[state=active]:bg-white data-[state=active]:text-black">Engagement Metrics</TabsTrigger> */}
                 <TabsTrigger
                   value="reports"
                   className="text-white data-[state=active]:bg-white data-[state=active]:text-black"
@@ -479,10 +637,6 @@ const ClassDetailPage = () => {
                       <Download className="h-4 w-4 mr-1" />
                       Export Roster
                     </Button>
-                    {/* <Button size="sm">
-                      <UserPlus className="h-4 w-4 mr-1" />
-                      Add Student
-                    </Button> */}
                   </div>
                 </div>
                 <StudentTable
@@ -514,23 +668,6 @@ const ClassDetailPage = () => {
                 <GradeEditTable classId={id} className="w-full" />
               </TabsContent>
 
-              {/* <TabsContent value="engagement">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex gap-2 items-center">
-                    <select className="border rounded-md px-3 py-2">
-                      <option>Last 5 Weeks</option>
-                      <option>Last 10 Weeks</option>
-                      <option>Entire Semester</option>
-                    </select>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-1" />
-                    Export Report
-                  </Button>
-                </div>
-                <EngagementMetrics />
-              </TabsContent> */}
-
               <TabsContent value="reports">
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <ReportsTab classId={id} />
@@ -546,6 +683,7 @@ const ClassDetailPage = () => {
           </CardContent>
         </Card>
       </div>
+
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

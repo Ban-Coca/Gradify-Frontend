@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { jwtDecode } from "jwt-decode";
+import { motion } from "framer-motion"
+import { GraduationCap } from "lucide-react"
 
 const OAuth2Callback = () => {
   const navigate = useNavigate();
@@ -23,16 +25,6 @@ const OAuth2Callback = () => {
       const lastName = params.get("lastName");
       const email = params.get("email");
       try {
-        console.log("OAuth2 Callback Parameters:", {
-          token: token ? "✓ Present" : "✗ Missing",
-          user: userParam ? "✓ Present" : "✗ Missing",
-          error: error || "None",
-          onboardingRequired: onboardingRequired,
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          fullURL: location.search,
-        });
         if (error) {
           console.error("Google OAuth error:", error);
           setIsProcessed(true);
@@ -94,17 +86,54 @@ const OAuth2Callback = () => {
     processCallback();
   }, [location.search, login, navigate, isProcessed]);
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        staggerChildren: 0.2,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 },
+    },
+  }
+
   if (isProcessed) {
     return null; // Don't render anything after processing
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <motion.div
+      className="flex items-center justify-center min-h-screen"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-        <p className="mt-4 text-muted-foreground">Processing Google login...</p>
+        <motion.div variants={itemVariants}>
+          <GraduationCap className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
+        </motion.div>
+        <motion.div
+          className="rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"
+          variants={itemVariants}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        ></motion.div>
+        <motion.p className="mt-4 text-muted-foreground" variants={itemVariants}>
+          Processing Google login...
+        </motion.p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

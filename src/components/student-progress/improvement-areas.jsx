@@ -32,9 +32,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
     const baseRecommendations = {
       urgent: {
         icon: XCircle,
-        color: "text-red-600",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
+        color: "text-red-600 dark:text-red-400",
+        bgColor: "bg-red-50/50 dark:bg-red-900/10",
+        borderColor: "border-red-200 dark:border-red-800",
         priority: "High Priority",
         actions: [
           "Schedule immediate meeting with instructor",
@@ -46,9 +46,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
       },
       danger: {
         icon: AlertTriangle,
-        color: "text-orange-600",
-        bgColor: "bg-orange-50",
-        borderColor: "border-orange-200",
+        color: "text-orange-600 dark:text-orange-400",
+        bgColor: "bg-orange-50/50 dark:bg-orange-900/10",
+        borderColor: "border-orange-200 dark:border-orange-800",
         priority: "Medium Priority",
         actions: [
           "Meet with instructor during office hours",
@@ -60,9 +60,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
       },
       improvement: {
         icon: TrendingUp,
-        color: "text-yellow-600",
-        bgColor: "bg-yellow-50",
-        borderColor: "border-yellow-200",
+        color: "text-yellow-600 dark:text-yellow-400",
+        bgColor: "bg-yellow-50/50 dark:bg-yellow-900/10",
+        borderColor: "border-yellow-200 dark:border-yellow-800",
         priority: "Low Priority",
         actions: [
           "Focus on areas where points were lost",
@@ -74,9 +74,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
       },
       good: {
         icon: CheckCircle,
-        color: "text-blue-600",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
+        color: "text-blue-600 dark:text-blue-400",
+        bgColor: "bg-blue-50/50 dark:bg-blue-900/10",
+        borderColor: "border-blue-200 dark:border-blue-800",
         priority: "Maintain",
         actions: [
           "Continue current study habits",
@@ -88,9 +88,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
       },
       excellent: {
         icon: Star,
-        color: "text-green-600",
-        bgColor: "bg-green-50",
-        borderColor: "border-green-200",
+        color: "text-green-600 dark:text-green-400",
+        bgColor: "bg-green-50/50 dark:bg-green-900/10",
+        borderColor: "border-green-200 dark:border-green-800",
         priority: "Excellence",
         actions: [
           "Maintain your excellent performance",
@@ -152,9 +152,9 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
   if (!classes.length || !allGrades.length) {
     return (
       <div className="text-center py-8">
-        <Lightbulb className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium mb-2">No Improvement Data Available</h3>
-        <p className="text-muted-foreground">
+        <Lightbulb className="h-16 w-16 text-muted-foreground dark:text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium mb-2 dark:text-foreground">No Improvement Data Available</h3>
+        <p className="text-muted-foreground dark:text-muted-foreground">
           Once you have grades, we'll provide personalized recommendations to help you improve.
         </p>
       </div>
@@ -176,37 +176,37 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-red-50/50 dark:bg-red-900/10 dark:border-red-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+              <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
               <div>
-                <p className="text-sm font-medium text-red-600">Needs Attention</p>
-                <p className="text-2xl font-bold text-red-700">{urgentClasses.length}</p>
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">Needs Attention</p>
+                <p className="text-2xl font-bold text-red-700 dark:text-red-300">{urgentClasses.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 bg-green-50/50 dark:bg-green-900/10 dark:border-green-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Star className="h-8 w-8 text-green-600" />
+              <Star className="h-8 w-8 text-green-600 dark:text-green-400" />
               <div>
-                <p className="text-sm font-medium text-green-600">Excellent Performance</p>
-                <p className="text-2xl font-bold text-green-700">{excellentClasses.length}</p>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">Excellent Performance</p>
+                <p className="text-2xl font-bold text-green-700 dark:text-green-300">{excellentClasses.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Target className="h-8 w-8 text-blue-600" />
+              <Target className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               <div>
-                <p className="text-sm font-medium text-blue-600">Total Classes</p>
-                <p className="text-2xl font-bold text-blue-700">{classes.length}</p>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Classes</p>
+                <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{classes.length}</p>
               </div>
             </div>
           </CardContent>
@@ -222,7 +222,7 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
           return (
             <Card
               key={cls.classId || idx}
-              className={`transition-all duration-200 hover:shadow-lg cursor-pointer ${recommendation.borderColor} ${recommendation.bgColor}`}
+              className={`transition-all duration-200 hover:shadow-lg dark:hover:shadow-xl cursor-pointer ${recommendation.borderColor} ${recommendation.bgColor}`}
               onClick={() => setSelectedClass(selectedClass === cls.classId ? null : cls.classId)}
             >
               <CardHeader className="pb-3">
@@ -230,7 +230,7 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
                   <div className="flex items-center gap-3">
                     <RecommendationIcon className={`h-6 w-6 ${recommendation.color}`} />
                     <div>
-                      <CardTitle className="text-lg">{cls.className}</CardTitle>
+                      <CardTitle className="text-lg dark:text-foreground">{cls.className}</CardTitle>
                       <Badge variant="outline" className="mt-1">
                         {recommendation.priority}
                       </Badge>
@@ -258,7 +258,7 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
                       <ul className="space-y-2">
                         {recommendation.actions.slice(0, 3).map((action, actionIdx) => (
                           <li key={actionIdx} className="flex items-start gap-2 text-sm">
-                            <ArrowRight className="h-3 w-3 mt-1 text-muted-foreground flex-shrink-0" />
+                            <ArrowRight className="h-3 w-3 mt-1 text-muted-foreground dark:text-muted-foreground flex-shrink-0" />
                             {action}
                           </li>
                         ))}
@@ -297,18 +297,18 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
       )}
 
       {/* General Tips */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-blue-600" />
+          <CardTitle className="flex items-center gap-2 dark:text-foreground">
+            <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             General Study Tips
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-medium mb-2">Time Management:</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <h4 className="font-medium mb-2 dark:text-foreground">Time Management:</h4>
+              <ul className="space-y-1 text-muted-foreground dark:text-muted-foreground">
                 <li>• Create a weekly study schedule</li>
                 <li>• Use the Pomodoro Technique</li>
                 <li>• Prioritize difficult subjects</li>
@@ -316,8 +316,8 @@ export function ImprovementAreas({ classes = [], allGrades = [] }) {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Study Strategies:</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <h4 className="font-medium mb-2 dark:text-foreground">Study Strategies:</h4>
+              <ul className="space-y-1 text-muted-foreground dark:text-muted-foreground">
                 <li>• Active recall and spaced repetition</li>
                 <li>• Form study groups</li>
                 <li>• Teach concepts to others</li>

@@ -24,7 +24,7 @@ export function GradeDisplayTable({ classId }) {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const excludedFields = ["Student Number", "First Name", "Last Name"];
+  const excludedFields = ["Student Number", "First Name", "Last Name", "Project Id", "PROJECT ID", "NAME", "LASTNAME"];
 
   useEffect(() => {
     const fetchSpreadsheet = async () => {
@@ -83,10 +83,24 @@ export function GradeDisplayTable({ classId }) {
   const handleVisibilityToggle = (assessmentName) => {
     if (!spreadsheet?.id) return;
 
-    toggleAssessment.mutate({
-      classSpreadsheetId: spreadsheet?.id,
-      assessmentName: assessmentName,
-    });
+    console.log(`Toggling visibility for ${assessmentName}`);
+    console.log("Current visibility:", getAssessmentVisibility(assessmentName));
+
+    toggleAssessment.mutate(
+      {
+        classSpreadsheetId: spreadsheet?.id,
+        assessmentName: assessmentName,
+      },
+      {
+        onSuccess: (data) => {
+          console.log("Toggle successful:", data);
+          // Force refetch of assessment status after successful toggle
+        },
+        onError: (error) => {
+          console.error("Toggle failed:", error);
+        },
+      }
+    );
   };
 
   const handleSaveVisibility = async () => {
@@ -158,15 +172,23 @@ export function GradeDisplayTable({ classId }) {
       </div>
 
       {/* Visibility Controls */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h3 className="text-lg font-semibold mb-3">Assessment Visibility for Students</h3>
+      <div className="mb-6 p-4 bg-gray-50 dark:bg-card border dark:border-emerald-800 rounded-lg">
+        <h3 className="text-lg font-semibold mb-3">
+          Assessment Visibility for Students
+        </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {gradeColumns.map((column) => {
-            const isVisible = getAssessmentVisibility(column)
-            const isDisabled = toggleAssessment?.isLoading || !spreadsheet?.id || !toggleAssessment?.mutate
+            const isVisible = getAssessmentVisibility(column);
+            const isDisabled =
+              toggleAssessment?.isLoading ||
+              !spreadsheet?.id ||
+              !toggleAssessment?.mutate;
 
             return (
-              <div key={column} className="flex items-center justify-between p-2 bg-white rounded border">
+              <div
+                key={column}
+                className="flex items-center justify-between p-2 bg-white dark:bg-black rounded border"
+              >
                 <div className="flex items-center gap-2">
                   {isVisible ? (
                     <Eye className="h-4 w-4 text-green-600" />
@@ -179,14 +201,19 @@ export function GradeDisplayTable({ classId }) {
                 <Switch
                   checked={isVisible}
                   onCheckedChange={(checked) => {
-                    console.log(`Debug - Switch clicked for ${column}, new value:`, checked)
-                    handleVisibilityToggle(column)
+                    console.log(
+                      `Debug - Switch clicked for ${column}, current:`,
+                      isVisible,
+                      "new value:",
+                      checked
+                    );
+                    handleVisibilityToggle(column);
                   }}
                   disabled={isDisabled}
                   className="cursor-pointer"
                 />
               </div>
-            )
+            );
           })}
         </div>
       </div>
@@ -198,6 +225,11 @@ export function GradeDisplayTable({ classId }) {
               <TableHead className="font-bold">Student Number</TableHead>
               <TableHead className="font-bold">First Name</TableHead>
               <TableHead className="font-bold">Last Name</TableHead>
+              {spreadsheet.gradeRecords.some(record => 
+                record?.grades?.["PROJECT ID"] || record?.grades?.["Project Id"]
+              ) && (
+                <TableHead className="font-bold">Project ID</TableHead>
+              )}
               {gradeColumns.map((column) => {
                 const isVisible = getAssessmentVisibility(column);
                 return (
@@ -224,12 +256,17 @@ export function GradeDisplayTable({ classId }) {
               const studentId =
                 record.grades["Student Number"] || record.studentNumber || "";
               const uniqueKey = studentId || record.id || `student-${index}`;
-
+              const projectId = record.grades["PROJECT ID"] || record.grades["Project Id"] || "";
               return (
                 <TableRow key={uniqueKey} className="hover:bg-[#198754]/10">
                   <TableCell className="font-medium">{studentId}</TableCell>
-                  <TableCell>{record.grades["First Name"] || ""}</TableCell>
-                  <TableCell>{record.grades["Last Name"] || ""}</TableCell>
+                  <TableCell>{record.grades["First Name"] || record.grades["NAME"] || ""}</TableCell>
+                  <TableCell>{record.grades["Last Name"] || record.grades["LASTNAME"] || ""}</TableCell>
+                  {spreadsheet.gradeRecords.some(record => 
+                    record?.grades?.["PROJECT ID"] || record?.grades?.["Project Id"]
+                  ) && (
+                    <TableCell>{projectId}</TableCell>
+                  )}
                   {gradeColumns.map((column) => {
                     const isVisible = getAssessmentVisibility(column);
                     return (
@@ -237,8 +274,8 @@ export function GradeDisplayTable({ classId }) {
                         <div
                           className={`p-2 rounded ${
                             isVisible
-                              ? "bg-green-50 text-green-800"
-                              : "bg-gray-50 text-gray-500"
+                              ? "bg-green-50 dark:bg-emerald-900 text-green-800 dark:text-gray-200"
+                              : "bg-gray-50 dark:bg-card text-gray-500 dark:text-gray-200"
                           }`}
                         >
                           {record.grades[column] || "-"}
@@ -254,16 +291,16 @@ export function GradeDisplayTable({ classId }) {
       </div>
 
       {/* Summary */}
-      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-semibold text-blue-800 mb-2">Visibility Summary</h4>
+      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border dark:border-blue-800">
+        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Visibility Summary</h4>
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-blue-700">
+          <span className="text-sm text-blue-700 dark:text-blue-300">
             Visible to students:{" "}
             {Object.values(assessmentStatus?.data || {}).filter(Boolean).length}{" "}
             assessments
           </span>
-          <span className="text-sm text-blue-700">•</span>
-          <span className="text-sm text-blue-700">
+          <span className="text-sm text-blue-700 dark:text-blue-300">•</span>
+          <span className="text-sm text-blue-700 dark:text-blue-300">
             Hidden from students:{" "}
             {
               Object.values(assessmentStatus?.data || {}).filter((v) => !v)

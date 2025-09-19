@@ -24,6 +24,7 @@ import {
 } from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
 import { updateRole } from "@/services/user/userService";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const formSchema = z.object({
   institution: z.string().min(1, { message: "Institution is required." }),
@@ -36,6 +37,7 @@ export default function TeacherOnboarding() {
   const { login, currentUser, getAuthHeader } = useAuth();
   const [error, setError] = useState(null);
   const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const helmet = useDocumentTitle("Teacher Details", "Complete your teacher profile.");
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -154,12 +156,13 @@ export default function TeacherOnboarding() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-neutral-900 px-4 py-12">
+      {helmet}
       <Link href="/" className="mb-8 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
           <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
-        <span className="text-xl font-semibold text-gray-900">Gradify</span>
+        <span className="text-xl font-semibold text-gray-900 dark:text-white">Gradify</span>
       </Link>
 
       {/* Improved Back Button */}
@@ -169,7 +172,7 @@ export default function TeacherOnboarding() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-1 text-gray-600 hover:text-gray-900"
+          className="mb-6 flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -177,10 +180,10 @@ export default function TeacherOnboarding() {
       </div>
 
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           Complete your teacher profile
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
           We need a few more details to set up your account
         </p>
       </div>

@@ -48,6 +48,7 @@ import {
   AlertCircle,
   X,
   Save,
+  RefreshCw
 } from "lucide-react";
 
 export default function GraphFileBrowser({
@@ -66,31 +67,43 @@ export default function GraphFileBrowser({
     data: rootFiles,
     isLoading: rootIsLoading,
     error: rootError,
+    refetch: refetchRoot
   } = useQuery({
     queryKey: ["drive-files", userId, currentPath],
     queryFn: () => {
       return getDriveRoot(userId, getAuthHeader());
     },
     enabled: !!userId && open,
+    refetchInterval: 30000, // Auto-refetch every 30 seconds when component is focused
+    refetchIntervalInBackground: false, // Don't refetch in background
   });
 
   const {
     data: folderFiles,
     isLoading: folderIsLoading,
     error: folderError,
+    refetch: refetchFolder
   } = useQuery({
     queryKey: ["folder-files", userId, currentPath],
     queryFn: () => {
-      
       return getFolderFiles(userId, currentFolderId, getAuthHeader());
     },
-    
+
     enabled: !!userId && !!currentFolderId && open,
+    refetchInterval: 30000, // Auto-refetch every 30 seconds when component is focused
+    refetchIntervalInBackground: false, // Don't refetch in background
   });
 
   const saveExcelMutation = useMutation({
-    mutationFn: ({ folderName, fileName }) =>
-      saveExcelData(userId, folderName, fileName, getAuthHeader()),
+    mutationFn: ({ folderName, fileName, folderId, itemId }) =>
+      saveExcelData(
+        userId,
+        folderName,
+        fileName,
+        folderId,
+        itemId,
+        getAuthHeader()
+      ),
     onSuccess: (data) => {
       console.log("Excel data saved successfully");
     },
@@ -98,6 +111,14 @@ export default function GraphFileBrowser({
       console.log("Failed to save excel data", error);
     },
   });
+
+  const handleRefresh = () => {
+    if (currentPath.length === 0) {
+      refetchRoot();
+    } else {
+      refetchFolder();
+    }
+  };
 
   const files = currentPath.length === 0 ? rootFiles : folderFiles;
   const isLoading = currentPath.length === 0 ? rootIsLoading : folderIsLoading;
@@ -203,6 +224,8 @@ export default function GraphFileBrowser({
       saveExcelMutation.mutate({
         folderName,
         fileName: selectedFile.name,
+        folderId: currentFolderId,
+        itemId: selectedFile.id,
       });
     }
   };
@@ -265,6 +288,17 @@ export default function GraphFileBrowser({
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
 
           {/* Search */}
@@ -313,6 +347,15 @@ export default function GraphFileBrowser({
                 </Button>
                 <Button
                   size="sm"
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                  className="flex items-center gap-1"
+                  variant="outline"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button
+                  size="sm"
                   onClick={handleRemoveFile}
                   className="flex items-center gap-1"
                   variant="destructive"
@@ -328,7 +371,57 @@ export default function GraphFileBrowser({
             <Alert className="border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Failed to save Excel data. Please try again.
+                {(() => {
+                  const error = saveExcelMutation.error;
+                  const errorData = error?.response?.data;
+
+                  // Check if it's a grade validation error with details
+                  if (
+                    errorData?.errorCode === "GRADE_VALIDATION_ERROR" &&
+                    errorData?.details?.errors
+                  ) {
+                    return (
+                      <div className="space-y-2">
+                        <div className="font-semibold">
+                          {errorData.message || "Grade validation failed"}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                          {errorData.details.errors.map(
+                            (validationError, index) => (
+                              <div
+                                key={index}
+                                className="text-sm bg-red-100 p-2 rounded border-l-4 border-red-400"
+                              >
+                                <div className="font-medium">
+                                  Row {validationError.row}:{" "}
+                                  {validationError.studentNumber}
+                                </div>
+                                <div>{validationError.message}</div>
+                                <div className="text-xs text-red-600 mt-1">
+                                  Assessment: {validationError.assessmentName} |
+                                  Value: {validationError.actualValue} | Max:{" "}
+                                  {validationError.maxValue}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                        {errorData.details.errorCount > 1 && (
+                          <div className="text-sm font-medium">
+                            Total errors: {errorData.details.errorCount}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Fallback to generic error message
+                  return (
+                    errorData?.message ||
+                    error?.message ||
+                    "Failed to save Excel data. Please try again."
+                  );
+                })()}
               </AlertDescription>
             </Alert>
           )}

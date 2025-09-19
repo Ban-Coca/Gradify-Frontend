@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import { getSpreadsheetById } from "@/services/teacher/spreadsheetservices";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function SpreadsheetDisplayPage() {
     const { id } = useParams();
@@ -11,6 +12,8 @@ export default function SpreadsheetDisplayPage() {
     const [spreadsheetData, setSpreadsheetData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const helmet = useDocumentTitle("Spreadsheet", "View detailed spreadsheet data and grades.");
 
     useEffect(() => {
 
@@ -61,9 +64,26 @@ export default function SpreadsheetDisplayPage() {
         
         // Check if grades is an object and extract its keys
         if (firstRecord.grades && typeof firstRecord.grades === 'object') {
-            // Filter out non-grade columns if needed
-            const excludedFields = ['id', 'studentNumber', 'Student Number', 'First Name', 'Last Name'];
-            return Object.keys(firstRecord.grades).filter(key => !excludedFields.includes(key));
+            // Create a set of excluded fields in lowercase for easier comparison
+            const excludedFields = new Set([
+                'id', 'studentnumber', 'student number', 
+                'first name', 'last name', 'firstname', 'lastname',
+                'name', 'full name', 'fullname',
+                'project id', 'number', 'student id'
+            ]);
+            
+            const allKeys = Object.keys(firstRecord.grades);
+            console.log('All grade keys:', allKeys);
+            console.log('Excluded fields:', Array.from(excludedFields));
+            
+            const filteredKeys = allKeys.filter(key => {
+                const isExcluded = excludedFields.has(key.toLowerCase());
+                console.log(`Key: "${key}" (lowercase: "${key.toLowerCase()}") - Excluded: ${isExcluded}`);
+                return !isExcluded;
+            });
+            
+            console.log('Final filtered keys (grade columns):', filteredKeys);
+            return filteredKeys;
         }
         
         return [];
@@ -92,8 +112,17 @@ export default function SpreadsheetDisplayPage() {
         return spreadsheetData.gradeRecords.map((record) => (
             <tr key={record.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{record.studentNumber || record.grades?.["Student Number"] || ""}</td>
-                <td className="p-3">{record.grades?.["First Name"] || ""}</td>
-                <td className="p-3">{record.grades?.["Last Name"] || ""}</td>
+                <td className="p-3">
+                    {record.grades?.["First Name"] || 
+                     record.grades?.["FirstName"] || 
+                     record.grades?.["FIRSTNAME"] || 
+                     record.grades?.["NAME"] || ""}
+                </td>
+                <td className="p-3">
+                    {record.grades?.["Last Name"] || 
+                     record.grades?.["LastName"] || 
+                     record.grades?.["LASTNAME"] || ""}
+                </td>
                 {gradeColumns.map((column) => (
                     <td key={`${record.id}-${column}`} className="p-3">
                         {/* Convert any non-string values to string */}
@@ -109,6 +138,7 @@ export default function SpreadsheetDisplayPage() {
     if (loading) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <Skeleton className="h-8 w-64 mb-4" />
                     <Skeleton className="h-6 w-full mb-2" />
@@ -123,6 +153,7 @@ export default function SpreadsheetDisplayPage() {
     if (error) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <h1 className="text-xl md:text-2xl font-bold text-red-500">Error</h1>
                     <p className="mt-2">{error}</p>
@@ -135,6 +166,7 @@ export default function SpreadsheetDisplayPage() {
     if (!spreadsheetData) {
         return (
             <Layout>
+                {helmet}
                 <div className="p-4">
                     <h1 className="text-xl md:text-2xl font-bold">No Data Found</h1>
                     <p className="mt-2">The spreadsheet data could not be loaded.</p>
@@ -145,6 +177,7 @@ export default function SpreadsheetDisplayPage() {
 
     return (
         <Layout>
+            {helmet}
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-xl md:text-2xl font-bold">

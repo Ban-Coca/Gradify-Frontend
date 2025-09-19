@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import logo from "@/assets/gradifyLogo.svg";
 import { updateUserRole } from "@/services/user/authenticationService";
 import { useOnboarding } from "@/contexts/onboarding-context";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export default function RoleSelection() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function RoleSelection() {
   const { currentUser, updateUserProfile, getAuthHeader } = useAuth();
   const location = useLocation();
   const { formData, setFormData } = useOnboarding();
+  const helmet = useDocumentTitle("Choose Role", "Select your role to continue onboarding.");
 
   useEffect(() => {
     const azureUserData = sessionStorage.getItem('azureUserData');
@@ -55,19 +57,20 @@ export default function RoleSelection() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-neutral-900 px-4 py-12">
+      {helmet}
       <Link href="/" className="mb-8 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
          <img src={logo} alt="Logo" className="h-8 w-8" />
         </div>
-        <span className="text-xl font-semibold text-gray-900">Gradify</span>
+        <span className="text-xl font-semibold text-gray-900 dark:text-white">Gradify</span>
       </Link>
 
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           How will you use Gradify?
         </h1>
-        <p className="mt-2 text-lg text-gray-600">
+        <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
           This helps customize your experience
         </p>
       </div>
@@ -76,8 +79,8 @@ export default function RoleSelection() {
         <div
           className={`cursor-pointer rounded-xl border p-6 transition-all hover:border-green-600 hover:shadow-md ${
             selectedRole === "student"
-              ? "border-2 border-green-600 bg-green-50"
-              : "border-gray-200"
+              ? "border-2 border-green-600 bg-green-50 dark:bg-green-900/20"
+              : "border-gray-200 dark:border-gray-700"
           }`}
           onClick={() => handleRoleSelect("student")}
         >
@@ -98,10 +101,10 @@ export default function RoleSelection() {
               <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             I&apos;m a Student
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Track classes, assignments, and grades in one place
           </p>
         </div>
@@ -109,8 +112,8 @@ export default function RoleSelection() {
         <div
           className={`cursor-pointer rounded-xl border p-6 transition-all hover:border-green-600 hover:shadow-md ${
             selectedRole === "teacher"
-              ? "border-2 border-green-600 bg-green-50"
-              : "border-gray-200"
+              ? "border-2 border-green-600 bg-green-50 dark:bg-green-900/20"
+              : "border-gray-200 dark:border-gray-700"
           }`}
           onClick={() => handleRoleSelect("teacher")}
         >
@@ -131,10 +134,10 @@ export default function RoleSelection() {
               <circle cx="12" cy="8" r="2" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             I&apos;m a Teacher
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-gray-600 dark:text-gray-300">
             Manage classes, track student progress, and upload spreadsheets
           </p>
         </div>
@@ -146,7 +149,7 @@ export default function RoleSelection() {
         className={`mt-10 rounded-md px-8 py-3 text-white transition-all ${
           selectedRole
             ? "bg-green-600 hover:bg-green-700"
-            : "cursor-not-allowed bg-gray-300"
+            : "cursor-not-allowed bg-gray-300 dark:bg-gray-600"
         }`}
       >
         Continue

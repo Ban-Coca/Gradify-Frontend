@@ -45,6 +45,7 @@ import {
   getStudentByClass,
 } from "@/services/teacher/classServices";
 import { useQuery } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 function ReportsPage() {
   const { tab } = useParams();
@@ -72,6 +73,8 @@ function ReportsPage() {
   );
 
   const activeTeacher = initialTeacherId || currentUser?.userId;
+
+  const helmet = useDocumentTitle("Reports", "Generate and manage student reports and feedback.");
 
   const { data: classes = [], isLoading: isLoadingClasses } = useQuery({
     queryKey: ["classes", activeTeacher],
@@ -189,6 +192,7 @@ function ReportsPage() {
 
   return (
     <Layout>
+      {helmet}
       <div className="mt-6 flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">

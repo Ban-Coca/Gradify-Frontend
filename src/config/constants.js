@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
         LOGIN: '/api/user/login',
         REGISTER: '/api/user/register',
         OAUTH2_FAILURE: '/api/user/oauth2/failure',
+        CHECK_EMAIL_EXISTS: '/api/user/email-exists',
         
         // Profile Management
         UPDATE_PROFILE: '/api/user/update-profile',
@@ -29,6 +30,7 @@ export const API_ENDPOINTS = {
         REQUEST_PASSWORD_RESET: '/api/user/request-password-reset',
         VERIFY_RESET_CODE: '/api/user/verify-reset-code',
         RESET_PASSWORD: '/api/user/reset-password',
+        RESEND_CODE: '/api/user/resend-code'
     },
     
     // Student Related
@@ -75,6 +77,7 @@ export const API_ENDPOINTS = {
         UPDATE_VISIBLE_ASSESSMENTS: '/api/teacher/class-spreadsheet', // + /{classSpreadsheetId}/assessments/visible
         TOGGLE_ASSESSMENT: '/api/teacher', // + /{classSpreadsheetId}/assessments/{assessmentName}/toggle
         ASSESSMENT_STATUS: '/api/teacher', // + /{classSpreadsheetId}/assessments/status
+        STUDENT_DETAIL: '/api/teacher', // + /class/{classId}/student/{studentId}
     },
     
     // Reports
@@ -147,10 +150,20 @@ export const API_ENDPOINTS = {
         SAVE_EXCEL: '/api/graph/save', // + /{folderName}/{fileName}
         
         // Notifications & Subscriptions
-        CREATE_SUBSCRIPTION: '/api/graph/notification/subscription',
+        CREATE_SUBSCRIPTION: '/api/graph/notification/subscribe',
         HANDLE_NOTIFICATION: '/api/graph/notification',
+        TRACKED_FILES: '/api/graph/tracked-files',
+        UNSUBSCRIBE: '/api/graph/subscription', // DELETE MAPPING
+        RENEW_SUBSCRIPTION: '/api/graph/subscription/renew',
+        SUBSCRIPTION_STATUS: '/api/graph/subscription/status',
+        SYNC_EXCEL: '/api/graph/sync-excel-sheet' // + ?userId={usesrId}&sheetId={sheetId}
+
     },
-    
+    GOOGLE: {
+        GET_ACCESS_TOKEN: '/api/google/access-token', // + ?userId={userId}
+        SAVE_SHEET: '/api/google/drive/save', // + ?userId={userId}&urlLink={urlLink}
+        SYNC_SHEET: '/api/google/sync-sheet' // + ?userId={usesrId}&sheetId={sheetId}
+    },
     // FCM (Firebase Cloud Messaging) for Push Notifications
     FCM: {
         REGISTER_DEVICE: '/api/fcm/register-device',

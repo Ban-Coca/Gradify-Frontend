@@ -67,12 +67,9 @@ export const AuthenticationProvider = ({ children }) => {
           const role = extractRoleFromToken(storedToken);
           setUserRole(role);
           localStorage.setItem("role", role);
-        } else {
-          logout();
         }
       } catch (error) {
         console.error("Error initializing auth state:", error);
-        logout();
       } finally {
         setLoading(false);
       }

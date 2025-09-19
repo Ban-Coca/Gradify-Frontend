@@ -1,22 +1,24 @@
 import { LoginForm } from "@/components/login-form"
-import { GalleryVerticalEnd } from "lucide-react"
 import loginImg from "@/assets/learning-animate.svg"
-import { useRef } from "react"
 import { motion } from "motion/react"
 import logo from '@/assets/gradifyLogo.svg'
+import { Link } from "react-router-dom"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 export default function LoginPage() {
-  const ref = useRef(null)
+  const helmet = useDocumentTitle("Login", "Sign in to your Gradify account.");
+
   return (
     <div 
       className="grid min-h-svh lg:grid-cols-2">
+      {helmet}
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <Link to="/" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md border border-solid border-primary text-primary-foreground">
               <img src={logo} alt="Logo" className="h-6 w-6" />
             </div>
             Gradify
-          </a>
+          </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
@@ -41,10 +43,20 @@ export default function LoginPage() {
             <h1 className="text-6xl font-bold">Gradify</h1>
             <h3 className="text-xl font-bold italic">Learning Reoptimized</h3>
         </motion.div>
-        <img
+        <motion.img
           src={loginImg}
           alt="Image"
           className="animated w-128 h-128"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            transition: {
+              delay: 0.5,
+              duration: 0.8,
+              ease: "easeOut",
+            },
+          }}
         />
       </div>
     </div>

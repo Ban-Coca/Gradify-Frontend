@@ -41,6 +41,7 @@ import { useAuth } from "@/contexts/authentication-context";
 import NewClass from "@/pages/TeacherPages/NewClass.jsx";
 import { useTeacher } from "@/hooks/use-teacher";
 import { useReports } from "@/hooks/use-reports";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState("math101");
@@ -52,6 +53,7 @@ const TeacherDashboard = () => {
   const { currentUser, getAuthHeader } = useAuth();
   // Add state for new class modal
   const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
+  const helmet = useDocumentTitle("Dashboard", "Welcome to your teacher dashboard. Manage your classes and track student performance.");
   const { studentCountQuery, atRiskStudentsQuery, topStudentsQuery } =
     useTeacher(currentUser.userId);
   // Calculate the classes to display for the current page
@@ -141,6 +143,7 @@ const TeacherDashboard = () => {
 
   return (
     <Layout>
+      {helmet}
       {/* Welcome Banner */}
       <div className="mt-5 mb-6 bg-gradient-to-r from-primary to-green-400 text-white font-bold text-2xl md:text-4xl p-6 rounded-lg shadow-md items-center">
         <div>
@@ -156,11 +159,11 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Total Students
               </p>
               <h3 className="text-2xl font-bold">{studentCountQuery.data}</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground ">
                 Across all classes
               </p>
             </div>
@@ -172,7 +175,7 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Students at Risk
               </p>
               <h3 className="text-2xl font-bold">{atRiskStudentsQuery.data}</h3>
@@ -194,7 +197,7 @@ const TeacherDashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Top Performers
               </p>
               <h3 className="text-2xl font-bold">{topStudentsQuery.data}</h3>
@@ -383,9 +386,9 @@ const TeacherDashboard = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate("/uploads")}
+                onClick={() => navigate("/reports")}
               >
-                View All Uploads
+                View All Reports
               </Button>
             </CardFooter>
           </Card>

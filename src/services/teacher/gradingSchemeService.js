@@ -13,7 +13,7 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
         };
         
         const response = await api.post(
-            `${API_ENDPOINTS.GRADING.SAVE_SCHEME}/save?classId=${classId}&teacherId=${teacherId}`, 
+            `${API_ENDPOINTS.GRADING.SAVE_SCHEME}?classId=${classId}&teacherId=${teacherId}`, 
             dataToSend,
             {
                 headers: {
@@ -32,7 +32,7 @@ export const savingGradingScheme = async (gradingScheme, classId, teacherId, hea
 export const getGradingScheme = async (classId, headers) => {
     try {
         const response = await api.get(
-            `${API_ENDPOINTS.GRADING.GET_SCHEMES}/schemes?classId=${classId}`, 
+            `${API_ENDPOINTS.GRADING.GET_SCHEMES}?classId=${classId}`, 
             {
                 headers: {
                     ...headers,
@@ -54,7 +54,7 @@ export const updateGradingScheme = async (gradingScheme, classId, teacherId, hea
         };
 
         const response = await api.put(
-            `${API_ENDPOINTS.GRADING.UPDATE_SCHEME}/class/${classId}/teacher/${teacherId}`,
+            `${API_ENDPOINTS.GRADING.UPDATE_SCHEME}/${classId}/teacher/${teacherId}`,
             dataToSend,
             {
                 headers: {

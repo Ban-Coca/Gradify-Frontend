@@ -108,23 +108,23 @@ export function ProgressView() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger 
               value="average"
-              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-green-700/50"
             > Average Per Class</TabsTrigger>
             <TabsTrigger 
               value="distribution"
-              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-green-700/50"
             > Grade Distribution</TabsTrigger>
             <TabsTrigger 
               value="comparison"
-              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-green-700/50"
             > Class Comparison</TabsTrigger>
             <TabsTrigger 
               value="trend"
-              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-green-700/50"
             > Pseudo-Trend</TabsTrigger>
             <TabsTrigger 
               value="improvement"
-              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-white data-[state=active]:text-black hover:bg-gray-300/50"
+              className="w-full text-center text-white transition-all duration-300 ease-in-out transform data-[state=active]:bg-green-600 data-[state=active]:text-white hover:bg-green-700/50"
             > Improvement Suggestions</TabsTrigger>
           </TabsList>
           <TabsContent value="average">
@@ -185,9 +185,7 @@ export function ProgressView() {
                 <CardDescription>Actionable tips based on your grades.</CardDescription>
               </CardHeader>
               <CardContent>
-                <CardContent>
-                  <ImprovementAreas classes={classes} allGrades={allGrades} />
-                </CardContent>
+                <ImprovementAreas classes={classes} allGrades={allGrades} />
               </CardContent>
             </Card>
           </TabsContent>
