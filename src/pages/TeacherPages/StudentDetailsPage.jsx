@@ -1,5 +1,6 @@
 import { ArrowLeft, Calendar, Download, Mail, MessageSquare, Phone, Send, User } from "lucide-react"
 import {Link} from "react-router-dom"
+import DOMPurify from 'dompurify'
 import {
   Dialog,
   DialogContent,
@@ -85,7 +86,7 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
     major: studentDetail.major,
     yearLevel: studentDetail.yearLevel,
     grade: convertCalculatedGradeToLetterGrade(calculatedGradeData) || 'N/A',
-    percentage: calculatedGradeData.percentage || 0,
+    percentage: calculatedGradeData || 0,
     status: getStudentStatus(calculatedGradeData || 0),
     gradeHistory: transformCourseDataToHistory(courseTableData),
     reports: studentDetail.reports || [],
@@ -113,7 +114,7 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
 
   // Use processed student data if available, otherwise fall back to prop or default
   const student = processedStudent || propStudent || defaultStudent
-  console.log("Student: ", student)
+  
   // Handle loading state
   if (isLoading || isGradeLoading || isCourseDataLoading) {
     return (
@@ -358,7 +359,7 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
                       <CardContent>
                         <div 
                           className="text-sm"
-                          dangerouslySetInnerHTML={{ __html: report.message }}
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.message) }}
                         />
                       </CardContent>
                     </Card>

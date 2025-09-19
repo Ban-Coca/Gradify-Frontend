@@ -119,7 +119,6 @@ export function StudentTable({ searchQuery, classId }) {
 
   const handleStudentDetails = (student) => {
     setSelectedStudent(student);
-    console.log("Selected student: ", selectedStudent)
     requestAnimationFrame(() => {
       setIsDetailsOpen(true)
     })
