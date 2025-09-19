@@ -130,7 +130,7 @@ export default function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    className="text-base h-12 hover:bg-primary hover:text-white"
+                    className="text-base h-12 hover:bg-primary hover:text-white data-[active=true]:bg-primary"
                     isActive={isActive(item.url)}
                     asChild
                   >

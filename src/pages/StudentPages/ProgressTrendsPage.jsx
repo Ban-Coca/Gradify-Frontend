@@ -16,7 +16,7 @@ export default function ProgressTrendsPage() {
       {helmet}
         <div className='bg-inherited p-2 rounded-lg mt-4 mb-4'>
             <h1 className="text-xl md:text-2xl font-bold">Progress Trends</h1>
-            <p className="text-sm text-muted">Track your academic progress and identify improvement areas.</p>
+            <p className="text-sm text-muted dark:text-emerald-600">Track your academic progress and identify improvement areas.</p>
         </div>
         <ProgressView />
     </Layout>

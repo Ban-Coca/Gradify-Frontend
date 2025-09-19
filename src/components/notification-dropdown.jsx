@@ -70,8 +70,31 @@ export function NotificationDropdown() {
         return "bg-amber-500/10 text-amber-500 border-amber-500/20";
       case "error":
         return "bg-red-500/10 text-red-500 border-red-500/20";
+      case "ASSESSMENT_VISIBILITY_CHANGED":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      case "REPORT_CREATED":
+        return "bg-green-500/10 text-green-500 border-green-500/20";
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+    }
+  };
+
+  const getTypeDisplayText = (type) => {
+    switch (type) {
+      case "ASSESSMENT_VISIBILITY_CHANGED":
+        return "Visibility Changed";
+      case "REPORT_CREATED":
+        return "Report Created";
+      case "info":
+        return "Info";
+      case "success":
+        return "Success";
+      case "warning":
+        return "Warning";
+      case "error":
+        return "Error";
+      default:
+        return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
   const cleanNotificationText = (html) => {
@@ -168,11 +191,11 @@ export function NotificationDropdown() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "h-6 px-2",
+                            "h-8 p-4",
                             getTypeStyles(notification.type)
                           )}
                         >
-                          {notification.type}
+                          {getTypeDisplayText(notification.type)}
                         </Badge>
                         <h4 className="font-medium text-sm">
                           {notification.title}

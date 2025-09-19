@@ -596,8 +596,8 @@ export function GradesView() {
               ) : Object.keys(grades).length === 0 ? (
                 <div className="text-center py-12">
                   <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-medium mb-2">No Grade Data</h3>
-                  <p className="text-muted-foreground">No grade information is available for this class yet.</p>
+                  <h3 className="text-xl font-medium mb-2">No Visible Grades</h3>
+                  <p className="text-muted-foreground">There are no visible grades here. Your instructor hasn't set any visible grades yet.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

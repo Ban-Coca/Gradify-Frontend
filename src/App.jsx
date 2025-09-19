@@ -32,6 +32,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AzureCallback from "./callbacks/AzureCallback";
 import TeacherSettings from "./pages/SettingsPage";
 import WorkInProgress from "./pages/WorkInProgress";
+import StudentSettings from "./pages/StudentSettingsPage";
 
 export const RoleBasedComponent = ({ children, allowedRoles }) => {
   const { userRole } = useAuth();
@@ -215,7 +216,7 @@ function App() {
           <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/grades" element={<GradesPage />} />
           <Route
-            path="/student/feedback/:feedbackId?"
+            path="/student/feedback/:reportId?"
             element={<FeedbackPage />}
           />
           <Route
@@ -223,6 +224,7 @@ function App() {
             element={<ProgressTrendsPage />}
           />
           <Route path="/student/profile" element={<ProfilePage />} />
+          <Route path="/student/settings" element={<StudentSettings/>}/>
         </Route>
 
         <Route element={<OnboardingRoute />}>

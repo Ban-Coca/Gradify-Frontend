@@ -120,7 +120,7 @@ export default function NavUser({
                     {currentUser?.firstName} {currentUser?.lastName}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="hover:dark:bg-emerald-600" onClick={handleSettingsClick}>
+                  <DropdownMenuItem className="hover:dark:bg-primary" onClick={handleSettingsClick}>
                     <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
                     <span>Settings</span>
                   </DropdownMenuItem>
@@ -208,7 +208,7 @@ export default function NavUser({
           <Button
             variant="ghost"
             aria-label="More options"
-            className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 dark:hover:bg-emerald-700 hover:text-primary hover:dark:text-emerald-200"
+            className="w-full flex items-center justify-start gap-3 h-14 px-3 hover:bg-primary/10 dark:hover:bg-primary hover:text-primary hover:dark:text-emerald-200"
             aria-expanded={isDropdownOpen}
             aria-haspopup="menu"
           >
@@ -242,7 +242,7 @@ export default function NavUser({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleSettingsClick}
-            className="hover:dark:bg-emerald-600"
+            className="hover:dark:bg-primary"
           >
             <Settings className="mr-2 h-4 w-4 group-hover:text-white" />
             <span>Settings</span>

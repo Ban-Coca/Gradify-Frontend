@@ -35,9 +35,9 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
   if (!sortedGrades.length) {
     return (
       <div className="text-center py-12">
-        <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium mb-2">No Trend Data Available</h3>
-        <p className="text-muted-foreground">Grade trends will appear here once you have multiple classes.</p>
+        <BarChart3 className="h-16 w-16 text-muted-foreground dark:text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium mb-2 dark:text-foreground">No Trend Data Available</h3>
+        <p className="text-muted-foreground dark:text-muted-foreground">Grade trends will appear here once you have multiple classes.</p>
       </div>
     )
   }
@@ -73,49 +73,61 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
     <div className="space-y-6">
       {/* Trend Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800">
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-sm font-medium text-blue-600">Average Grade</p>
-              <p className="text-2xl font-bold text-blue-700">{averageGrade.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Average Grade</p>
+              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{averageGrade.toFixed(1)}%</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-green-50 border-green-200">
+        <Card className="bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800">
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-sm font-medium text-green-600">Highest</p>
-              <p className="text-2xl font-bold text-green-700">{maxGrade.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-green-600 dark:text-green-400">Highest</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-300">{maxGrade.toFixed(1)}%</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-orange-50 border-orange-200">
+        <Card className="bg-orange-50/50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800">
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-sm font-medium text-orange-600">Lowest</p>
-              <p className="text-2xl font-bold text-orange-700">{minGrade.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Lowest</p>
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{minGrade.toFixed(1)}%</p>
             </div>
           </CardContent>
         </Card>
 
         <Card
-          className={`${trend === "improving" ? "bg-green-50 border-green-200" : trend === "declining" ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}
+          className={`${
+            trend === "improving" 
+              ? "bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800" 
+              : trend === "declining" 
+                ? "bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-800" 
+                : "bg-gray-50/50 border-gray-200 dark:bg-gray-900/10 dark:border-gray-800"
+          }`}
         >
           <CardContent className="p-4">
             <div className="text-center">
-              <p className="text-sm font-medium">Trend</p>
+              <p className="text-sm font-medium dark:text-foreground">Trend</p>
               <div className="flex items-center justify-center gap-1">
                 {trend === "improving" ? (
-                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
                 ) : trend === "declining" ? (
-                  <TrendingDown className="h-5 w-5 text-red-600" />
+                  <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
                 ) : (
-                  <Target className="h-5 w-5 text-gray-600" />
+                  <Target className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 )}
                 <span
-                  className={`text-sm font-bold ${trend === "improving" ? "text-green-700" : trend === "declining" ? "text-red-700" : "text-gray-700"}`}
+                  className={`text-sm font-bold ${
+                    trend === "improving" 
+                      ? "text-green-700 dark:text-green-300" 
+                      : trend === "declining" 
+                        ? "text-red-700 dark:text-red-300" 
+                        : "text-gray-700 dark:text-gray-300"
+                  }`}
                 >
                   {trend === "improving" ? "Improving" : trend === "declining" ? "Declining" : "Stable"}
                 </span>
@@ -127,7 +139,7 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
 
       {/* View Mode Controls */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">View:</span>
+        <span className="text-sm font-medium dark:text-foreground">View:</span>
         <Button variant={viewMode === "bars" ? "default" : "outline"} size="sm" onClick={() => setViewMode("bars")}>
           <BarChart3 className="h-4 w-4 mr-1" />
           Bars
@@ -145,11 +157,11 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
       {/* Main Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 dark:text-foreground">
             <BarChart3 className="h-5 w-5" />
             Grade Progression by Class Enrollment Order
           </CardTitle>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
             <Info className="h-4 w-4" />
             Click on any point to see detailed information
           </div>
@@ -158,10 +170,10 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
           <div className="relative">
             {/* Average line */}
             <div
-              className="absolute w-full border-t-2 border-dashed border-gray-300 z-10"
+              className="absolute w-full border-t-2 border-dashed border-gray-300 dark:border-gray-600 z-10"
               style={{ top: `${100 - averageGrade}%` }}
             >
-              <span className="absolute -top-6 right-0 text-xs text-gray-500 bg-white px-2">
+              <span className="absolute -top-6 right-0 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2">
                 Avg: {averageGrade.toFixed(1)}%
               </span>
             </div>
@@ -186,7 +198,7 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
                           </Badge>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-center text-muted-foreground max-w-16 truncate">
+                      <div className="mt-2 text-xs text-center text-muted-foreground dark:text-muted-foreground max-w-16 truncate">
                         {className}
                       </div>
                     </div>
@@ -246,7 +258,7 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
                 {/* Class labels */}
                 <div className="flex justify-between mt-2">
                   {sortedGrades.map((item) => (
-                    <div key={item.classId} className="text-xs text-center text-muted-foreground flex-1 truncate">
+                    <div key={item.classId} className="text-xs text-center text-muted-foreground dark:text-muted-foreground flex-1 truncate">
                       {classIdToName[item.classId] || `Class ${item.classId}`}
                     </div>
                   ))}
@@ -267,7 +279,7 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
                         >
                           {item.grade.toFixed(0)}
                         </div>
-                        <div className="mt-2 text-xs text-center text-muted-foreground max-w-16 truncate">
+                        <div className="mt-2 text-xs text-center text-muted-foreground dark:text-muted-foreground max-w-16 truncate">
                           {className}
                         </div>
                         <Progress value={item.grade} className="mt-1 w-16 h-1" />
@@ -319,16 +331,16 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
       </Card>
 
       {/* Insights */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border-blue-200 dark:from-blue-900/10 dark:to-indigo-900/10 dark:border-blue-800">
         <CardContent className="p-6">
-          <h4 className="font-semibold mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5 text-blue-600" />
+          <h4 className="font-semibold mb-4 flex items-center gap-2 dark:text-foreground">
+            <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Trend Analysis
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="font-medium mb-2">Performance Pattern:</p>
-              <ul className="space-y-1 text-muted-foreground">
+              <p className="font-medium mb-2 dark:text-foreground">Performance Pattern:</p>
+              <ul className="space-y-1 text-muted-foreground dark:text-muted-foreground">
                 <li>
                   • Grade range: {minGrade.toFixed(1)}% - {maxGrade.toFixed(1)}%
                 </li>
@@ -344,8 +356,8 @@ export function PseudoTrendChart({ allGrades = [], classes = [] }) {
               </ul>
             </div>
             <div>
-              <p className="font-medium mb-2">Recommendations:</p>
-              <ul className="space-y-1 text-muted-foreground">
+              <p className="font-medium mb-2 dark:text-foreground">Recommendations:</p>
+              <ul className="space-y-1 text-muted-foreground dark:text-muted-foreground">
                 {trend === "improving" && <li>• Great progress! Keep up the momentum</li>}
                 {trend === "declining" && <li>• Focus on study habits and seek help</li>}
                 {trend === "stable" && <li>• Maintain consistency across all subjects</li>}
