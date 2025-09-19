@@ -77,6 +77,7 @@ export const API_ENDPOINTS = {
         UPDATE_VISIBLE_ASSESSMENTS: '/api/teacher/class-spreadsheet', // + /{classSpreadsheetId}/assessments/visible
         TOGGLE_ASSESSMENT: '/api/teacher', // + /{classSpreadsheetId}/assessments/{assessmentName}/toggle
         ASSESSMENT_STATUS: '/api/teacher', // + /{classSpreadsheetId}/assessments/status
+        STUDENT_DETAIL: '/api/teacher', // + /class/{classId}/student/{studentId}
     },
     
     // Reports
