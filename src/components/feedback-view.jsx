@@ -221,8 +221,8 @@ export function FeedbackView() {
                           className={`cursor-pointer transition-colors
                           ${
                             selectedClass === cls.id
-                              ? "bg-primary text-white"
-                              : "hover:bg-primary hover:text-white"
+                              ? "bg-green-600 text-white"
+                              : "hover:bg-green-600 hover:text-white"
                           }
                         `}
                           onClick={() => setSelectedClass(cls.id)}
@@ -314,16 +314,16 @@ export function FeedbackView() {
                     {filteredFeedback.map((feedback) => (
                       <div
                         key={feedback.reportId}
-                        className={`group p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-primary/10 ${
+                        className={`group p-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-green-50 dark:hover:bg-green-900/20 ${
                           selectedFeedback === feedback.reportId
-                            ? "bg-primary/5 border-l-4 border-l-primary"
-                            : "hover:bg-primary/10 hover:text-primary"
+                            ? "bg-green-50 dark:bg-green-900/10 border-l-4 border-l-green-600"
+                            : "hover:bg-green-50 dark:hover:bg-green-900/20"
                         }`}
                         onClick={() => handleFeedbackSelect(feedback.reportId)}
                       >
                         <div className="flex items-start gap-3">
                           <Avatar className="h-9 w-9 flex-shrink-0">
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                            <AvatarFallback className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
                               {getTeacherInitials(feedback.teacherName)}
                             </AvatarFallback>
                           </Avatar>
@@ -401,7 +401,7 @@ export function FeedbackView() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-primary/10 text-primary">
+                        <AvatarFallback className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
                           {getTeacherInitials(
                             selectedFeedbackDetails.teacherName
                           )}

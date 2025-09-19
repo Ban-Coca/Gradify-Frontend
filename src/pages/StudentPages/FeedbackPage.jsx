@@ -16,7 +16,7 @@ export default function FeedbackPage() {
       {helmet}
         <div className='bg-inherited p-2 rounded-lg mt-4 mb-4'>
             <h1 className="text-xl md:text-2xl font-bold">Feedback</h1>
-            <p className="text-sm text-muted">Review teacher comments and suggestions on your work.</p>
+            <p className="text-sm text-muted dark:text-emerald-600">Review teacher comments and suggestions on your work.</p>
         </div>
         <FeedbackView />
     </Layout>
