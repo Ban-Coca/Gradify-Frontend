@@ -15,71 +15,147 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useStudentDetail } from '@/hooks/use-teacher'
+import { Loading } from '@/components/loading-state'
+import { useQuery } from '@tanstack/react-query'
+import { getCalculatedGrade, getStudentCourseTableData } from '@/services/student/studentService'
+import { useAuth } from '@/contexts/authentication-context'
 
-export default function StudentDetailsDialog({ isOpen, onClose, student: propStudent = null }) {
-  // default sample student for when no student prop is passed
+export default function StudentDetailsDialog({ isOpen, onClose, student: propStudent = null, classId }) {
+  // Use the API hook to fetch student details
+  const { getAuthHeader } = useAuth();
+
+  const { studentDetail, isLoading, error } = useStudentDetail(classId, propStudent?.id);
+  
+  // Fetch calculated grade for the student
+  const { data: calculatedGradeData, isLoading: isGradeLoading } = useQuery({
+    queryKey: ["calculatedGrade", propStudent?.id, classId],
+    queryFn: () => getCalculatedGrade(propStudent?.id, classId, getAuthHeader()),
+    enabled: !!propStudent?.id && !!classId,
+  });
+
+  // Fetch student course table data for grade history
+  const { data: courseTableData, isLoading: isCourseDataLoading } = useQuery({
+    queryKey: ["studentCourseData", propStudent?.id, classId],
+    queryFn: () => getStudentCourseTableData(propStudent?.id, classId, getAuthHeader()),
+    enabled: !!propStudent?.id && !!classId,
+  });
+
+  // Helper function to transform course table data to grade history array
+  const transformCourseDataToHistory = (courseData) => {
+    if (!courseData?.grades) return [];
+    
+    return Object.entries(courseData.grades)
+      .filter(([key, value]) => 
+        !['studentId', 'studentName', 'studentNumber', 'Last Name', 'First Name', 'Student Number'].includes(key) && 
+        value !== null && value !== undefined && value !== ''
+      )
+      .map(([assessment, score]) => ({
+        assessment,
+        score: parseFloat(score) || 0,
+        percentage: parseFloat(score) || 0,
+        date: new Date().toLocaleDateString() // API doesn't provide dates, using current date
+      }));
+  };
+
+  // Helper function to determine student status based on overall grade
+  const getStudentStatus = (percentage) => {
+    if (percentage >= 90) return 'Excellent';
+    if (percentage >= 80) return 'Good Standing';
+    if (percentage >= 70) return 'Passing';
+    if (percentage >= 60) return 'At Risk';
+    return 'Failing';
+  };
+
+  const convertCalculatedGradeToLetterGrade = (percentage) => {
+      let grade;
+      if (percentage >= 90) grade = "A";
+      else if (percentage >= 80) grade = "B";
+      else if (percentage >= 70) grade = "C";
+      else if (percentage >= 60) grade = "D";
+      else grade = "F";
+      return grade;
+  }
+  // Process the API data when available
+  const processedStudent = studentDetail && calculatedGradeData ? {
+    id: studentDetail.userId,
+    name: `${studentDetail.firstName} ${studentDetail.lastName}`,
+    email: studentDetail.email,
+    studentId: studentDetail.studentNumber,
+    major: studentDetail.major,
+    yearLevel: studentDetail.yearLevel,
+    grade: convertCalculatedGradeToLetterGrade(calculatedGradeData) || 'N/A',
+    percentage: calculatedGradeData.percentage || 0,
+    status: getStudentStatus(calculatedGradeData || 0),
+    gradeHistory: transformCourseDataToHistory(courseTableData),
+    reports: studentDetail.reports || [],
+  
+  } : null;
+  
+  // default sample student for when no student prop is passed or data is loading
   const defaultStudent = {
     id: "12345",
-    name: "Maria Teresa Santos",
-    email: "maria.santos@student.edu",
-    studentId: "65-5456-851",
+    name: "Loading...",
+    email: "loading@example.com",
+    studentId: "Loading...",
     enrollmentDate: "August 15, 2023",
     profileImage: "/placeholder.svg?height=100&width=100",
-    grade: "A",
-    percentage: 90.5,
-    status: "Excellent",
-    attendance: 95,
-    engagement: 88,
-    classRank: 2,
-    classPercentile: 10,
-    gradeHistory: [
-      { assessment: "Quiz 1", score: 85, date: "Feb 15, 2025" },
-      { assessment: "Midterm", score: 88, date: "Apr 5, 2025" },
-      { assessment: "Quiz 2", score: 92, date: "May 10, 2025" },
-      { assessment: "Final Project", score: 94, date: "May 18, 2025" },
-    ],
-    feedback: [
-      {
-        id: "fb1",
-        date: "May 15, 2025",
-        from: "Dr. Johnson",
-        subject: "Midterm Project Feedback",
-        message:
-          "Excellent work on your midterm project. Your analysis was thorough and your presentation was clear and engaging. I particularly appreciated your innovative approach to solving the main problem.",
-        type: "positive",
-      },
-      {
-        id: "fb2",
-        date: "April 3, 2025",
-        from: "Prof. Williams",
-        subject: "Group Assignment Participation",
-        message:
-          "Maria has been an outstanding contributor to her group project. She consistently takes initiative and helps keep the team on track. Her research skills have been particularly valuable.",
-        type: "positive",
-      },
-      {
-        id: "fb3",
-        date: "March 22, 2025",
-        from: "Dr. Chen",
-        subject: "Quiz 3 Performance",
-        message:
-          "While Maria performed well overall, there were some gaps in understanding the concepts covered in chapter 7. I recommend reviewing sections 7.3 and 7.4 before the final exam.",
-        type: "improvement",
-      },
-    ],
+    grade: "N/A",
+    percentage: 0,
+    status: "Loading...",
+    attendance: 0,
+    engagement: 0,
+    classRank: 0,
+    classPercentile: 0,
+    gradeHistory: [],
+    reports: [],
   }
 
-  const student = propStudent || defaultStudent
+  // Use processed student data if available, otherwise fall back to prop or default
+  const student = processedStudent || propStudent || defaultStudent
+  console.log("Student: ", student)
+  // Handle loading state
+  if (isLoading || isGradeLoading || isCourseDataLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent aria-describedby="report-details-description" className="w-full sm:max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogDescription>Loading student information...</DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-8">
+            <Loading text="Loading student details..." />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent aria-describedby="report-details-description" className="w-full sm:max-w-4xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogDescription>Error loading student information</DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <p className="text-red-500 mb-4">Failed to load student details</p>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent aria-describedby="report-details-description" className="w-full sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center">
-            <Link to="/classes" className="flex items-center text-muted-foreground hover:text-foreground mr-4">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Class
-            </Link>
             <DialogTitle>Student Details</DialogTitle>
           </div>
           <DialogDescription className="mt-1">Details for {student.name}</DialogDescription>
@@ -124,19 +200,24 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
                     <p className="text-sm text-muted-foreground">{student.studentId}</p>
                   </div>
                 </div>
-              </div>
-
-              <Separator className="my-4" />
-
-              <div className="space-y-4">
-                <Button variant="outline" className="w-full">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Send Message
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Report
-                </Button>
+                {student.major && (
+                  <div className="flex items-start">
+                    <Calendar className="h-4 w-4 mr-2 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Major</p>
+                      <p className="text-sm text-muted-foreground">{student.major}</p>
+                    </div>
+                  </div>
+                )}
+                {student.yearLevel && (
+                  <div className="flex items-start">
+                    <Calendar className="h-4 w-4 mr-2 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Year Level</p>
+                      <p className="text-sm text-muted-foreground">{student.yearLevel}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -146,120 +227,93 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
             <CardHeader>
               <CardTitle>Academic Performance</CardTitle>
               <CardDescription>
-                Current grade: {student.grade} ({student.percentage}%)
+                Academic overview for student
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="overview">
                 <TabsList className="mb-4">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="trends">Grade Trends</TabsTrigger>
+                  <TabsTrigger value="trends">Grades</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Overall Grade</span>
-                      <span className="font-medium">{student.percentage}%</span>
+                      <span className="font-medium">{calculatedGradeData?.toFixed(2)}%</span>
                     </div>
-                    <Progress value={student.percentage} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Attendance</span>
-                      <span className="font-medium">{student.attendance}%</span>
-                    </div>
-                    <Progress value={student.attendance} className="h-2" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Engagement</span>
-                      <span className="font-medium">{student.engagement}%</span>
-                    </div>
-                    <Progress value={student.engagement} className="h-2" />
+                    <Progress value={calculatedGradeData} className="h-2" />
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 pt-4">
                     <div className="bg-muted rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold">{student.grade}</p>
-                      <p className="text-xs text-muted-foreground">Current Grade</p>
+                      <p className="text-2xl text-white font-bold">{calculatedGradeData?.toFixed(2)}</p>
+                      <p className="text-xs text-white dark:text-muted-foreground">Current Grade</p>
                     </div>
                     <div className="bg-muted rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold">{student.status}</p>
-                      <p className="text-xs text-muted-foreground">Standing</p>
+                      <p className="text-2xl text-white font-bold">{student.status}</p>
+                      <p className="text-xs text-white dark:text-muted-foreground">Standing</p>
                     </div>
                     <div className="bg-muted rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold">{student.feedback.length}</p>
-                      <p className="text-xs text-muted-foreground">Feedback Received</p>
+                      <p className="text-2xl text-white font-bold">{student.reports ? student.reports.length : 0}</p>
+                      <p className="text-xs text-white dark:text-muted-foreground">Reports Received</p>
                     </div>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="trends">
                   <div className="space-y-6">
-                    <div className="h-[200px] w-full border rounded-lg p-4 relative">
-                      {/* This would be a chart in a real implementation */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="space-y-4 w-full px-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Quiz 1</span>
-                              <span className="font-medium">85%</span>
+                    <div className="w-full border rounded-lg p-4">
+                      {/* Display actual grade history */}
+                      <div className="space-y-3 max-h-[300px] px-4 overflow-y-auto">
+                        {student.gradeHistory && student.gradeHistory.length > 0 ? (
+                          student.gradeHistory.map((grade, index) => (
+                            <div key={index} className="space-y-2 py-1">
+                              <div className="flex justify-between text-sm">
+                                <span className="font-medium">{grade.assessment}</span>
+                                <span className="font-semibold">{grade.score}%</span>
+                              </div>
+                              <Progress value={grade.percentage} className="h-2" />
                             </div>
-                            <Progress value={85} className="h-1.5" />
+                          ))
+                        ) : (
+                          <div className="text-center text-muted-foreground py-8">
+                            <p>No grade history available</p>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Midterm</span>
-                              <span className="font-medium">88%</span>
-                            </div>
-                            <Progress value={88} className="h-1.5" />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Quiz 2</span>
-                              <span className="font-medium">92%</span>
-                            </div>
-                            <Progress value={92} className="h-1.5" />
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Final Project</span>
-                              <span className="font-medium">94%</span>
-                            </div>
-                            <Progress value={94} className="h-1.5" />
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Grade Trend</CardTitle>
+                          <CardTitle className="text-sm">Current Grade</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="flex items-center">
-                            <div className="font-bold text-lg mr-2">↗️</div>
+                            <div className="font-bold text-3xl mr-3">
+                              {student.grade}
+                            </div>
                             <div>
-                              <p className="text-sm font-medium">Improving</p>
-                              <p className="text-xs text-muted-foreground">+6% over semester</p>
+                              <p className="text-lg font-semibold">{calculatedGradeData?.toFixed(2)}%</p>
+                              <p className="text-xs text-muted-foreground">Overall Score</p>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-sm">Class Standing</CardTitle>
+                          <CardTitle className="text-sm">Academic Status</CardTitle>
                         </CardHeader>
                         <CardContent>
                           <div className="flex items-center">
-                            <div className="font-bold text-lg mr-2">🏆</div>
+                            <div className="font-bold text-lg mr-2">
+                              {student.percentage >= 90 ? "🏆" : student.percentage >= 80 ? "⭐" : student.percentage >= 70 ? "✅" : "⚠️"}
+                            </div>
                             <div>
-                              <p className="text-sm font-medium">Top 10%</p>
-                              <p className="text-xs text-muted-foreground">2nd in class</p>
+                              <p className="text-sm font-medium">{student.status}</p>
+                              <p className="text-xs text-muted-foreground">Current Standing</p>
                             </div>
                           </div>
                         </CardContent>
@@ -285,26 +339,35 @@ export default function StudentDetailsDialog({ isOpen, onClose, student: propStu
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {student.feedback.map((item) => (
-                  <Card key={item.id}>
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-base">{item.subject}</CardTitle>
-                          <CardDescription>
-                            From: {item.from} • {item.date}
-                          </CardDescription>
+                {student.reports && student.reports.length > 0 ? (
+                  student.reports.map((report) => (
+                    <Card key={report.reportId}>
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-base">{report.subject}</CardTitle>
+                            <CardDescription>
+                              {new Date(report.reportDate).toLocaleDateString()}
+                            </CardDescription>
+                          </div>
+                          <Badge variant={report.notificationType === "grade-alert" ? "destructive" : "default"}>
+                            {report.notificationType === "grade-alert" ? "Grade Alert" : "Feedback"}
+                          </Badge>
                         </div>
-                        <Badge variant={item.type === "positive" ? "default" : "outline"}>
-                          {item.type === "positive" ? "Positive" : "Needs Improvement"}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">{item.message}</p>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardHeader>
+                      <CardContent>
+                        <div 
+                          className="text-sm"
+                          dangerouslySetInnerHTML={{ __html: report.message }}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No feedback or reports available for this student.</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

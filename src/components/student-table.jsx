@@ -99,7 +99,7 @@ export function StudentTable({ searchQuery, classId }) {
       setSortDirection("asc");
     }
   };
-  console.log(selectedStudent)
+  
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case "Failing":
@@ -119,6 +119,7 @@ export function StudentTable({ searchQuery, classId }) {
 
   const handleStudentDetails = (student) => {
     setSelectedStudent(student);
+    console.log("Selected student: ", selectedStudent)
     requestAnimationFrame(() => {
       setIsDetailsOpen(true)
     })
@@ -233,7 +234,7 @@ export function StudentTable({ searchQuery, classId }) {
                       <DropdownMenuItem
                         className="cursor-pointer"
                         onClick={() => {
-                          handleStudentDetails(selectedStudent);
+                          handleStudentDetails(student);
                         }}
                       >
                         <Eye className="hover:text-white mr-2 h-4 w-4" />
@@ -268,6 +269,7 @@ export function StudentTable({ searchQuery, classId }) {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         student={selectedStudent}
+        classId={classId}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import {
   getAssessmentStatus,
   toggleAssessmentVisibility,
   updateAssessmentVisibility,
+  getStudentDetail,
 } from "@/services/teacher/teacherService";
 import { useAuth } from "@/contexts/authentication-context";
 
@@ -83,6 +84,7 @@ export function useTeacher(teacherId, classId, classSpreadsheetId) {
     queryFn: () => getAssessmentStatus(classSpreadsheetId, getAuthHeader()),
     enabled: !!classSpreadsheetId,
   });
+
   return {
     studentCountQuery,
     atRiskStudentsQuery,
@@ -92,5 +94,23 @@ export function useTeacher(teacherId, classId, classSpreadsheetId) {
     toggleAssessment,
     updateAssessment,
     assessmentStatus
+  };
+}
+
+// Custom hook for student details
+export function useStudentDetail(classId, studentId) {
+  const { getAuthHeader } = useAuth();
+
+  const studentDetailQuery = useQuery({
+    queryKey: ["studentDetail", classId, studentId],
+    queryFn: () => getStudentDetail(classId, studentId, getAuthHeader()),
+    enabled: !!classId && !!studentId,
+  });
+
+  return {
+    studentDetail: studentDetailQuery.data,
+    isLoading: studentDetailQuery.isLoading,
+    error: studentDetailQuery.error,
+    refetch: studentDetailQuery.refetch,
   };
 }
