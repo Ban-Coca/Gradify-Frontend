@@ -15,6 +15,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -24,6 +25,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/authentication-context";
 import NavUser from "@/components/nav-user";
 import { useEffect, useRef, useState } from "react";
+import GradifyLogo from "@/assets/gradifyLogo.svg?react";
+import { Separator } from "./ui/separator";
 
 const teacherItems = [
   {
@@ -115,18 +118,33 @@ export default function AppSidebar() {
     logout();
     navigate("/login");
   };
-  
+
   return (
-    <Sidebar
-      collapsible="icon"
-    >
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="p-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-16 justify-start group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:px-0"
+            >
+              <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full">
+                <div className="flex items-center justify-center">
+                  <GradifyLogo style={{ width: "2rem", height: "2rem" }} />
+                </div>
+                <span className="text-2xl font-medium text-emerald-700 group-data-[collapsible=icon]:sr-only">
+                  Gradify
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <Separator />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-2xl text-primary dark:text-white p-4 font-bold mt-5">
-            GRADIFY
-          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="mt-6">
+            <SidebarMenu className="mt-4">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
