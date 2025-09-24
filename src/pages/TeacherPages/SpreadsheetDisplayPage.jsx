@@ -93,7 +93,7 @@ export default function SpreadsheetDisplayPage() {
         const gradeColumns = getGradeColumns();
         
         return (
-            <tr className="bg-gray-100 border-b">
+            <tr className="bg-gray-100 dark:bg-accent border-b">
                 <th className="p-3 text-left">Student Number</th>
                 <th className="p-3 text-left">First Name</th>
                 <th className="p-3 text-left">Last Name</th>
@@ -110,7 +110,7 @@ export default function SpreadsheetDisplayPage() {
         const gradeColumns = getGradeColumns();
         
         return spreadsheetData.gradeRecords.map((record) => (
-            <tr key={record.id} className="border-b hover:bg-gray-50">
+            <tr key={record.id} className="border-b hover:bg-gray-50 hover:dark:bg-accent">
                 <td className="p-3">{record.studentNumber || record.grades?.["Student Number"] || ""}</td>
                 <td className="p-3">
                     {record.grades?.["First Name"] || 
@@ -154,7 +154,7 @@ export default function SpreadsheetDisplayPage() {
         return (
             <Layout>
                 {helmet}
-                <div className="p-4">
+                <div className="p-4 ">
                     <h1 className="text-xl md:text-2xl font-bold text-red-500">Error</h1>
                     <p className="mt-2">{error}</p>
                 </div>
@@ -188,7 +188,7 @@ export default function SpreadsheetDisplayPage() {
                     </span>
                 </div>
 
-                <div className="overflow-x-auto bg-white rounded-lg shadow transition-all duration-300 ease-in-out">
+                <div className="overflow-x-auto bg-white dark:bg-card rounded-lg shadow transition-all duration-300 ease-in-out">
                     <table className="min-w-full">
                         <thead>
                             {renderTableHeaders()}
