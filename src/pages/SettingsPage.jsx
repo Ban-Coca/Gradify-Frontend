@@ -706,7 +706,7 @@ export default function TeacherSettings() {
                     <div
                       className={`flex items-center justify-between p-4 rounded-lg border ${
                         subscriptionStatus.hasActiveSubscription
-                          ? "bg-green-50 border-green-200"
+                          ? "bg-green-50 border-green-200 dark:bg-emerald-950 dark:border-green-800"
                           : "bg-yellow-50 border-yellow-200"
                       }`}
                     >
@@ -724,7 +724,7 @@ export default function TeacherSettings() {
                           <p
                             className={`font-medium ${
                               subscriptionStatus.hasActiveSubscription
-                                ? "text-green-900"
+                                ? "text-green-900 dark:text-green-500"
                                 : "text-yellow-900"
                             }`}
                           >
@@ -818,16 +818,10 @@ export default function TeacherSettings() {
                             onClick={refetchFiles}
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 mr-4"
                           >
                             <RefreshCw className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add File
+                            Refresh
                           </Button>
                         </div>
                       </div>
@@ -857,8 +851,8 @@ export default function TeacherSettings() {
                         </div>
                       ) : (
                         <div className="border rounded-lg overflow-hidden">
-                          <div className="bg-gray-50 px-4 py-3 border-b">
-                            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
+                          <div className="bg-gray-50 px-4 py-3 border-b dark:bg-card">
+                            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 dark:text-white">
                               <div className="col-span-3">File Name</div>
                               <div className="col-span-3">Path</div>
                               <div className="col-span-2">Status</div>
@@ -872,16 +866,16 @@ export default function TeacherSettings() {
                             {trackedFiles.map((file, index) => (
                               <div
                                 key={file.itemId || index}
-                                className="px-4 py-3 hover:bg-gray-50"
+                                className="px-4 py-3 dark:bg-card hover:bg-gray-50 hover:dark:bg-accent"
                               >
                                 <div className="grid grid-cols-12 gap-4 items-center text-sm">
                                   <div className="col-span-3 flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-gray-400" />
-                                    <span className="font-medium text-gray-900 truncate">
+                                    <span className="font-medium text-gray-900 dark:text-white truncate">
                                       {file.fileName}
                                     </span>
                                   </div>
-                                  <div className="col-span-3 text-gray-600 truncate">
+                                  <div className="col-span-3 text-gray-600 dark:text-white/50 truncate">
                                     {file.filePath}
                                   </div>
                                   <div className="col-span-2">
