@@ -126,7 +126,7 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-16 justify-start group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:px-0"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-16 justify-start group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:px-0 hover:bg-white"
             >
               <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full">
                 <div className="flex items-center justify-center">
