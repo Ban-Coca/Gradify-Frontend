@@ -106,10 +106,10 @@ export default function NavUser({
                   >
                     <Avatar className="h-9 w-9">
                       <AvatarImage
-                        src={currentUser?.profileImage}
+                        src={currentUser?.profilePictureUrl}
                         alt={currentUser?.firstName}
                       />
-                      <AvatarFallback className="bg-primary/10 dark:bg-emerald-600 text-primary">
+                      <AvatarFallback className="bg-primary/10 dark:bg-emerald-700 text-primary dark:text-emerald-400">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>

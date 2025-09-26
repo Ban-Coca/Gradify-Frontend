@@ -110,16 +110,16 @@ const ClassDetailPage = () => {
   const syncSheetMutation = useMutation({
     mutationFn: async () => {
       const userId = currentUser?.userId || currentUser?.id;
-      const sheetId = classSpreadsheet[0]?.id;
+      const sheetId = classSpreadsheet?.id;
       const headers = getAuthHeader();
 
       if (!userId || !sheetId) {
         throw new Error("Missing userId or sheetId for sync");
       }
 
-      if (classSpreadsheet[0]?.isGoogleSheets === true) {
+      if (classSpreadsheet?.isGoogleSheets === true) {
         return await syncSheet(userId, sheetId, headers);
-      } else if (Boolean(classSpreadsheet?.[0]?.folderId)) {
+      } else if (Boolean(classSpreadsheet?.folderId)) {
         return await syncSheetExcel(userId, sheetId, headers);
       } else {
         throw new Error("Invalid sync condition");
@@ -438,8 +438,8 @@ const ClassDetailPage = () => {
               <Button
                 onClick={() => {
                   if (
-                    classSpreadsheet[0]?.isGoogleSheets === true ||
-                    Boolean(classSpreadsheet?.[0]?.folderId)
+                    classSpreadsheet?.isGoogleSheets === true ||
+                    Boolean(classSpreadsheet?.folderId)
                   ) {
                     syncSheetMutation.mutate();
                   } else {
@@ -450,16 +450,16 @@ const ClassDetailPage = () => {
               >
                 {syncSheetMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : classSpreadsheet[0]?.isGoogleSheets === true ||
-                  Boolean(classSpreadsheet?.[0]?.folderId) ? (
+                ) : classSpreadsheet?.isGoogleSheets === true ||
+                  Boolean(classSpreadsheet?.folderId) ? (
                   <RefreshCw className="h-4 w-4 mr-2" />
                 ) : (
                   <Upload className="h-4 w-4 mr-2" />
                 )}
                 {syncSheetMutation.isPending
                   ? "Syncing..."
-                  : classSpreadsheet[0]?.isGoogleSheets === true ||
-                    Boolean(classSpreadsheet?.[0]?.folderId)
+                  : classSpreadsheet?.isGoogleSheets === true ||
+                    Boolean(classSpreadsheet?.folderId)
                   ? "Sync data"
                   : "Update Data"}
               </Button>

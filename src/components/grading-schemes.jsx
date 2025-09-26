@@ -175,7 +175,7 @@ export default function GradingSchemeModal({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={weightWarning}>
             {getGradingScheme.data && getGradingScheme.data.length > 0
               ? "Update Weights"
               : "Save Weights"}
