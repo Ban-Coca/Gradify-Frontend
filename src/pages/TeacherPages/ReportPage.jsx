@@ -120,6 +120,7 @@ function ReportsPage() {
       );
       return;
     }
+
     setFormError("");
     const payload = {
       teacherId: activeTeacher,
@@ -137,7 +138,7 @@ function ReportsPage() {
       setNotificationType("grade-alert");
       setSelectedClassId("");
       setSelectedStudentId("");
-
+      
       // Navigate to history tab
       setActiveTab("history");
       navigate("/teacher/reports/history");
@@ -146,6 +147,7 @@ function ReportsPage() {
       console.error("Failed to send report:", error);
     }
   };
+
   useEffect(() => {
     if (tab && tab !== activeTab) {
       setActiveTab(tab);
@@ -201,20 +203,6 @@ function ReportsPage() {
           <p className="text-muted-foreground">
             Create customized reports for students
           </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print
-          </Button>
-          <Button variant="outline" size="sm">
-            <Share2 className="mr-2 h-4 w-4" />
-            Share
-          </Button>
         </div>
       </div>
       <div className="mb-4 mt-4 items-center space-y-5">

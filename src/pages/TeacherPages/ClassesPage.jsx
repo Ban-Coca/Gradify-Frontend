@@ -209,10 +209,6 @@
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <Button variant="outline" size="sm" className={"cursor-pointer"}>
-                    <Filter className="h-4 w-4 mr-1" />
-                    Filter
-                  </Button>
                 </div>
                 <div className="flex gap-2">
                   <Button 
