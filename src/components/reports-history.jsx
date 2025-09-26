@@ -23,7 +23,6 @@ export function ReportsHistory({ classId, studentId }) {
   const { currentUser } = useAuth();
   const [selectedReport, setSelectedReport] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [selectedReportToDelete, setSelectedReportToDelete] = useState(null)
   const { reportsByTeacherQuery, deleteReportMutation } = useReports(
     currentUser,
     classId,
@@ -61,8 +60,7 @@ export function ReportsHistory({ classId, studentId }) {
   };
 
   const handleDelete = (report) => {
-    setSelectedReportToDelete(report);
-    deleteReportMutation.mutate(selectedReportToDelete.reportId)
+    deleteReportMutation.mutate(report.reportId)
   }
 
   if (isLoading) {
