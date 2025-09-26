@@ -85,20 +85,20 @@ export const resendCode = async (email) => {
     }
 }
 
-export const completeOnboarding = async (onboardingData, header) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/onboarding`, onboardingData, {
-            headers: {
-                ...header,
-                'Content-Type': 'application/json',
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Error completing onboarding:', error);
-        throw error;
-    }
-}
+// export const completeOnboarding = async (onboardingData, header) => {
+//     try {
+//         const response = await axios.post(`${API_BASE_URL}/onboarding`, onboardingData, {
+//             headers: {
+//                 ...header,
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+//         return response.data;
+//     } catch (error) {
+//         console.error('Error completing onboarding:', error);
+//         throw error;
+//     }
+// }
 
 
 export const googleLogin = () => {
