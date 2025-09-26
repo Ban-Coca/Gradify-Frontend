@@ -400,7 +400,7 @@ export function GradesView() {
                             <div className="space-y-4">
                               <div className="flex items-start justify-between">
                                 <div className="space-y-1 flex-1">
-                                  <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                                  <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors group-hover:dark:text-white">
                                     {cls.className}
                                   </h3>
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">

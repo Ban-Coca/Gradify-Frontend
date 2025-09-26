@@ -2,11 +2,10 @@ import { api } from "@/config/api";
 import { API_ENDPOINTS } from '@/config/constants';
 
 export const createReport = async (reportDTO, authHeader) => {
-  console.log(reportDTO);
   const response = await api.post(API_ENDPOINTS.REPORTS.CREATE, reportDTO, {
     headers: authHeader,
+    timeout: 20000
   });
-  console.log(response.data);
   return response.data;
 };
 
@@ -52,7 +51,7 @@ export const deleteReport = async (reportId, authHeader) => {
 export const getAIGeneratedReport = async (studentId, classId, authHeader) => {
   const response = await api.get(
     `${API_ENDPOINTS.REPORTS.GENERATE_SUGGESTION}/${studentId}/class/${classId}`,
-    { headers: authHeader }
+    { headers: authHeader, timeout: 20000 }
   );
   return response.data;
 };

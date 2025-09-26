@@ -23,7 +23,8 @@ export function ReportsHistory({ classId, studentId }) {
   const { currentUser } = useAuth();
   const [selectedReport, setSelectedReport] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const { reportsByTeacherQuery } = useReports(
+  const [selectedReportToDelete, setSelectedReportToDelete] = useState(null)
+  const { reportsByTeacherQuery, deleteReportMutation } = useReports(
     currentUser,
     classId,
     studentId,
@@ -58,6 +59,11 @@ export function ReportsHistory({ classId, studentId }) {
       setIsDetailsModalOpen(true)
     })
   };
+
+  const handleDelete = (report) => {
+    setSelectedReportToDelete(report);
+    deleteReportMutation.mutate(selectedReportToDelete.reportId)
+  }
 
   if (isLoading) {
     return (
@@ -141,7 +147,7 @@ export function ReportsHistory({ classId, studentId }) {
                           <Eye className="text-inherit mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => {handleDelete(report)}}>
                           <Trash2 className="text-destructive mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>

@@ -208,9 +208,6 @@ export function PerformanceChart() {
             <Button variant="outline" size="sm" onClick={fetchCoursesWithGrades} disabled={loading}>
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
