@@ -375,7 +375,6 @@ export default function SpreadsheetsPage() {
 
     try {
       const checkResult = await checkUrlSupport(sheetUrl, getAuthHeader, api, API_ENDPOINTS);
-      console.log("Response: ", checkResult);
 
       setDebugInfo({
         urlCheck: checkResult,
@@ -462,7 +461,7 @@ export default function SpreadsheetsPage() {
           <AlertDescription className="text-red-800 pr-8">
             {(() => {
               const errorData = error?.details;
-              console.log(errorData)
+
               // Check if it's a detailed error with specific information (like grade validation)
               if (
                 errorData?.errorCode === "GRADE_VALIDATION_ERROR" &&
