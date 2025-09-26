@@ -28,6 +28,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import GraphFileBrowser from "@/components/graph-file-browser";
 import { GoogleDrivePicker } from "@/components/google-drive-picker";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { api } from "@/config/api";
+import { API_ENDPOINTS } from "@/config/constants";
 
 export default function SpreadsheetsPage() {
   const { currentUser, getAuthHeader } = useAuth();
@@ -120,6 +122,59 @@ export default function SpreadsheetsPage() {
         },
       }
     );
+  };
+
+  // Helper functions for URL submission
+  const validateUrl = (sheetUrl, showErrorToast, isValidSpreadsheetUrl) => {
+    if (!sheetUrl) {
+      showErrorToast("Please enter a spreadsheet URL");
+      return false;
+    }
+    if (!isValidSpreadsheetUrl(sheetUrl)) {
+      showErrorToast(
+        "Please provide a valid Google Sheets or Microsoft Excel Online URL.",
+        { duration: 5000 }
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const checkUrlSupport = async (sheetUrl, getAuthHeader, api, API_ENDPOINTS) => {
+    const checkResponse = await api.get(`${API_ENDPOINTS.SPREADSHEET.CHECK_URL_SUPPORT}?url=${sheetUrl}`, {
+      headers: getAuthHeader()
+    });
+    return checkResponse.data;
+  };
+
+  const processUrl = async (sheetUrl, teacherId, getAuthHeader, processSpreadsheetUrl) => {
+    return await processSpreadsheetUrl(
+      { url: sheetUrl, teacherId },
+      getAuthHeader()
+    );
+  };
+
+  const handleUrlSuccess = (response, sheetUrl, navigate, showSuccessToast, setSheetUrl, getUrlProvider, showErrorToast) => {
+    let spreadsheetId;
+    if (response.spreadsheet && response.spreadsheet.id) {
+      spreadsheetId = response.spreadsheet.id;
+    } else {
+      console.error("Could not find spreadsheet ID in response:", response);
+      showErrorToast("Processing successful but couldn't retrieve spreadsheet ID.");
+      return false;
+    }
+
+    showSuccessToast(
+      `Spreadsheet from ${response.provider || getUrlProvider(sheetUrl)} processed successfully!`,
+      { duration: 3000, position: "bottom-center" }
+    );
+
+    navigate(`/teacher/spreadsheets/display/${spreadsheetId}`, {
+      state: { fromLinkImport: true },
+    });
+
+    setSheetUrl("");
+    return true;
   };
 
   const handleFileChange = async (event) => {
@@ -288,13 +343,13 @@ export default function SpreadsheetsPage() {
         console.error("Error uploading file:", error);
         toast.dismiss(loadingToast);
         setError({
-          title: "Upload Failed",
-          message:
-            error.message || "Unknown error occurred while uploading the file.",
+          title: error.response?.data?.errorCode || "Upload Failed",
+          message: error.response?.data?.message || error.message || "Unknown error occurred while uploading the file.",
           details: error.response?.data || error.response?.statusText,
         });
+        
         showErrorToast(
-          `Error uploading file: ${error.message || "Unknown error"}`,
+          `Error uploading file: ${error.response?.data?.message || error.message || "Unknown error"}`,
           { duration: 5000 }
         );
       } finally {
@@ -308,18 +363,7 @@ export default function SpreadsheetsPage() {
   };
 
   const handleUrlSubmit = async () => {
-    if (!sheetUrl) {
-      showErrorToast("Please enter a spreadsheet URL");
-      return;
-    }
-
-    if (!isValidSpreadsheetUrl(sheetUrl)) {
-      showErrorToast(
-        "Please provide a valid Google Sheets or Microsoft Excel Online URL.",
-        { duration: 5000 }
-      );
-      return;
-    }
+    if (!validateUrl(sheetUrl, showErrorToast, isValidSpreadsheetUrl)) return;
 
     setIsProcessingUrl(true);
     setError(null);
@@ -330,20 +374,10 @@ export default function SpreadsheetsPage() {
     });
 
     try {
-      const API_BASE_URL_CHECK = import.meta.env
-        .VITE_API_BASE_URL_TEACHER_SERVICE; // Assuming same base URL for check
-      const checkResponse = await axios.get(
-        `${API_BASE_URL_CHECK}/check-url-support`,
-        {
-          params: { url: sheetUrl },
-          headers: getAuthHeader(),
-        }
-      );
-
-      const checkResult = checkResponse.data;
+      const checkResult = await checkUrlSupport(sheetUrl, getAuthHeader, api, API_ENDPOINTS);
+      console.log("Response: ", checkResult);
 
       setDebugInfo({
-        // Store debug info earlier
         urlCheck: checkResult,
         detectedProvider: getUrlProvider(sheetUrl),
         isUrlValid: isValidSpreadsheetUrl(sheetUrl),
@@ -352,67 +386,45 @@ export default function SpreadsheetsPage() {
       if (!checkResult.supported) {
         toast.dismiss(loadingToast);
         showErrorToast(
-          `Unsupported spreadsheet URL. Provider: ${
-            checkResult.provider || "Unknown"
-          }. Please use a valid Google Sheets or Microsoft Excel Online URL.`,
-          {
-            duration: 7000,
-          }
+          `Unsupported spreadsheet URL. Provider: ${checkResult.provider || "Unknown"}. Please use a valid Google Sheets or Microsoft Excel Online URL.`,
+          { duration: 7000 }
         );
         setIsProcessingUrl(false);
         return;
       }
 
-      const response = await processSpreadsheetUrl(
-        { url: sheetUrl, teacherId: currentUser.userId },
-        getAuthHeader()
-      );
-
-      let spreadsheetId;
-      if (response.spreadsheet && response.spreadsheet.id) {
-        spreadsheetId = response.spreadsheet.id;
-      } else {
-        console.error("Could not find spreadsheet ID in response:", response);
-        showErrorToast(
-          "Processing successful but couldn't retrieve spreadsheet ID."
-        );
-        setIsProcessingUrl(false);
-        toast.dismiss(loadingToast);
-        return;
-      }
+      const response = await processUrl(sheetUrl, currentUser.userId, getAuthHeader, processSpreadsheetUrl);
 
       toast.dismiss(loadingToast);
-      showSuccessToast(
-        `Spreadsheet from ${
-          response.provider || getUrlProvider(sheetUrl)
-        } processed successfully!`,
-        {
-          duration: 3000,
-          position: "bottom-center",
-        }
-      );
 
-      navigate(`/teacher/spreadsheets/display/${spreadsheetId}`, {
-        state: { fromLinkImport: true },
-      });
+      if (!handleUrlSuccess(response, sheetUrl, navigate, showSuccessToast, setSheetUrl, getUrlProvider, showErrorToast)) {
+        setIsProcessingUrl(false);
+        return;
+      }
 
-      setSheetUrl("");
     } catch (error) {
       console.error("Error processing spreadsheet URL:", error);
       toast.dismiss(loadingToast);
+      
+      // Parse error message if it contains JSON
+      let parsedErrorData = null;
+      const errorMessage = error.message || "";
+      const jsonMatch = errorMessage.match(/\{.*\}/);
+      if (jsonMatch) {
+        try {
+          parsedErrorData = JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+          console.warn("Failed to parse JSON from error message:", parseError);
+        }
+      }
+      
       setError({
-        title: "URL Processing Failed",
-        message: error.message || "Unknown error occurred.",
-        details: error.response?.data || error.response?.statusText,
+        title: parsedErrorData?.errorCode || "Error",
+        message: parsedErrorData?.message || errorMessage || "Unknown error occurred.",
+        details: parsedErrorData || error.response?.statusText,
       });
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data ||
-        error.message ||
-        "Unknown error";
-      showErrorToast(`Error processing URL: ${errorMessage}`, {
-        duration: 5000,
-      });
+      const displayErrorMessage = parsedErrorData?.message || errorMessage || "Unknown error";
+      showErrorToast(`Error processing URL: ${displayErrorMessage}`, { duration: 5000 });
     } finally {
       setIsProcessingUrl(false);
     }
@@ -450,7 +462,7 @@ export default function SpreadsheetsPage() {
           <AlertDescription className="text-red-800 pr-8">
             {(() => {
               const errorData = error?.details;
-
+              console.log(errorData)
               // Check if it's a detailed error with specific information (like grade validation)
               if (
                 errorData?.errorCode === "GRADE_VALIDATION_ERROR" &&

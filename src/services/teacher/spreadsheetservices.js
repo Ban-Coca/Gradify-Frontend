@@ -53,7 +53,7 @@ export const processSpreadsheetUrl = async (data, headers) => {
         console.error("Error processing spreadsheet URL:", error);
         
         // Log request details to help debug
-        console.log("Request URL:", `${API_BASE_URL}/process-url`);
+        console.log("Request URL:", `${API_ENDPOINTS.SPREADSHEET.PROCESS_URL}`);
         console.log("Request data:", data);
         console.log("Request headers:", headers);
         
