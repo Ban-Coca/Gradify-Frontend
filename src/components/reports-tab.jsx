@@ -144,13 +144,6 @@ export function ReportsTab({ classId }) {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleViewDetails(report)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
               </div>
             ))
           )}
