@@ -101,7 +101,7 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
           <div className="overflow-x-auto rounded-md border border-green-300 dark:border-green-700">
             <Table>
               <TableHeader>
-                <TableRow className="bg-green-100 dark:bg-green-900/30">
+                <TableRow className="bg-green-100 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/30">
                   <TableHead className="font-bold">A</TableHead>
                   <TableHead className="font-bold">B</TableHead>
                   <TableHead className="font-bold">C</TableHead>
@@ -113,7 +113,7 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
               </TableHeader>
               <TableBody>
                 {/* Row 1: Headers */}
-                <TableRow className="bg-white dark:bg-card">
+                <TableRow className="bg-white dark:bg-card hover:bg-white dark:hover:bg-card">
                   <TableCell className="font-medium text-green-700">Student Number</TableCell>
                   <TableCell className="font-medium text-green-700">First Name</TableCell>
                   <TableCell className="font-medium text-green-700">Last Name</TableCell>
@@ -123,15 +123,15 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
                   <TableCell className="font-medium text-green-700">...</TableCell>
                 </TableRow>
                 {/* Row 2: Max Values */}
-                <TableRow className="bg-white dark:bg-card border-t border-dashed">
+                <TableRow className="bg-white dark:bg-card border-t border-dashed hover:bg-white dark:hover:bg-card">
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
                   </TableCell>
                   <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">10</TableCell>
                   <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">20</TableCell>
@@ -139,7 +139,7 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
                   <TableCell className="text-sm text-gray-500">...</TableCell>
                 </TableRow>
                 {/* Row 3: Data */}
-                <TableRow className="bg-white dark:bg-card">
+                <TableRow className="bg-white dark:bg-card hover:bg-white dark:hover:bg-card">
                   <TableCell>22-4539-123</TableCell>
                   <TableCell>Derrick</TableCell>
                   <TableCell>Estopace</TableCell>
@@ -157,6 +157,12 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
             <li><span className="font-bold">Mandatory Columns:</span> Your file must include columns for <span className="font-bold">Student Number</span>, <span className="font-bold">First Name</span>, and <span className="font-bold">Last Name</span>.</li>
             <li><span className="font-bold">Data Rows (Row 3 onwards):</span> Enter the actual student data and their scores.</li>
           </ul>
+
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border-red-500 rounded-md">
+            <p className="text-xs font-semibold text-red-800 dark:text-red-300">
+              ⚠️ Important: Only the first sheet of the Excel file will be read.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
