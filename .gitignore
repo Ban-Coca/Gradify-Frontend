@@ -27,3 +27,4 @@ dist-ssr
 
 #credentials
 src/main/resources/credentials/google-sheets-credentials.json.DS_Store
+.DS_Store
