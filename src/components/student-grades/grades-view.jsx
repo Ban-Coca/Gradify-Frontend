@@ -603,7 +603,7 @@ export function GradesView() {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Grades Table */}
-                  <div className="lg:col-span-2">
+                  <div>
                     <Card>
                       <CardHeader>
                         <CardTitle>Assessment Grades</CardTitle>
