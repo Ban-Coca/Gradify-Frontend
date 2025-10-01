@@ -26,4 +26,4 @@ dist-ssr
 .env
 
 #credentials
-src/main/resources/credentials/google-sheets-credentials.json
+src/main/resources/credentials/google-sheets-credentials.json.DS_Store
