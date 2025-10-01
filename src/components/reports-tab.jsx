@@ -127,7 +127,7 @@ export function ReportsTab({ classId }) {
             reports.map((report) => (
               <div
                 key={report.reportId}
-                className="flex items-center justify-between p-3 border rounded-md mb-2"
+                className="flex items-center justify-between p-3 border rounded-md mb-2 hover:bg-[#198754]/10"
                 onClick={() => handleCardClick(report)}
               >
                 <div className="flex items-center">
