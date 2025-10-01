@@ -30,8 +30,11 @@ import { GoogleDrivePicker } from "@/components/google-drive-picker";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { api } from "@/config/api";
 import { API_ENDPOINTS } from "@/config/constants";
+import ExcelFormatGuide from "@/components/excel-format-guide";
 
 export default function SpreadsheetsPage() {
+  const [showFormatGuide, setShowFormatGuide] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const { currentUser, getAuthHeader } = useAuth();
   const fileInputRef = React.useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,6 +45,13 @@ export default function SpreadsheetsPage() {
   const [debugInfo, setDebugInfo] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const hintShown = localStorage.getItem('formatGuideHintShown');
+    if (!hintShown) {
+      setShowHint(true);
+    }
+  }, []);
 
   const helmet = useDocumentTitle("Spreadsheets", "Import and manage spreadsheet data for your classes.");
 
@@ -405,7 +415,6 @@ export default function SpreadsheetsPage() {
       console.error("Error processing spreadsheet URL:", error);
       toast.dismiss(loadingToast);
       
-      // Parse error message if it contains JSON
       let parsedErrorData = null;
       const errorMessage = error.message || "";
       const jsonMatch = errorMessage.match(/\{.*\}/);
@@ -439,13 +448,56 @@ export default function SpreadsheetsPage() {
       <Toaster richColors />
 
       <div className="bg-neutral-50 dark:bg-card p-6 rounded-lg border dark:border-emerald-900 mt-4 mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
-          Import Spreadsheet Data
-        </h1>
-        <p className="text-neutral-600 dark:text-neutral-200 mt-2">
-          Upload or link a spreadsheet to import student grades
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
+              Import Spreadsheet Data
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-200 mt-2">
+              Upload or link a spreadsheet to import student grades
+            </p>
+          </div>
+
+          {/* Button on the right */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowFormatGuide(true);
+                setShowHint(false);
+                localStorage.setItem('formatGuideHintShown', 'true');
+              }}
+              className="
+                border-green-800 text-green-700
+                dark:border-green-400 dark:text-green-300
+                hover:bg-green-800 hover:text-white
+                dark:hover:bg-green-400 dark:hover:text-neutral-900
+                transition-all duration-200 ease-in-out
+                hover:shadow-md hover:scale-[1.02]
+              "
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              View Required Excel Format
+            </Button>
+            
+            {/* Chat bubble hint */}
+            {showHint && (
+            <div className="absolute -right-2 -top-5 animate-bounce">
+              <div className="relative bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
+                Check this first!
+                {/* Tail of the chat bubble */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-500"></div>
+              </div>
+            </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      <ExcelFormatGuide 
+      isOpen={showFormatGuide}
+      onClose={() => setShowFormatGuide(false)}
+    />
 
       {error && (
         <Alert className="border-red-200 bg-red-50 mb-6 relative">

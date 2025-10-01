@@ -35,7 +35,7 @@ const teacherItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Classes",
+    title: "My Classes",
     url: "/teacher/classes",
     icon: Inbox,
   },
@@ -58,7 +58,7 @@ const studentItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Grades",
+    title: "My Classes",
     url: "/student/grades",
     icon: FileSpreadsheet, // Spreadsheet icon for grades
   },
@@ -126,7 +126,8 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-16 justify-start group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:px-0 hover:bg-white"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-16 justify-start group-data-[collapsible=icon]:!justify-center group-data-[collapsible=icon]:px-0 hover:bg-white hover:dark:bg-card cursor-pointer"
+              onClick={() => navigate(items[0].url)}
             >
               <div className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full">
                 <div className="flex items-center justify-center">

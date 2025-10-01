@@ -627,16 +627,6 @@ const ClassDetailPage = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-1" />
-                      Filter
-                    </Button>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-1" />
-                      Export Roster
-                    </Button>
                   </div>
                 </div>
                 <StudentTable

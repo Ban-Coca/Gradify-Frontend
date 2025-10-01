@@ -1,5 +1,3 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,6 +20,7 @@ import {
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { GPASection } from "./gpa-section"
+import { GradeBreakDown } from "./grade-breakdown"
 import { useLocation } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import Pagination from "@/components/ui/pagination"
@@ -135,10 +134,7 @@ export function GradesView() {
   const grades = visibleStudentGrades?.grades || {}
   const gradesError = studentGradesError || null
   const gradesLoading = isLoading
-  console.log('useStudent hook response:', { visibleStudentGrades, isLoading, studentGradesError })
-  console.log('selectedClass:', selectedClass)
-  console.log('currentUser:', currentUser)
-  console.log('grades:', grades)
+  
   // Fetch teacher info
   useEffect(() => {
     async function fetchTeacher() {
@@ -281,14 +277,6 @@ export function GradesView() {
 
   return (
     <div className="space-y-6 mb-6">
-      <Card>
-            <CardHeader>
-              <CardTitle>Your Classes</CardTitle>
-              <CardDescription>
-                View your enrolled classes and check your grades for each class.
-              </CardDescription>
-            </CardHeader>
-          </Card>
       {!selectedClass ? (
         <>
           {loading ? (
@@ -400,7 +388,7 @@ export function GradesView() {
                             <div className="space-y-4">
                               <div className="flex items-start justify-between">
                                 <div className="space-y-1 flex-1">
-                                  <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+                                  <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors group-hover:dark:text-white">
                                     {cls.className}
                                   </h3>
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -517,16 +505,11 @@ export function GradesView() {
               <ChevronLeft className="h-4 w-4 mr-2" />
               Back to All Classes
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export Class Grades
-              </Button>
-              <Button variant="outline" size="icon">
-                <FileText className="h-4 w-4" />
-                <span className="sr-only">Print class grades</span>
-              </Button>
-            </div>
+            <GradeBreakDown
+              schemeLoading={schemeLoading}
+              scheme={scheme}
+              triggerClassName="justify-center"
+            />
           </div>
 
           <Card>
@@ -563,6 +546,7 @@ export function GradesView() {
                     </p>
                   </div>
                   {calculatedGrade !== null && <Progress value={calculatedGrade} className="w-32" />}
+                  
                 </div>
               </div>
 
@@ -600,9 +584,9 @@ export function GradesView() {
                   <p className="text-muted-foreground">There are no visible grades here. Your instructor hasn't set any visible grades yet.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                   {/* Grades Table */}
-                  <div className="lg:col-span-2">
+                  <div>
                     <Card>
                       <CardHeader>
                         <CardTitle>Assessment Grades</CardTitle>
@@ -639,7 +623,7 @@ export function GradesView() {
                                       <td className="py-3 px-4 font-medium">{key}</td>
                                       <td className="py-3 px-4">
                                         <span className="font-mono">
-                                          {value || "N/A"} / {maxValue !== undefined ? maxValue : "N/A"}
+                                          {value || "N/A"}
                                         </span>
                                       </td>
                                       <td className="py-3 px-4">
@@ -660,51 +644,7 @@ export function GradesView() {
                       </CardContent>
                     </Card>
                   </div>
-
-                  {/* Grading Scheme */}
-                  <div>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Grading Breakdown</CardTitle>
-                        <CardDescription>How your final grade is calculated</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {schemeLoading ? (
-                          <div className="space-y-3">
-                            {[...Array(4)].map((_, i) => (
-                              <Skeleton key={i} className="h-16 w-full" />
-                            ))}
-                          </div>
-                        ) : scheme && Array.isArray(scheme) && scheme.length > 0 ? (
-                          <div className="space-y-3">
-                            {scheme.map((item, idx) => (
-                              <Card key={item.id || idx} className="border-l-4 border-l-primary/20">
-                                <CardContent className="p-4">
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <h4 className="font-medium">{item.name}</h4>
-                                      <p className="text-sm text-muted-foreground">Weight in final grade</p>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="text-2xl font-bold text-primary">
-                                        {item.weight ? `${item.weight}%` : "N/A"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  {item.weight && <Progress value={item.weight} className="mt-2" />}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8">
-                            <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                            <p className="text-muted-foreground">No grading scheme available</p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                  
                 </div>
               )}
             </CardContent>
