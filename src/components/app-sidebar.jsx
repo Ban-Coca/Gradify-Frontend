@@ -35,7 +35,7 @@ const teacherItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Classes",
+    title: "My Classes",
     url: "/teacher/classes",
     icon: Inbox,
   },
@@ -58,7 +58,7 @@ const studentItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Grades",
+    title: "My Classes",
     url: "/student/grades",
     icon: FileSpreadsheet, // Spreadsheet icon for grades
   },
