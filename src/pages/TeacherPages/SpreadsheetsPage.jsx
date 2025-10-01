@@ -30,8 +30,21 @@ import { GoogleDrivePicker } from "@/components/google-drive-picker";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { api } from "@/config/api";
 import { API_ENDPOINTS } from "@/config/constants";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import * as XLSX from 'xlsx';
 
 export default function SpreadsheetsPage() {
+  const [showFormatGuide, setShowFormatGuide] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const { currentUser, getAuthHeader } = useAuth();
   const fileInputRef = React.useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,6 +55,13 @@ export default function SpreadsheetsPage() {
   const [debugInfo, setDebugInfo] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const hintShown = localStorage.getItem('formatGuideHintShown');
+    if (!hintShown) {
+      setShowHint(true);
+    }
+  }, []);
 
   const helmet = useDocumentTitle("Spreadsheets", "Import and manage spreadsheet data for your classes.");
 
@@ -405,7 +425,6 @@ export default function SpreadsheetsPage() {
       console.error("Error processing spreadsheet URL:", error);
       toast.dismiss(loadingToast);
       
-      // Parse error message if it contains JSON
       let parsedErrorData = null;
       const errorMessage = error.message || "";
       const jsonMatch = errorMessage.match(/\{.*\}/);
@@ -433,19 +452,180 @@ export default function SpreadsheetsPage() {
     setSheetUrl(event.target.value);
   };
 
+  const downloadTemplate = () => {
+  const wb = XLSX.utils.book_new();
+  
+  const data = [
+    ['Student Number', 'First Name', 'Last Name', 'Q1', 'Q2', 'ME', 'Final Exam'],
+    ['', '', '', 10, 20, 100, 100],
+    ['22-4539-123', 'Derrick', 'Estopace', 8, 15, 92, 85],
+    ['22-4539-124', 'Kent', 'Abadiano', 9, 18, 95, 90],
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  ws['!cols'] = [
+    { wch: 15 },
+    { wch: 12 }, 
+    { wch: 12 },
+    { wch: 8 },
+    { wch: 8 },
+    { wch: 8 },
+    { wch: 12 },
+  ];
+  
+  XLSX.utils.book_append_sheet(wb, ws, 'Student Grades');
+  
+  XLSX.writeFile(wb, 'grade_template.xlsx');
+  
+  showSuccessToast('Template downloaded successfully!', { duration: 2000 });
+};
+
   return (
     <Layout>
       {helmet}
       <Toaster richColors />
 
       <div className="bg-neutral-50 dark:bg-card p-6 rounded-lg border dark:border-emerald-900 mt-4 mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
-          Import Spreadsheet Data
-        </h1>
-        <p className="text-neutral-600 dark:text-neutral-200 mt-2">
-          Upload or link a spreadsheet to import student grades
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
+              Import Spreadsheet Data
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-200 mt-2">
+              Upload or link a spreadsheet to import student grades
+            </p>
+          </div>
+
+          {/* Button on the right */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowFormatGuide(true);
+                setShowHint(false);
+                localStorage.setItem('formatGuideHintShown', 'true');
+              }}
+              className="
+                border-green-800 text-green-700
+                dark:border-green-400 dark:text-green-300
+                hover:bg-green-800 hover:text-white
+                dark:hover:bg-green-400 dark:hover:text-neutral-900
+                transition-all duration-200 ease-in-out
+                hover:shadow-md hover:scale-[1.02]
+              "
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              View Required Excel Format
+            </Button>
+            
+            {/* Chat bubble hint */}
+            {showHint && (
+            <div className="absolute -right-2 -top-5 animate-bounce">
+              <div className="relative bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
+                Check this first!
+                {/* Tail of the chat bubble */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-500"></div>
+              </div>
+            </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Format Guide Dialog/Card */}
+      {showFormatGuide && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border-l-4 border-l-green-600 dark:border-l-green-400 bg-white dark:bg-card shadow-2xl">
+            <CardHeader className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute -top-2 right-3 h-8 w-8 p-0 hover:bg-transparent hover:text-black-600"
+                onClick={() => setShowFormatGuide(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-xl flex items-center gap-2 text-green-700 dark:text-green-300">
+                <FileSpreadsheet className="h-5 w-5" /> Required Excel Format
+              </CardTitle>
+              <CardDescription className="text-green-800 dark:text-green-300 flex items-center justify-between">
+                <span>Your spreadsheet must follow this exact two-row header structure:</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-4 border-green-600 text-green-700 hover:bg-green-500 border-green-500 cursor-pointer"
+                  onClick={downloadTemplate}
+                >
+                  <Upload className="h-4 w-4 mr-2 rotate-180" />
+                  Download Template
+                </Button>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto rounded-md border border-green-300 dark:border-green-700">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-green-100 dark:bg-green-900/30">
+                      <TableHead className="font-bold">A</TableHead>
+                      <TableHead className="font-bold">B</TableHead>
+                      <TableHead className="font-bold">C</TableHead>
+                      <TableHead className="font-bold">D</TableHead>
+                      <TableHead className="font-bold">E</TableHead>
+                      <TableHead className="font-bold">F</TableHead>
+                      <TableHead className="font-bold">...</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Row 1: Headers */}
+                    <TableRow className="bg-white dark:bg-card">
+                      <TableCell className="font-medium text-green-700">Student Number</TableCell>
+                      <TableCell className="font-medium text-green-700">First Name</TableCell>
+                      <TableCell className="font-medium text-green-700">Last Name</TableCell>
+                      <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">Q1</TableCell>
+                      <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">Q2</TableCell>
+                      <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">ME</TableCell>
+                      <TableCell className="font-medium text-green-700">...</TableCell>
+                    </TableRow>
+                    {/* Row 2: Max Values */}
+                    <TableRow className="bg-white dark:bg-card border-t border-dashed">
+                      <TableCell className="text-sm text-gray-500">
+                        <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-500">
+                        <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-500">
+                        <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card">Leave Empty</Badge>
+                      </TableCell>
+                      <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">10</TableCell>
+                      <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">20</TableCell>
+                      <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">100</TableCell>
+                      <TableCell className="text-sm text-gray-500">...</TableCell>
+                    </TableRow>
+                    {/* Row 3: Data */}
+                    <TableRow className="bg-white dark:bg-card">
+                      <TableCell>22-4539-123</TableCell>
+                      <TableCell>Derrick</TableCell>
+                      <TableCell>Estopace</TableCell>
+                      <TableCell>8</TableCell>
+                      <TableCell>15</TableCell>
+                      <TableCell>92</TableCell>
+                      <TableCell>...</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              <ul className="mt-4 text-sm text-neutral-700 dark:text-neutral-300 space-y-1 pl-4 list-disc">
+                <li><span className="font-bold">Row 1:</span> Must contain headers for all columns (e.g., Student Number, First Name, Last Name, Assessment Names).</li>
+                <li><span className="font-bold">Row 2 (Maximum Scores):</span> Must contain the <u>maximum possible score/grade</u> for every assessment column (e.g., `100`, `20`). <span className="font-bold text-red-600">Leave columns A, B, and C empty.</span></li>
+                <li><span className="font-bold">Mandatory Columns:</span> Your file must include columns for <span className="font-bold">Student Number</span>, <span className="font-bold">First Name</span>, and <span className="font-bold">Last Name</span>.</li>
+                <li><span className="font-bold">Data Rows (Row 3 onwards):</span> Enter the actual student data and their scores.</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {error && (
         <Alert className="border-red-200 bg-red-50 mb-6 relative">
