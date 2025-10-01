@@ -30,17 +30,6 @@ import { GoogleDrivePicker } from "@/components/google-drive-picker";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { api } from "@/config/api";
 import { API_ENDPOINTS } from "@/config/constants";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import * as XLSX from 'xlsx';
 import ExcelFormatGuide from "@/components/excel-format-guide";
 
 export default function SpreadsheetsPage() {
@@ -453,35 +442,6 @@ export default function SpreadsheetsPage() {
     setSheetUrl(event.target.value);
   };
 
-  const downloadTemplate = () => {
-  const wb = XLSX.utils.book_new();
-  
-  const data = [
-    ['Student Number', 'First Name', 'Last Name', 'Q1', 'Q2', 'ME', 'Final Exam'],
-    ['', '', '', 10, 20, 100, 100],
-    ['22-4539-123', 'Derrick', 'Estopace', 8, 15, 92, 85],
-    ['22-4539-124', 'Kent', 'Abadiano', 9, 18, 95, 90],
-  ];
-  
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  
-  ws['!cols'] = [
-    { wch: 15 },
-    { wch: 12 }, 
-    { wch: 12 },
-    { wch: 8 },
-    { wch: 8 },
-    { wch: 8 },
-    { wch: 12 },
-  ];
-  
-  XLSX.utils.book_append_sheet(wb, ws, 'Student Grades');
-  
-  XLSX.writeFile(wb, 'grade_template.xlsx');
-  
-  showSuccessToast('Template downloaded successfully!', { duration: 2000 });
-};
-
   return (
     <Layout>
       {helmet}
@@ -537,7 +497,6 @@ export default function SpreadsheetsPage() {
       <ExcelFormatGuide 
       isOpen={showFormatGuide}
       onClose={() => setShowFormatGuide(false)}
-      onDownloadTemplate={downloadTemplate}
     />
 
       {error && (
