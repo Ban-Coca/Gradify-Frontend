@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, BarChart, Users, EllipsisVertical } from "lucide-react";
+import { Eye,FileText, BarChart, Users, EllipsisVertical } from "lucide-react";
 import { useState } from "react";
 import { useReports } from "@/hooks/use-reports";
 import { useAuth } from "@/contexts/authentication-context";
@@ -127,7 +127,7 @@ export function ReportsTab({ classId }) {
             reports.map((report) => (
               <div
                 key={report.reportId}
-                className="flex items-center justify-between p-3 border rounded-md mb-2"
+                className="flex items-center justify-between p-3 border rounded-md mb-2 hover:bg-[#198754]/10"
                 onClick={() => handleCardClick(report)}
               >
                 <div className="flex items-center">
@@ -144,26 +144,6 @@ export function ReportsTab({ classId }) {
                     </p>
                   </div>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm">
-                      <EllipsisVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                      <a
-                        href={report.downloadUrl || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        download
-                      >
-                        Download
-                      </a>
-                    </DropdownMenuItem>
-                    {/* Add more actions here as needed */}
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             ))
           )}

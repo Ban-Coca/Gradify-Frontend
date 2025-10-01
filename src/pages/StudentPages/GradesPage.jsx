@@ -14,8 +14,8 @@ export default function GradesPage() {
     <Layout>
       {helmet}
         <div className='bg-inherited p-2 rounded-lg mt-4 mb-4'>
-            <h1 className="text-xl md:text-2xl font-bold">Grades</h1>
-            <p className="text-sm text-muted dark:text-emerald-600">View and track your academic performance across all courses.</p>
+            <h1 className="text-xl md:text-2xl font-bold">My Classes</h1>
+            <p className="text-sm text-muted dark:text-emerald-600">View your enrolled classes and check your grades for each class.</p>
         </div>
         <GradesView />
     </Layout>
