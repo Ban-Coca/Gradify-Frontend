@@ -341,12 +341,12 @@ function ReportsPage() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-4">
+              <CardFooter className="flex flex-col sm:flex-row gap-4">
                 <TooltipProvider>
                   {isGeneratingAI || !selectedStudentId || !selectedClassId ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span>
+                        <span className="w-full sm:w-auto">
                           <Button
                             variant="outline"
                             onClick={generateAIReport}
@@ -357,19 +357,21 @@ function ReportsPage() {
                               !selectedStudentId ||
                               !selectedClassId
                             }
-                            className="flex items-center gap-2"
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm"
                           >
                             {isGeneratingAI ||
                             aiGeneratedReportQuery.isLoading ||
                             aiGeneratedReportQuery.isFetching ? (
                               <>
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                                Generating...
+                                <span className="hidden sm:inline">Generating...</span>
+                                <span className="sm:hidden">AI...</span>
                               </>
                             ) : (
                               <>
-                                <Sparkles className="h-4 w-4" />
-                                Generate AI Report
+                                <Sparkles className="h-4 w-4 flex-shrink-0" />
+                                <span className="hidden sm:inline">Generate AI Report</span>
+                                <span className="sm:hidden">AI Report</span>
                               </>
                             )}
                           </Button>
@@ -392,25 +394,30 @@ function ReportsPage() {
                       variant="outline"
                       onClick={generateAIReport}
                       disabled={false}
-                      className="flex items-center gap-2"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm"
                     >
-                      <Sparkles className="h-4 w-4" />
-                      Generate AI Report
+                      <Sparkles className="h-4 w-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">Generate AI Report</span>
+                      <span className="sm:hidden">AI Report</span>
                     </Button>
                   )}
                 </TooltipProvider>
                 <Button
                   onClick={handleSendReport}
-                  className="cursor-pointer"
+                  className="w-full sm:w-auto cursor-pointer text-sm"
                   disabled={createReportMutation.isPending}
                 >
                   {createReportMutation.isPending ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"></div>
-                      Sending...
+                      <span className="hidden sm:inline">Sending...</span>
+                      <span className="sm:hidden">Send...</span>
                     </>
                   ) : (
-                    "Send Report"
+                    <>
+                      <span className="hidden sm:inline">Send Report</span>
+                      <span className="sm:hidden">Send</span>
+                    </>
                   )}
                 </Button>
                 {aiGeneratedReportQuery.error && (
