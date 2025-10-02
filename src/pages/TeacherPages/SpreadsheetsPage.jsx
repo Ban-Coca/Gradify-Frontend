@@ -468,9 +468,9 @@ export default function SpreadsheetsPage() {
                 localStorage.setItem('formatGuideHintShown', 'true');
               }}
               className="
-                border-green-800 text-green-700
+                border-green-700 text-green-700
                 dark:border-green-400 dark:text-green-300
-                hover:bg-green-800 hover:text-white
+                hover:bg-green-700 hover:text-white
                 dark:hover:bg-green-400 dark:hover:text-neutral-900
                 transition-all duration-200 ease-in-out
                 hover:shadow-md hover:scale-[1.02]
