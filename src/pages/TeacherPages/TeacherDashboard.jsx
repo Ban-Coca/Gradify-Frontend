@@ -386,38 +386,13 @@ const TeacherDashboard = () => {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate("/reports")}
+                onClick={() => navigate("/teacher/reports")}
               >
                 View All Reports
               </Button>
             </CardFooter>
           </Card>
 
-          {/* System Alerts */}
-          {/* <Card>
-            <CardHeader className="bg-amber-50 rounded-t-lg">
-              <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
-                <CardTitle>Alerts</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-4">
-                <div className="p-3 bg-red-50 border border-red-100 rounded-md">
-                  <p className="font-medium text-red-800">Math 101: 2 students at risk</p>
-                  <p className="text-sm text-red-600 mt-1">Students with grades below 60%</p>
-                </div>
-                <div className="p-3 bg-amber-50 border border-amber-100 rounded-md">
-                  <p className="font-medium text-amber-800">History 303: Grades need review</p>
-                  <p className="text-sm text-amber-600 mt-1">Last updated more than 7 days ago</p>
-                </div>
-                <div className="p-3 bg-blue-50 border border-blue-100 rounded-md">
-                  <p className="font-medium text-blue-800">Feedback reports due</p>
-                  <p className="text-sm text-blue-600 mt-1">End of month reports need to be generated</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card> */}
         </div>
       </div>
 

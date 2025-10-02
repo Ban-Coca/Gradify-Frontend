@@ -47,13 +47,16 @@ export default function SpreadsheetsPage() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    const hintShown = localStorage.getItem('formatGuideHintShown');
+    const hintShown = localStorage.getItem("formatGuideHintShown");
     if (!hintShown) {
       setShowHint(true);
     }
   }, []);
 
-  const helmet = useDocumentTitle("Spreadsheets", "Import and manage spreadsheet data for your classes.");
+  const helmet = useDocumentTitle(
+    "Spreadsheets",
+    "Import and manage spreadsheet data for your classes."
+  );
 
   const isValidSpreadsheetUrl = (url) => {
     if (!url) return false;
@@ -150,32 +153,57 @@ export default function SpreadsheetsPage() {
     return true;
   };
 
-  const checkUrlSupport = async (sheetUrl, getAuthHeader, api, API_ENDPOINTS) => {
-    const checkResponse = await api.get(`${API_ENDPOINTS.SPREADSHEET.CHECK_URL_SUPPORT}?url=${sheetUrl}`, {
-      headers: getAuthHeader()
-    });
+  const checkUrlSupport = async (
+    sheetUrl,
+    getAuthHeader,
+    api,
+    API_ENDPOINTS
+  ) => {
+    const checkResponse = await api.get(
+      `${API_ENDPOINTS.SPREADSHEET.CHECK_URL_SUPPORT}?url=${sheetUrl}`,
+      {
+        headers: getAuthHeader(),
+      }
+    );
     return checkResponse.data;
   };
 
-  const processUrl = async (sheetUrl, teacherId, getAuthHeader, processSpreadsheetUrl) => {
+  const processUrl = async (
+    sheetUrl,
+    teacherId,
+    getAuthHeader,
+    processSpreadsheetUrl
+  ) => {
     return await processSpreadsheetUrl(
       { url: sheetUrl, teacherId },
       getAuthHeader()
     );
   };
 
-  const handleUrlSuccess = (response, sheetUrl, navigate, showSuccessToast, setSheetUrl, getUrlProvider, showErrorToast) => {
+  const handleUrlSuccess = (
+    response,
+    sheetUrl,
+    navigate,
+    showSuccessToast,
+    setSheetUrl,
+    getUrlProvider,
+    showErrorToast
+  ) => {
     let spreadsheetId;
     if (response.spreadsheet && response.spreadsheet.id) {
       spreadsheetId = response.spreadsheet.id;
     } else {
       console.error("Could not find spreadsheet ID in response:", response);
-      showErrorToast("Processing successful but couldn't retrieve spreadsheet ID.");
+      showErrorToast(
+        "Processing successful but couldn't retrieve spreadsheet ID."
+      );
       return false;
     }
 
     showSuccessToast(
-      `Spreadsheet from ${response.provider || getUrlProvider(sheetUrl)} processed successfully!`,
+      `Spreadsheet from ${
+        response.provider || getUrlProvider(sheetUrl)
+      } processed successfully!`,
       { duration: 3000, position: "bottom-center" }
     );
 
@@ -354,12 +382,17 @@ export default function SpreadsheetsPage() {
         toast.dismiss(loadingToast);
         setError({
           title: error.response?.data?.errorCode || "Upload Failed",
-          message: error.response?.data?.message || error.message || "Unknown error occurred while uploading the file.",
+          message:
+            error.response?.data?.message ||
+            error.message ||
+            "Unknown error occurred while uploading the file.",
           details: error.response?.data || error.response?.statusText,
         });
-        
+
         showErrorToast(
-          `Error uploading file: ${error.response?.data?.message || error.message || "Unknown error"}`,
+          `Error uploading file: ${
+            error.response?.data?.message || error.message || "Unknown error"
+          }`,
           { duration: 5000 }
         );
       } finally {
@@ -384,7 +417,12 @@ export default function SpreadsheetsPage() {
     });
 
     try {
-      const checkResult = await checkUrlSupport(sheetUrl, getAuthHeader, api, API_ENDPOINTS);
+      const checkResult = await checkUrlSupport(
+        sheetUrl,
+        getAuthHeader,
+        api,
+        API_ENDPOINTS
+      );
 
       setDebugInfo({
         urlCheck: checkResult,
@@ -395,26 +433,42 @@ export default function SpreadsheetsPage() {
       if (!checkResult.supported) {
         toast.dismiss(loadingToast);
         showErrorToast(
-          `Unsupported spreadsheet URL. Provider: ${checkResult.provider || "Unknown"}. Please use a valid Google Sheets or Microsoft Excel Online URL.`,
+          `Unsupported spreadsheet URL. Provider: ${
+            checkResult.provider || "Unknown"
+          }. Please use a valid Google Sheets or Microsoft Excel Online URL.`,
           { duration: 7000 }
         );
         setIsProcessingUrl(false);
         return;
       }
 
-      const response = await processUrl(sheetUrl, currentUser.userId, getAuthHeader, processSpreadsheetUrl);
+      const response = await processUrl(
+        sheetUrl,
+        currentUser.userId,
+        getAuthHeader,
+        processSpreadsheetUrl
+      );
 
       toast.dismiss(loadingToast);
 
-      if (!handleUrlSuccess(response, sheetUrl, navigate, showSuccessToast, setSheetUrl, getUrlProvider, showErrorToast)) {
+      if (
+        !handleUrlSuccess(
+          response,
+          sheetUrl,
+          navigate,
+          showSuccessToast,
+          setSheetUrl,
+          getUrlProvider,
+          showErrorToast
+        )
+      ) {
         setIsProcessingUrl(false);
         return;
       }
-
     } catch (error) {
       console.error("Error processing spreadsheet URL:", error);
       toast.dismiss(loadingToast);
-      
+
       let parsedErrorData = null;
       const errorMessage = error.message || "";
       const jsonMatch = errorMessage.match(/\{.*\}/);
@@ -425,14 +479,18 @@ export default function SpreadsheetsPage() {
           console.warn("Failed to parse JSON from error message:", parseError);
         }
       }
-      
+
       setError({
         title: parsedErrorData?.errorCode || "Error",
-        message: parsedErrorData?.message || errorMessage || "Unknown error occurred.",
+        message:
+          parsedErrorData?.message || errorMessage || "Unknown error occurred.",
         details: parsedErrorData || error.response?.statusText,
       });
-      const displayErrorMessage = parsedErrorData?.message || errorMessage || "Unknown error";
-      showErrorToast(`Error processing URL: ${displayErrorMessage}`, { duration: 5000 });
+      const displayErrorMessage =
+        parsedErrorData?.message || errorMessage || "Unknown error";
+      showErrorToast(`Error processing URL: ${displayErrorMessage}`, {
+        duration: 5000,
+      });
     } finally {
       setIsProcessingUrl(false);
     }
@@ -447,57 +505,61 @@ export default function SpreadsheetsPage() {
       {helmet}
       <Toaster richColors />
 
-      <div className="bg-neutral-50 dark:bg-card p-6 rounded-lg border dark:border-emerald-900 mt-4 mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
+      <div className="bg-neutral-50 dark:bg-card p-4 md:p-6 rounded-lg border dark:border-emerald-900 mt-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-900 dark:text-neutral-200">
               Import Spreadsheet Data
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-200 mt-2">
+            <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-200 mt-2">
               Upload or link a spreadsheet to import student grades
             </p>
           </div>
 
           {/* Button on the right */}
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <Button
               variant="outline"
               onClick={() => {
                 setShowFormatGuide(true);
                 setShowHint(false);
-                localStorage.setItem('formatGuideHintShown', 'true');
+                localStorage.setItem("formatGuideHintShown", "true");
               }}
               className="
+                w-full sm:w-auto
                 border-green-700 text-green-700
                 dark:border-green-400 dark:text-green-300
                 hover:bg-green-700 hover:text-white
                 dark:hover:bg-green-400 dark:hover:text-neutral-900
                 transition-all duration-200 ease-in-out
                 hover:shadow-md hover:scale-[1.02]
+                text-sm sm:text-base
+                px-3 sm:px-4
+                py-2
               "
             >
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              View Required Excel Format
+              <FileSpreadsheet className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">View Required Excel Format</span>
             </Button>
-            
+
             {/* Chat bubble hint */}
             {showHint && (
-            <div className="absolute -right-2 -top-5 animate-bounce">
-              <div className="relative bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
-                Check this first!
-                {/* Tail of the chat bubble */}
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-500"></div>
+              <div className="absolute -right-2 -top-5 animate-bounce">
+                <div className="relative bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
+                  Check this first!
+                  {/* Tail of the chat bubble */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-green-500"></div>
+                </div>
               </div>
-            </div>
             )}
           </div>
         </div>
       </div>
 
-      <ExcelFormatGuide 
-      isOpen={showFormatGuide}
-      onClose={() => setShowFormatGuide(false)}
-    />
+      <ExcelFormatGuide
+        isOpen={showFormatGuide}
+        onClose={() => setShowFormatGuide(false)}
+      />
 
       {error && (
         <Alert className="border-red-200 bg-red-50 mb-6 relative">
@@ -625,22 +687,31 @@ export default function SpreadsheetsPage() {
           <TabsList className="grid w-full grid-cols-3 bg-neutral-100 dark:bg-neutral-900">
             <TabsTrigger
               value="upload"
-              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200"
+              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200 px-2 sm:px-3"
             >
-              Upload Spreadsheet
+              <div className="flex items-center justify-center gap-2">
+                <Upload className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Upload Spreadsheet</span>
+              </div>
             </TabsTrigger>
             <TabsTrigger
               value="google-link"
-              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200"
+              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200 px-2 sm:px-3"
             >
-              Link Google Spreadsheet
+              <div className="flex items-center justify-center gap-2">
+                <LinkIcon className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Link Google Spreadsheet</span>
+              </div>
             </TabsTrigger>
 
             <TabsTrigger
               value="microsoft-excel"
-              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200"
+              className="data-[state=active]:bg-white data-[state=active]:text-neutral-900 data-[state=active]:shadow-sm text-neutral-600 hover:text-green-600 transition-colors duration-200 px-2 sm:px-3"
             >
-              Microsoft Excel
+              <div className="flex items-center justify-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Microsoft Excel</span>
+              </div>
             </TabsTrigger>
           </TabsList>
 
@@ -678,11 +749,23 @@ export default function SpreadsheetsPage() {
                 />
               </Button>
               {selectedFile && (
-                <div className="flex items-center bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in">
-                  <span className="mr-2">📄</span>
+                <div className="flex items-center justify-between gap-4 bg-white px-3 py-2 rounded-md border transition-all duration-300 animate-in fade-in dark:bg-card dark:border-green-700">
+                  <span>📄</span>
                   <span className="text-sm text-neutral-700 dark:text-neutral-200">
                     {selectedFile.name}
                   </span>
+                  <Button
+                    variant="ghost"
+                    className="hover:dark:bg-destructive flex-shrink-0"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
               <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
