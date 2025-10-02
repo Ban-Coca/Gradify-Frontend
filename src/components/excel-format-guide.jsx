@@ -74,8 +74,6 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
 
     worksheet.addRows(data);
 
-    // const ws = XLSX.utils.aoa_to_sheet(data);
-
     worksheet.columns = [
       { width: 18 }, // Student Number
       { width: 15 }, // First Name
@@ -104,7 +102,7 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
     // Cleanup
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-    
+
     showSuccessToast("Template downloaded successfully!", { duration: 2000 });
   };
 
