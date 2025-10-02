@@ -364,8 +364,8 @@ function ReportsPage() {
                             aiGeneratedReportQuery.isFetching ? (
                               <>
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                                <span className="hidden xs:inline">Generating...</span>
-                                <span className="xs:hidden">AI...</span>
+                                <span className="hidden sm:inline">Generating...</span>
+                                <span className="sm:hidden">AI...</span>
                               </>
                             ) : (
                               <>
@@ -410,8 +410,8 @@ function ReportsPage() {
                   {createReportMutation.isPending ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2"></div>
-                      <span className="hidden xs:inline">Sending...</span>
-                      <span className="xs:hidden">Send...</span>
+                      <span className="hidden sm:inline">Sending...</span>
+                      <span className="sm:hidden">Send...</span>
                     </>
                   ) : (
                     <>

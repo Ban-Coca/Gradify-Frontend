@@ -756,7 +756,7 @@ export default function SpreadsheetsPage() {
                   </span>
                   <Button
                     variant="ghost"
-                    className="hover:dark:bg-destructive flex-shrink-0"
+                    className="dark:hover:bg-destructive flex-shrink-0"
                     onClick={() => {
                       setSelectedFile(null);
                       if (fileInputRef.current) {
