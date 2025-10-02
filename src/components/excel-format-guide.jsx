@@ -1,11 +1,24 @@
-import React from 'react';
-import { X, FileSpreadsheet, Download, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import React from "react";
+import { X, FileSpreadsheet, Download, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import toast from "react-hot-toast";
-import { Badge } from '@/components/ui/badge';
-import * as XLSX from 'xlsx';
+import { Badge } from "@/components/ui/badge";
+import ExcelJS from "exceljs";
 
 export default function ExcelFormatGuide({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -40,33 +53,59 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
     );
   };
 
-  const downloadTemplate = () => {
-    const wb = XLSX.utils.book_new();
-    
-    const data = [
-      ['Student Number', 'First Name', 'Last Name', 'Q1', 'Q2', 'ME', 'Final Exam'],
-      ['', '', '', 10, 20, 100, 100],
-      ['22-4539-123', 'Derrick', 'Estopace', 8, 15, 92, 85],
-      ['22-4539-124', 'Kent', 'Abadiano', 9, 18, 95, 90],
-    ];
-    
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    
-    ws['!cols'] = [
-      { wch: 15 },
-      { wch: 12 }, 
-      { wch: 12 },
-      { wch: 8 },
-      { wch: 8 },
-      { wch: 8 },
-      { wch: 12 },
-    ];
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Student Grades');
-    
-    XLSX.writeFile(wb, 'grade_template.xlsx');
+  const downloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Spreadsheet Template");
 
-    showSuccessToast('Template downloaded successfully!', { duration: 2000 });
+    const data = [
+      [
+        "Student Number",
+        "First Name",
+        "Last Name",
+        "Q1",
+        "Q2",
+        "ME",
+        "Final Exam",
+      ],
+      ["", "", "", 10, 20, 100, 100],
+      ["22-4539-123", "Derrick", "Estopace", 8, 15, 92, 85],
+      ["22-4539-124", "Kent", "Abadiano", 9, 18, 95, 90],
+    ];
+
+    worksheet.addRows(data);
+
+    // const ws = XLSX.utils.aoa_to_sheet(data);
+
+    worksheet.columns = [
+      { width: 18 }, // Student Number
+      { width: 15 }, // First Name
+      { width: 15 }, // Last Name
+      { width: 8 }, // Q1
+      { width: 8 }, // Q2
+      { width: 8 }, // ME
+      { width: 12 }, // Final Exam
+    ];
+
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Gradify_Template.xlsx";
+
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    showSuccessToast("Template downloaded successfully!", { duration: 2000 });
   };
 
   return (
@@ -85,7 +124,9 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
             <FileSpreadsheet className="h-5 w-5" /> Required Excel Format
           </CardTitle>
           <CardDescription className="text-green-800 dark:text-green-300 flex items-center justify-between">
-            <span>Your spreadsheet must follow this exact two-row header structure:</span>
+            <span>
+              Your spreadsheet must follow this exact two-row header structure:
+            </span>
             <Button
               variant="outline"
               size="sm"
@@ -114,28 +155,63 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
               <TableBody>
                 {/* Row 1: Headers */}
                 <TableRow className="bg-white dark:bg-card hover:bg-white dark:hover:bg-card">
-                  <TableCell className="font-medium text-green-700">Student Number</TableCell>
-                  <TableCell className="font-medium text-green-700">First Name</TableCell>
-                  <TableCell className="font-medium text-green-700">Last Name</TableCell>
-                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">Q1</TableCell>
-                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">Q2</TableCell>
-                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">ME</TableCell>
-                  <TableCell className="font-medium text-green-700">...</TableCell>
+                  <TableCell className="font-medium text-green-700">
+                    Student Number
+                  </TableCell>
+                  <TableCell className="font-medium text-green-700">
+                    First Name
+                  </TableCell>
+                  <TableCell className="font-medium text-green-700">
+                    Last Name
+                  </TableCell>
+                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">
+                    Q1
+                  </TableCell>
+                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">
+                    Q2
+                  </TableCell>
+                  <TableCell className="font-medium bg-yellow-50 dark:bg-yellow-950">
+                    ME
+                  </TableCell>
+                  <TableCell className="font-medium text-green-700">
+                    ...
+                  </TableCell>
                 </TableRow>
                 {/* Row 2: Max Values */}
                 <TableRow className="bg-white dark:bg-card border-t border-dashed hover:bg-white dark:hover:bg-card">
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0"
+                    >
+                      Leave Empty
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0"
+                    >
+                      Leave Empty
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    <Badge variant="outline" className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0">Leave Empty</Badge>
+                    <Badge
+                      variant="outline"
+                      className="bg-white text-gray-500 border-gray-300 dark:bg-card hover:!bg-transparent hover:!text-inherit focus-visible:!ring-0"
+                    >
+                      Leave Empty
+                    </Badge>
                   </TableCell>
-                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">10</TableCell>
-                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">20</TableCell>
-                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">100</TableCell>
+                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">
+                    10
+                  </TableCell>
+                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">
+                    20
+                  </TableCell>
+                  <TableCell className="font-bold text-lg bg-yellow-100 dark:bg-yellow-900">
+                    100
+                  </TableCell>
                   <TableCell className="text-sm text-gray-500">...</TableCell>
                 </TableRow>
                 {/* Row 3: Data */}
@@ -152,10 +228,30 @@ export default function ExcelFormatGuide({ isOpen, onClose }) {
             </Table>
           </div>
           <ul className="mt-4 text-sm text-neutral-700 dark:text-neutral-300 space-y-1 pl-4 list-disc">
-            <li><span className="font-bold">Row 1:</span> Must contain headers for all columns (e.g., Student Number, First Name, Last Name, Assessment Names).</li>
-            <li><span className="font-bold">Row 2 (Maximum Scores):</span> Must contain the <u>maximum possible score/grade</u> for every assessment column (e.g., `100`, `20`). <span className="font-bold text-red-600">Leave columns A, B, and C empty.</span></li>
-            <li><span className="font-bold">Mandatory Columns:</span> Your file must include columns for <span className="font-bold">Student Number</span>, <span className="font-bold">First Name</span>, and <span className="font-bold">Last Name</span>.</li>
-            <li><span className="font-bold">Data Rows (Row 3 onwards):</span> Enter the actual student data and their scores.</li>
+            <li>
+              <span className="font-bold">Row 1:</span> Must contain headers for
+              all columns (e.g., Student Number, First Name, Last Name,
+              Assessment Names).
+            </li>
+            <li>
+              <span className="font-bold">Row 2 (Maximum Scores):</span> Must
+              contain the <u>maximum possible score/grade</u> for every
+              assessment column (e.g., `100`, `20`).{" "}
+              <span className="font-bold text-red-600">
+                Leave columns A, B, and C empty.
+              </span>
+            </li>
+            <li>
+              <span className="font-bold">Mandatory Columns:</span> Your file
+              must include columns for{" "}
+              <span className="font-bold">Student Number</span>,{" "}
+              <span className="font-bold">First Name</span>, and{" "}
+              <span className="font-bold">Last Name</span>.
+            </li>
+            <li>
+              <span className="font-bold">Data Rows (Row 3 onwards):</span>{" "}
+              Enter the actual student data and their scores.
+            </li>
           </ul>
 
           <div className="mt-4 p-4 bg-red-50 dark:bg-red-950/30 border-red-500 rounded-md">
