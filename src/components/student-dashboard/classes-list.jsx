@@ -147,25 +147,27 @@ export function ClassesList() {
   return (
     <Card className="h-full flex flex-col gap-0">
       <CardHeader className="pb-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Your Classes
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="flex items-center gap-2 flex-wrap">
+              <BookOpen className="h-5 w-5 flex-shrink-0" />
+              <span className="truncate">Your Classes</span>
               {!loading && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 flex-shrink-0">
                   {filteredClasses.length}
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription>Overview of your enrolled classes</CardDescription>
+            <CardDescription className="mt-1">Overview of your enrolled classes</CardDescription>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={loadClasses} disabled={loading}>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={loadClasses} disabled={loading} className="flex-shrink-0">
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <span className="sr-only sm:not-sr-only sm:ml-2">Refresh</span>
             </Button>
-            <Button onClick={() => navigate("/student/grades")}>
-              View All Classes
+            <Button onClick={() => navigate("/student/grades")} className="flex-shrink-0">
+              <span className="hidden sm:inline">View All Classes</span>
+              <span className="sm:hidden">View All</span>
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
