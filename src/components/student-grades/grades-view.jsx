@@ -364,13 +364,13 @@ export function GradesView() {
 
               <Tabs defaultValue="classes" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="classes" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-                    <BookOpen className="h-4 w-4" />
-                    Classes ({filteredClasses.length})
+                  <TabsTrigger value="classes" className="text-white data-[state=active]:bg-white data-[state=active]:text-black flex items-center justify-center gap-2">
+                    <BookOpen className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">Classes ({filteredClasses.length})</span>
                   </TabsTrigger>
-                  <TabsTrigger value="summary" className="text-white data-[state=active]:bg-white data-[state=active]:text-black">
-                    <BarChart3 className="h-4 w-4" />
-                    Grade Summary
+                  <TabsTrigger value="summary" className="text-white data-[state=active]:bg-white data-[state=active]:text-black flex items-center justify-center gap-2">
+                    <BarChart3 className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">Grade Summary</span>
                   </TabsTrigger>
                 </TabsList>
 
