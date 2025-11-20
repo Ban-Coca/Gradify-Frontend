@@ -24,7 +24,15 @@ export function GradeDisplayTable({ classId }) {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const excludedFields = ["Student Number", "First Name", "Last Name", "Project Id", "PROJECT ID", "NAME", "LASTNAME"];
+  const excludedFields = [
+    "Student Number",
+    "First Name",
+    "Last Name",
+    "Project Id",
+    "PROJECT ID",
+    "NAME",
+    "LASTNAME",
+  ];
 
   useEffect(() => {
     const fetchSpreadsheet = async () => {
@@ -80,6 +88,8 @@ export function GradeDisplayTable({ classId }) {
     return Array.from(allKeys).sort();
   };
 
+  console.log("Visible Assessments: ", visibleAssessments.data);
+  console.log("Assessments Status: ", assessmentStatus.data);
   const handleVisibilityToggle = (assessmentName) => {
     if (!spreadsheet?.id) return;
 
@@ -225,11 +235,11 @@ export function GradeDisplayTable({ classId }) {
               <TableHead className="font-bold">Student Number</TableHead>
               <TableHead className="font-bold">First Name</TableHead>
               <TableHead className="font-bold">Last Name</TableHead>
-              {spreadsheet.gradeRecords.some(record => 
-                record?.grades?.["PROJECT ID"] || record?.grades?.["Project Id"]
-              ) && (
-                <TableHead className="font-bold">Project ID</TableHead>
-              )}
+              {spreadsheet.gradeRecords.some(
+                (record) =>
+                  record?.grades?.["PROJECT ID"] ||
+                  record?.grades?.["Project Id"]
+              ) && <TableHead className="font-bold">Project ID</TableHead>}
               {gradeColumns.map((column) => {
                 const isVisible = getAssessmentVisibility(column);
                 return (
@@ -256,17 +266,26 @@ export function GradeDisplayTable({ classId }) {
               const studentId =
                 record.grades["Student Number"] || record.studentNumber || "";
               const uniqueKey = studentId || record.id || `student-${index}`;
-              const projectId = record.grades["PROJECT ID"] || record.grades["Project Id"] || "";
+              const projectId =
+                record.grades["PROJECT ID"] ||
+                record.grades["Project Id"] ||
+                "";
               return (
                 <TableRow key={uniqueKey} className="hover:bg-[#198754]/10">
                   <TableCell className="font-medium">{studentId}</TableCell>
-                  <TableCell>{record.grades["First Name"] || record.grades["NAME"] || ""}</TableCell>
-                  <TableCell>{record.grades["Last Name"] || record.grades["LASTNAME"] || ""}</TableCell>
-                  {spreadsheet.gradeRecords.some(record => 
-                    record?.grades?.["PROJECT ID"] || record?.grades?.["Project Id"]
-                  ) && (
-                    <TableCell>{projectId}</TableCell>
-                  )}
+                  <TableCell>
+                    {record.grades["First Name"] || record.grades["NAME"] || ""}
+                  </TableCell>
+                  <TableCell>
+                    {record.grades["Last Name"] ||
+                      record.grades["LASTNAME"] ||
+                      ""}
+                  </TableCell>
+                  {spreadsheet.gradeRecords.some(
+                    (record) =>
+                      record?.grades?.["PROJECT ID"] ||
+                      record?.grades?.["Project Id"]
+                  ) && <TableCell>{projectId}</TableCell>}
                   {gradeColumns.map((column) => {
                     const isVisible = getAssessmentVisibility(column);
                     return (
@@ -292,7 +311,9 @@ export function GradeDisplayTable({ classId }) {
 
       {/* Summary */}
       <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border dark:border-blue-800">
-        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Visibility Summary</h4>
+        <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+          Visibility Summary
+        </h4>
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-blue-700 dark:text-blue-300">
             Visible to students:{" "}

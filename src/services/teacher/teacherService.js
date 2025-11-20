@@ -135,6 +135,7 @@ export const getAssessmentStatus = async (classSpreadSheetId, header) => {
             `${API_ENDPOINTS.TEACHER.ASSESSMENT_STATUS}/${classSpreadSheetId}/assessments/status`,
             {headers: header}
         )
+        console.log("Respopnse: ", response.data)
         return response.data
     } catch(error){
         throw error;

@@ -15,6 +15,9 @@ import { useAuth } from "@/contexts/authentication-context";
 export function useTeacher(teacherId, classId, classSpreadsheetId) {
   const { getAuthHeader } = useAuth();
   const queryClient = useQueryClient();
+
+  console.log('useTeacher called with:', { teacherId, classId, classSpreadsheetId });
+
   const studentCountQuery = useQuery({
     queryKey: ["studentCount", teacherId],
     queryFn: () => getStudentCount(teacherId, getAuthHeader()),
@@ -57,7 +60,7 @@ export function useTeacher(teacherId, classId, classSpreadsheetId) {
         queryKey: ["availableAssessments", classId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["assessmentStatus", classSpreadsheetId],
+        queryKey: ["assessmentStatus", classId],
       });
     },
   });
@@ -74,15 +77,32 @@ export function useTeacher(teacherId, classId, classSpreadsheetId) {
         queryKey: ["availableAssessments", classId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["assessmentStatus", classSpreadsheetId],
+        queryKey: ["assessmentStatus", classId],
       });
     },
   });
 
   const assessmentStatus = useQuery({
-    queryKey: ["assessmentStatus", classSpreadsheetId],
-    queryFn: () => getAssessmentStatus(classSpreadsheetId, getAuthHeader()),
-    enabled: !!classSpreadsheetId,
+    queryKey: ["assessmentStatus", classId],
+    queryFn: async () => {
+      console.log('Fetching assessmentStatus for:', classId);
+      const result = await getAssessmentStatus(classId, getAuthHeader());
+      console.log('assessmentStatus RAW result:', result);
+      console.log('assessmentStatus result type:', typeof result);
+      console.log('assessmentStatus result keys:', Object.keys(result || {}));
+      
+      // Check if the result structure is correct
+      if (result && typeof result === 'object') {
+        Object.entries(result).forEach(([key, value]) => {
+          console.log(`Assessment "${key}": ${value} (type: ${typeof value})`);
+        });
+      }
+      
+      return result;
+    },
+    enabled: !!classId,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   return {
