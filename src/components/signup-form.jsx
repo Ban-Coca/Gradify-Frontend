@@ -207,8 +207,8 @@ export function SignupForm({ className, ...props }) {
             Or register with
           </span>
         </div>
-        <div className="grid gap-3 grid-cols-2">
-          <motion.div variants={buttonHoverVariants} whileHover="hover">
+        <div className="grid gap-3 grid-cols-1">
+          {/* <motion.div variants={buttonHoverVariants} whileHover="hover">
             <Button
               variant="outline"
               className="w-full cursor-pointer"
@@ -237,7 +237,7 @@ export function SignupForm({ className, ...props }) {
                 ></path>
               </svg>
             </Button>
-          </motion.div>
+          </motion.div> */}
           <motion.div variants={buttonHoverVariants} whileHover="hover">
             <Button
               variant="outline"
