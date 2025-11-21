@@ -190,65 +190,108 @@ export default function LandingPage() {
         <section id="home" ref={heroRef} className="w-full py-12 md:py-16 lg:py-24 xl:pb-20 xl:pt-10">
           <div className="container mx-auto px-4 md:px-6">
             <motion.div
-              className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2"
+              className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto"
               variants={containerVariants}
               initial="hidden"
               animate={heroInView ? "visible" : "hidden"}
             >
-              <motion.div className="flex flex-col justify-center space-y-4" variants={itemVariants}>
-                <div className="space-y-2">
-                  <motion.h1
-                    className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={heroInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                  >
-                    Transform Academic Performance with Real-Time Insights
-                  </motion.h1>
-                  <motion.p
-                    className="max-w-[600px] text-muted-foreground md:text-xl"
-                    initial={{ opacity: 0 }}
-                    animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ duration: 0.7, delay: 0.4 }}
-                  >
-                    Gradify is an intelligent grade management system that provides real-time tracking and predictive
-                    insights to empower both students and teachers.
-                  </motion.p>
-                </div>
-                <motion.div
-                  className="flex flex-col gap-2 min-[400px]:flex-row"
+              <motion.div className="space-y-6" variants={itemVariants}>
+                <motion.h1
+                  className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl"
                   initial={{ opacity: 0, y: 20 }}
                   animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
+                  transition={{ duration: 0.7, delay: 0.2 }}
                 >
-                  <MotionLink
-                    to="/signup"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button
-                      size="lg"
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      Start Now
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </MotionLink>
-                </motion.div>
+                  Transform Academic Performance with{" "}
+                  <span className="text-emerald-600">Real-Time Insights</span>
+                </motion.h1>
+                <motion.p
+                  className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto"
+                  initial={{ opacity: 0 }}
+                  animate={heroInView ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                >
+                  Gradify is an intelligent grade management system that provides real-time tracking and predictive
+                  insights to empower both students and teachers.
+                </motion.p>
               </motion.div>
+
               <motion.div
-                className="flex items-center justify-center"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={heroInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
+                className="flex flex-col sm:flex-row gap-4 items-center justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
               >
-                <img
-                  src="/placeholder.svg?height=550&width=550"
-                  width={550}
-                  height={550}
-                  alt="Gradify Dashboard Preview"
-                  className="rounded-lg object-cover shadow-lg"
-                />
+                <MotionLink
+                  to="/signup"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    size="lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-lg px-8 py-6"
+                  >
+                    Start Now
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </MotionLink>
+                <MotionLink
+                  to="/login"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-6"
+                  >
+                    Learn More
+                  </Button>
+                </MotionLink>
+              </motion.div>
+
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-12"
+                initial={{ opacity: 0, y: 30 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.7, delay: 0.8 }}
+              >
+                {[
+                  {
+                    icon: <BarChart3 className="h-8 w-8 text-emerald-600" />,
+                    title: "Real-Time Analytics",
+                    description: "Track performance instantly",
+                  },
+                  {
+                    icon: <BrainCircuit className="h-8 w-8 text-emerald-600" />,
+                    title: "AI-Powered Insights",
+                    description: "Predictive grade analysis",
+                  },
+                  {
+                    icon: <Users className="h-8 w-8 text-emerald-600" />,
+                    title: "Easy Collaboration",
+                    description: "Connect students & teachers",
+                  },
+                ].map((feature, i) => (
+                  <motion.div
+                    key={i}
+                    className="flex flex-col items-center space-y-2 p-6 rounded-lg bg-muted/40 border border-border"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5, delay: 0.9 + i * 0.1 }}
+                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={heroInView ? { scale: 1 } : { scale: 0 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1.0 + i * 0.1 }}
+                    >
+                      {feature.icon}
+                    </motion.div>
+                    <h3 className="font-semibold text-lg">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </motion.div>
+                ))}
               </motion.div>
             </motion.div>
           </div>
