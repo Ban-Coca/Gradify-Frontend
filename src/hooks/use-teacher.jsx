@@ -101,8 +101,7 @@ export function useTeacher(teacherId, classId, classSpreadsheetId) {
       return result;
     },
     enabled: !!classId,
-    staleTime: 0,
-    refetchOnMount: true,
+    staleTime: 5 * 60 * 1000,
   });
 
   return {

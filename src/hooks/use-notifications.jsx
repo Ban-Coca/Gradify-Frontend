@@ -13,8 +13,8 @@ export function useNotification({ currentUser, queryClient, getAuthHeader }) {
     queryFn: () => getUserNotifications(currentUser.userId, getAuthHeader()),
     enabled: !!currentUser?.userId,
     refetchOnWindowFocus: false, // Disable to reduce requests
-    refetchInterval: 60000, // Increase to 1 minute
     retry: 3,
+    staleTime: 5 * 60 * 1000,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
@@ -23,8 +23,8 @@ export function useNotification({ currentUser, queryClient, getAuthHeader }) {
     queryFn: () => getUnreadCount(currentUser.userId, getAuthHeader()),
     enabled: !!currentUser?.userId,
     refetchOnWindowFocus: false, // Disable to reduce requests
-    refetchInterval: 60000, // Increase to 1 minute
     retry: 3,
+    staleTime: 5 * 60 * 1000,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
@@ -33,8 +33,8 @@ export function useNotification({ currentUser, queryClient, getAuthHeader }) {
     queryFn: () => getUnread(currentUser.userId, getAuthHeader()),
     enabled: !!currentUser?.userId,
     refetchOnWindowFocus: false, // Disable to reduce requests
-    refetchInterval: 60000, // Increase to 1 minute
     retry: 3,
+    staleTime: 5 * 60 * 1000,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 

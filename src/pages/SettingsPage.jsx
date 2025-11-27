@@ -136,7 +136,6 @@ export default function TeacherSettings() {
   } = useQuery({
     queryKey: ["subscriptionStatus", currentUser?.userId],
     queryFn: () => getSubscriptionStatus(currentUser?.userId, getAuthHeader()),
-    refetchInterval: 30000, // Refetch every 30 seconds
     enabled: !!currentUser,
   });
 

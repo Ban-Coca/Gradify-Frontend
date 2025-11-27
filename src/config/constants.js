@@ -78,6 +78,7 @@ export const API_ENDPOINTS = {
         TOGGLE_ASSESSMENT: '/api/teacher', // + /{classSpreadsheetId}/assessments/{assessmentName}/toggle
         ASSESSMENT_STATUS: '/api/teacher', // + /{classSpreadsheetId}/assessments/status
         STUDENT_DETAIL: '/api/teacher', // + /class/{classId}/student/{studentId}
+        STUDENT_BREAKDOWN: '/api/teacher'
     },
     
     // Reports
