@@ -74,7 +74,6 @@ export default function GraphFileBrowser({
       return getDriveRoot(userId, getAuthHeader());
     },
     enabled: !!userId && open,
-    refetchInterval: 30000, // Auto-refetch every 30 seconds when component is focused
     refetchIntervalInBackground: false, // Don't refetch in background
   });
 
@@ -90,7 +89,6 @@ export default function GraphFileBrowser({
     },
 
     enabled: !!userId && !!currentFolderId && open,
-    refetchInterval: 30000, // Auto-refetch every 30 seconds when component is focused
     refetchIntervalInBackground: false, // Don't refetch in background
   });
 

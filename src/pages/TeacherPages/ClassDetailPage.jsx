@@ -514,7 +514,7 @@ const ClassDetailPage = () => {
               className="space-y-4 p-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Class Name
                 </label>
                 <input
@@ -527,7 +527,20 @@ const ClassDetailPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
+                  Section
+                </label>
+                <input
+                  type="text"
+                  value={editForm?.section || ""}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, section: e.target.value })
+                  }
+                  className="mt-1 block w-full border rounded-md px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Semester
                 </label>
                 <input
@@ -540,7 +553,7 @@ const ClassDetailPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Schedule
                 </label>
                 <input
@@ -553,7 +566,7 @@ const ClassDetailPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-white">
                   Room
                 </label>
                 <input

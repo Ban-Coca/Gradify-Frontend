@@ -155,3 +155,17 @@ export const getStudentDetail = async (classId, studentId, header) => {
         throw error;
     }
 }
+
+export const getStudentBreakdown = async (classId, studentId, header) => {
+    try{
+        const response = await api.get(
+            `${API_ENDPOINTS.TEACHER.STUDENT_BREAKDOWN}/class/${classId}/student/${studentId}/breakdown`, {
+                headers: header
+            }
+        )
+
+        return response.data;
+    } catch(error){
+        throw error;
+    }
+}
