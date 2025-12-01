@@ -166,7 +166,7 @@ export function GradeDisplayTable({ classId }) {
         <h2 className="text-xl font-bold">
           Grade Overview for {spreadsheet.className}
         </h2>
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           {saveSuccess && (
             <span className="text-green-600">Visibility settings saved!</span>
           )}
@@ -178,7 +178,7 @@ export function GradeDisplayTable({ classId }) {
             <Save className="h-4 w-4" />
             {saving ? "Saving..." : "Save Visibility"}
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Visibility Controls */}
