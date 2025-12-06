@@ -3,15 +3,12 @@ import { API_ENDPOINTS } from '@/config/constants';
 
 export const savingGradingScheme = async (gradingScheme, classId, teacherId, headers) => {
     try {
-        console.log("Saving grading scheme:", gradingScheme);
-        console.log("class" , classId);
-        console.log("teacher" , teacherId);
         
         // Make sure we're sending the data in the expected format
         const dataToSend = {
             schemes: Array.isArray(gradingScheme) ? gradingScheme : gradingScheme.schemes || []
         };
-        
+        console.log("Data: ", dataToSend)
         const response = await api.post(
             `${API_ENDPOINTS.GRADING.SAVE_SCHEME}?classId=${classId}&teacherId=${teacherId}`, 
             dataToSend,

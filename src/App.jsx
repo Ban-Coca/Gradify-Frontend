@@ -33,6 +33,7 @@ import AzureCallback from "./callbacks/AzureCallback";
 import TeacherSettings from "./pages/SettingsPage";
 import WorkInProgress from "./pages/WorkInProgress";
 import StudentSettings from "./pages/StudentSettingsPage";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const RoleBasedComponent = ({ children, allowedRoles }) => {
   const { userRole } = useAuth();
@@ -46,7 +47,8 @@ export const RoleBasedComponent = ({ children, allowedRoles }) => {
 
 function App() {
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-
+  const { currentUser } = useAuth();
+  const queryClient = useQueryClient();
   useEffect(() => {
     // Check maintenance mode from environment variable
     const maintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
@@ -54,8 +56,24 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setupMessageListener();
-  }, []);
+    console.log('🔧 Setting up FCM listener with currentUser:', currentUser?.userId);
+    
+    setupMessageListener((payload) => {
+      console.log('🔔 FCM Callback received in App.jsx:', payload);
+      console.log('👤 Current user ID:', currentUser?.userId);
+      
+      // Invalidate notification queries to trigger refetch
+      if (currentUser?.userId) {
+        console.log('🔄 Invalidating notification queries...');
+        queryClient.invalidateQueries(['notifications', currentUser.userId]);
+        queryClient.invalidateQueries(['unreadCount', currentUser.userId]);
+        queryClient.invalidateQueries(['unread', currentUser.userId]);
+        console.log('✅ Queries invalidated successfully');
+      } else {
+        console.warn('⚠️ Cannot invalidate queries - no currentUser.userId');
+      }
+    });
+  }, [queryClient, currentUser?.userId]);
 
   if (isMaintenanceMode) {
     return (

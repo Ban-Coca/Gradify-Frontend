@@ -287,14 +287,16 @@ function ReportsPage() {
                               Loading students...
                             </SelectItem>
                           ) : students.length > 0 ? (
-                            students.map((student) => (
-                              <SelectItem
-                                key={student.userId}
-                                value={student.userId}
-                              >
-                                {student.firstName} {student.lastName}
-                              </SelectItem>
-                            ))
+                            students
+                              .sort((a, b) => a.lastName.localeCompare(b.lastName))
+                              .map((student) => (
+                                <SelectItem
+                                  key={student.userId}
+                                  value={student.userId}
+                                >
+                                  {student.firstName} {student.lastName}
+                                </SelectItem>
+                              ))
                           ) : (
                             <SelectItem value="none" disabled>
                               No students in this class

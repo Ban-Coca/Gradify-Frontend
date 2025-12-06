@@ -7,7 +7,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OnboardingProvider } from "./contexts/onboarding-context";
 import { ThemeProvider } from "./contexts/theme-context";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,  // Stop refetching when tab regains focus
+      refetchOnMount: false,         // Stop refetching on component remount
+      refetchOnReconnect: false,     // Stop refetching on network reconnect
+      staleTime: 5 * 60 * 1000,      // Consider data fresh for 5 minutes
+      retry: 1,                       // Reduce retries from 3 to 1
+    },
+  },
+});
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

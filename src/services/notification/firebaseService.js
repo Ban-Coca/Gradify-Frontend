@@ -72,31 +72,56 @@ const registerTokenWithServer = async (token, userId) => {
 };
 
 // Handle foreground messages
-export const setupMessageListener = () => {
+export const setupMessageListener = (onNotificationReceived) => {
+  console.log('🔔 FCM Listener setup called');
+  
   onMessage(messaging, (payload) => {
-    console.log('Message received:', payload);
+    console.log('✅ FCM Message received in FOREGROUND:', payload);
+    console.log('📦 Payload structure:', {
+      hasNotification: !!payload.notification,
+      hasData: !!payload.data,
+      notification: payload.notification,
+      data: payload.data
+    });
     
-    // Check if payload has the expected structure
-    const title = payload.notification?.title || 'New Notification';
-    const body = payload.notification?.body || 'New update in ProjectSync';
+    const title = payload.notification?.title || payload.data?.title || 'New Notification';
+    const body = payload.notification?.body || payload.data?.body || 'New update in Gradify';
+    const notificationType = payload.data?.type;
+    
+    console.log('📢 Processing notification:', { title, body, notificationType });
     
     try {
+      // Show toast notification
       toast.message(title, {
         description: body,
         duration: 5000,
       });
+      console.log('✅ Toast shown');
+      
       notificationSound.play().catch((error) => {
         console.error('Failed to play notification sound:', error);
       });
       
+      // Show browser notification
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(title, {
           body: body,
           icon: '/favicon.ico'
         });
+        console.log('✅ Browser notification shown');
+      }
+      
+      // Trigger callback to refetch notifications
+      if (onNotificationReceived) {
+        console.log('🔄 Triggering notification refetch callback');
+        onNotificationReceived(payload);
+      } else {
+        console.warn('⚠️ No callback provided to setupMessageListener');
       }
     } catch (error) {
-      console.error('Failed to show toast notification:', error);
+      console.error('❌ Failed to show notification:', error);
     }
   });
+  
+  console.log('🔔 FCM Listener registered successfully');
 };

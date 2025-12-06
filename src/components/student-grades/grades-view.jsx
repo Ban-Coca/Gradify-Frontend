@@ -538,7 +538,7 @@ export function GradesView() {
 
                 <div className="flex flex-col items-end gap-2">
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Final Grade</p>
+                    <p className="text-sm text-muted-foreground">Projected Final Grade</p>
                     <p
                       className={`text-3xl font-bold ${calculatedGrade !== null ? getGradeColor(calculatedGrade) : ""}`}
                     >

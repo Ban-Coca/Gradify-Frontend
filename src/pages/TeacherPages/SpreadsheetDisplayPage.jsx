@@ -78,7 +78,6 @@ export default function SpreadsheetDisplayPage() {
             
             const filteredKeys = allKeys.filter(key => {
                 const isExcluded = excludedFields.has(key.toLowerCase());
-                console.log(`Key: "${key}" (lowercase: "${key.toLowerCase()}") - Excluded: ${isExcluded}`);
                 return !isExcluded;
             });
             

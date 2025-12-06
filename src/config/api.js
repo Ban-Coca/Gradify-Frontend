@@ -3,9 +3,9 @@ import axios from 'axios';
 // API Configuration Constants
 const API_CONFIG = {
     BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-    TIMEOUT: 10000, // 10 seconds
+    TIMEOUT: 30000, // 10 seconds
     RETRY_ATTEMPTS: 3,
-    RETRY_DELAY: 1000, // 1 second
+    RETRY_DELAY: 10000, // 1 second
 };
 
 // Create axios instance

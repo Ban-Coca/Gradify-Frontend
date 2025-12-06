@@ -135,6 +135,7 @@ export const getAssessmentStatus = async (classSpreadSheetId, header) => {
             `${API_ENDPOINTS.TEACHER.ASSESSMENT_STATUS}/${classSpreadSheetId}/assessments/status`,
             {headers: header}
         )
+        console.log("Respopnse: ", response.data)
         return response.data
     } catch(error){
         throw error;
@@ -150,6 +151,20 @@ export const getStudentDetail = async (classId, studentId, header) => {
         )
 
         return response.data
+    } catch(error){
+        throw error;
+    }
+}
+
+export const getStudentBreakdown = async (classId, studentId, header) => {
+    try{
+        const response = await api.get(
+            `${API_ENDPOINTS.TEACHER.STUDENT_BREAKDOWN}/class/${classId}/student/${studentId}/breakdown`, {
+                headers: header
+            }
+        )
+
+        return response.data;
     } catch(error){
         throw error;
     }
