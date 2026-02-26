@@ -148,6 +148,26 @@ export const finalizeStudentOnboarding = async (data) => {
     }
 }
 
+export const sendStudentNumberVerification = async (email) => {
+    try {
+        const response = await api.post(`${API_ENDPOINTS.USER.SEND_STUDENT_VERIFICATION}`, { email }, { timeout: 30000 });
+        return response.data;
+    } catch (error) {
+        console.error('Error sending student number verification:', error);
+        throw error;
+    }
+}
+
+export const verifyStudentNumber = async (email, code) => {
+    try {
+        const response = await api.post(`${API_ENDPOINTS.USER.VERIFY_STUDENT_NUMBER}`, { email, code }, { timeout: 30000 });
+        return response.data;
+    } catch (error) {
+        console.error('Error verifying student number:', error);
+        throw error;
+    }
+}
+
 export const finalizeGoogleRegistration = async (role, data) => {
     try{
         const response = await api.post(`${API_ENDPOINTS.AUTH.GOOGLE_FINALIZE}/${role}`, data)

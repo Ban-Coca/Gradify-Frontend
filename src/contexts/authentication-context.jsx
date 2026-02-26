@@ -49,6 +49,7 @@ export const AuthenticationProvider = ({ children }) => {
           "/onboarding/role",
           "/onboarding/student",
           "/onboarding/teacher",
+          "/onboarding/verify-student",
           "/oauth2/callback"
         ];
         if (

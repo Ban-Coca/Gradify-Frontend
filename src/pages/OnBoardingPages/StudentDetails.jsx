@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/authentication-context";
-import { signUpUser, finalizeStudentOnboarding, finalizeGoogleRegistration } from "@/services/user/authenticationService";
+import { sendStudentNumberVerification } from "@/services/user/authenticationService";
 import {
   Select,
   SelectContent,
@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useOnboarding } from "@/contexts/onboarding-context";
-import { updateRole } from "@/services/user/userService";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 const formSchema = z.object({
   studentNumber: z.string().min(1, { message: "Student number is required." }),
@@ -39,8 +38,7 @@ export default function StudentOnboarding() {
   const { formData, setFormData } = useOnboarding();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
-  const { login, currentUser, getAuthHeader } = useAuth();
-  const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const { currentUser } = useAuth();
   const helmet = useDocumentTitle("Student Details", "Complete your student profile.");
 
   const form = useForm({
@@ -52,101 +50,22 @@ export default function StudentOnboarding() {
     },
   });
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token && currentUser) {
-      setIsOAuthUser(true);
-    }
-  }, [currentUser]);
-
   async function onSubmit(values) {
   setIsLoading(true);
   setError(null);
     console.log("Form Values:", formData);
     try {
-      const isAzureUser = formData.azureId;
-      const isGoogleUser = sessionStorage.getItem('googleUserData');
-      if(isGoogleUser){
-        console.log("Google User", isGoogleUser)
-        const onboardingData = {
-          role: formData.role || "STUDENT",
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          azureId: formData.azureId,
-          provider: formData.provider || "Google",
-          ...values,
-        };
-        const response = await finalizeGoogleRegistration(onboardingData.role, onboardingData);
-        sessionStorage.removeItem("googleUserData");
-        localStorage.removeItem("onboardingFormData");
-        login(response.userResponse, response.token);
-        navigate("/student/dashboard");
+      // Save student details to onboarding context for use after verification
+      setFormData((prev) => ({ ...prev, ...values }));
 
-      }else if (isAzureUser) {
-        // Azure user - create new account with Azure credentials
-        const onboardingData = {
-          role: formData.role || "STUDENT",
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          azureId: formData.azureId,
-          provider: formData.provider || "Microsoft",
-          ...values,
-        };
+      // Determine the email to send verification to
+      const email = formData.email || currentUser?.email;
 
-        console.log("Azure Onboarding Data:", onboardingData);
+      // Send verification email for student number
+      await sendStudentNumberVerification(email);
 
-        const response = await finalizeStudentOnboarding(onboardingData);
-        console.log("Azure Onboarding Response:", response);
-
-        // Clear session storage after successful signup
-        sessionStorage.removeItem("azureUserData");
-        localStorage.removeItem("onboardingFormData");
-
-        login(response.userResponse, response.token);
-        navigate("/student/dashboard");
-      } else if (isOAuthUser) {
-        // OAuth user - just update profile details
-        const onboardingData = {
-          role: formData.role || "STUDENT",
-          ...values,
-        };
-
-        console.log("OAuth Onboarding Data:", onboardingData);
-
-        const response = await updateRole(
-          currentUser.id,
-          onboardingData,
-        );
-
-        console.log("OAuth Onboarding Response:", response);
-
-        if (response.userResponse && response.token) {
-          login(response.userResponse, response.token);
-        }
-
-        localStorage.removeItem("onboardingFormData");
-        navigate("/student/dashboard");
-      } else {
-        // Regular signup flow - existing code
-        const onboardingData = {
-          role: formData.role || "STUDENT",
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          provider: formData.provider,
-          ...values,
-        };
-
-        console.log("Regular Onboarding Data:", onboardingData);
-
-        const response = await signUpUser(onboardingData);
-        console.log("Regular Onboarding Response:", response);
-        localStorage.removeItem("onboardingFormData");
-        login(response.userResponse, response.token);
-      }
+      // Navigate to verification page; the actual onboarding completes there
+      navigate("/onboarding/verify-student");
     } catch (error) {
       console.error("Profile update failed:", error);
       let msg = "Profile update failed.";
@@ -331,7 +250,7 @@ export default function StudentOnboarding() {
                 className="w-full bg-green-600 hover:bg-green-700"
                 disabled={isLoading}
               >
-                {isLoading ? "Saving..." : "Complete Setup"}
+                {isLoading ? "Sending verification..." : "Continue to Verification"}
               </Button>
             </form>
           </Form>

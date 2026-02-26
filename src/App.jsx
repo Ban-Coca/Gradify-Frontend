@@ -20,6 +20,7 @@ import ReportsPage from "./pages/TeacherPages/ReportPage";
 import RoleSelection from "./pages/OnBoardingPages/ChooseRole";
 import TeacherOnboarding from "./pages/OnBoardingPages/TeacherDetails";
 import StudentOnboarding from "./pages/OnBoardingPages/StudentDetails";
+import StudentNumberVerificationPage from "./pages/OnBoardingPages/StudentNumberVerificationPage";
 import GradesPage from "./pages/StudentPages/GradesPage";
 import FeedbackPage from "./pages/StudentPages/FeedbackPage";
 import ProgressTrendsPage from "./pages/StudentPages/ProgressTrendsPage";
@@ -249,6 +250,7 @@ function App() {
           <Route path="/onboarding/role" element={<RoleSelection />} />
           <Route path="/onboarding/student" element={<StudentOnboarding />} />
           <Route path="/onboarding/teacher" element={<TeacherOnboarding />} />
+          <Route path="/onboarding/verify-student" element={<StudentNumberVerificationPage />} />
         </Route>
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
